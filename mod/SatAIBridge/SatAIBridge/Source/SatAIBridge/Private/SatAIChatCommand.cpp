@@ -1,5 +1,6 @@
 #include "SatAIChatCommand.h"
 #include "Command/CommandSender.h"
+#include "SatAISubsystem.h"
 
 ASatAIChatCommand::ASatAIChatCommand()
 {
@@ -11,14 +12,20 @@ ASatAIChatCommand::ASatAIChatCommand()
 EExecutionStatus ASatAIChatCommand::ExecuteCommand_Implementation(
     UCommandSender* Sender, const TArray<FString>& Arguments, const FString& Label)
 {
-    const FString& Sub = Arguments[0];
+    const FString& SubCommand = Arguments[0];
 
-    if (Sub.Equals(TEXT("ping"), ESearchCase::IgnoreCase))
+    if (SubCommand == TEXT("ping"))
     {
-        Sender->SendChatMessage(TEXT("SatAIBridge: pong"));
+        ASatAISubsystem* Subsystem = ASatAISubsystem::Get(this);
+        if (!Subsystem)
+        {
+            Sender->SendChatMessage(TEXT("SatAIBridge: subsystem not found (registered in RootGameWorld?)"));
+            return EExecutionStatus::UNCOMPLETED;
+        }
+        Sender->SendChatMessage(Subsystem->HandlePing());
         return EExecutionStatus::COMPLETED;
     }
 
-    Sender->SendChatMessage(FString::Printf(TEXT("Unknown subcommand '%s'. Try: /ai ping"), *Sub));
+    Sender->SendChatMessage(FString::Printf(TEXT("Unknown subcommand '%s'. Try: /ai ping"), *SubCommand));
     return EExecutionStatus::BAD_ARGUMENTS;
 }
