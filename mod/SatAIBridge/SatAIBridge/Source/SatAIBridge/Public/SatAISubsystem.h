@@ -16,6 +16,7 @@ struct FSatAISpawnResult
     FTransform Transform;
     FBox LocalBounds = FBox(ForceInit);
     bool bLightweight = false;
+    AFGBuildable* Actor = nullptr;
 };
 
 struct FSatAITrackedPiece
@@ -24,6 +25,17 @@ struct FSatAITrackedPiece
     UClass* LightweightClass = nullptr;
     int32 LightweightIndex = INDEX_NONE;
     FVector Location = FVector::ZeroVector;
+};
+
+struct FSatAIPiece
+{
+    FString Id;
+    FString Kind;    
+    FString ClassPath;
+    FString BuiltWith; 
+    FString Recipe;  
+    FString From, To;  
+    FTransform Transform;
 };
 
 UCLASS(Abstract, Blueprintable)
@@ -49,6 +61,7 @@ public:
     bool SpawnTracked(const FString& BuildId, const FString& ClassPath, const FString& BuiltWithRecipePath,
         const FTransform& Transform, FSatAISpawnResult& Out, FString& OutError);
     int32 ClearBuild(const FString& BuildId);
+    bool BuildPieces(const FString& BuildId, const TArray<FSatAIPiece>& Pieces, int32& OutBuilt, FString& OutError);
 
 private:
     int32 FindLightweightIndex(UClass* Class, const FVector& LocationCm) const;

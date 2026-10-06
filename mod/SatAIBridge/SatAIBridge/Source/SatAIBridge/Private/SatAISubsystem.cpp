@@ -90,6 +90,43 @@ namespace
         return { MakeShared<FJsonValueNumber>(M.X), MakeShared<FJsonValueNumber>(M.Y), MakeShared<FJsonValueNumber>(M.Z) };
     }
 
+    bool ParsePiece(const FJsonObject& Json, FSatAIPiece& Out, FString& OutError)
+    {
+        if (!Json.TryGetStringField(TEXT("id"), Out.Id) || !Json.TryGetStringField(TEXT("kind"), Out.Kind)
+            || !Json.TryGetStringField(TEXT("class"), Out.ClassPath))
+        {
+            OutError = TEXT("needs id, kind and class");
+            return false;
+        }
+        Json.TryGetStringField(TEXT("built_with"), Out.BuiltWith);  
+
+        if (Out.Kind == TEXT("belt"))
+        {
+            if (!Json.TryGetStringField(TEXT("from"), Out.From) || !Json.TryGetStringField(TEXT("to"), Out.To))
+            {
+                OutError = TEXT("belt needs from and to");
+                return false;
+            }
+            return true;
+        }
+
+        FVector PosCm;
+        if (!ReadVec3Metres(Json, TEXT("pos"), PosCm, OutError))
+        {
+            return false;
+        }
+        double Yaw = 0.0;
+        Json.TryGetNumberField(TEXT("yaw"), Yaw);
+        Out.Transform = FTransform(FRotator(0.0, Yaw, 0.0), PosCm);
+
+        if (Out.Kind == TEXT("machine") && !Json.TryGetStringField(TEXT("recipe"), Out.Recipe))
+        {
+            OutError = TEXT("machine needs recipe");
+            return false;
+        }
+        return true;
+    }
+
     bool TraceGroundCm(UWorld* World, double XCm, double YCm, FVector& OutHitCm, FString& OutHitName)
     {
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SatAIGround), /*bTraceComplex=*/ false);
@@ -338,6 +375,54 @@ void ASatAISubsystem::StartHttpServer()
             return true;
         }));
 
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/build"), EHttpServerRequestVerbs::VERB_POST, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            TSharedPtr<FJsonObject> Body = ParseJsonBody(Request, OutError);
+            if (!Body)
+            {
+                return false;
+            }
+            FString BuildId;
+            if (!Body->TryGetStringField(TEXT("build_id"), BuildId))
+            {
+                OutError = TEXT("missing build_id");
+                return false;
+            }
+            const TArray<TSharedPtr<FJsonValue>>* PieceValues = nullptr;
+            if (!Body->TryGetArrayField(TEXT("pieces"), PieceValues))
+            {
+                OutError = TEXT("missing pieces");
+                return false;
+            }
+
+            TArray<FSatAIPiece> Pieces;
+            for (int32 i = 0; i < PieceValues->Num(); ++i)
+            {
+                const TSharedPtr<FJsonObject>* Obj = nullptr;
+                if (!(*PieceValues)[i]->TryGetObject(Obj))
+                {
+                    OutError = FString::Printf(TEXT("pieces[%d] is not an object"), i);
+                    return false;
+                }
+                FString PieceError;
+                if (!ParsePiece(**Obj, Pieces.AddDefaulted_GetRef(), PieceError))
+                {
+                    OutError = FString::Printf(TEXT("pieces[%d]: %s"), i, *PieceError);
+                    return false;
+                }
+            }
+
+            int32 Built = 0;
+            if (!Self.BuildPieces(BuildId, Pieces, Built, OutError))
+            {
+                return false;
+            }
+            Out->SetStringField(TEXT("build_id"), BuildId);
+            Out->SetNumberField(TEXT("built"), Built);
+            return true;
+        }));
+
     Http.StartAllListeners();
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: HTTP server listening on 127.0.0.1:%u (%d routes)"),
         HttpPort, HttpRoutes.Num());
@@ -530,6 +615,7 @@ bool ASatAISubsystem::SpawnTracked(const FString& BuildId, const FString& ClassP
 
     if (IsValid(Built))
     {
+        Out.Actor = Built;
         Out.Transform = Built->GetActorTransform();
         Out.LocalBounds = Built->CalculateComponentsBoundingBoxInLocalSpace(/*bNonColliding=*/ false);
         Builds.FindOrAdd(BuildId).Add({ Built, nullptr, INDEX_NONE, Out.Transform.GetLocation() });
@@ -610,4 +696,73 @@ int32 ASatAISubsystem::ClearBuild(const FString& BuildId)
     }
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: cleared build '%s' (%d pieces)"), *BuildId, Removed);
     return Removed;
+}
+
+bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPiece>& Pieces,
+    int32& OutBuilt, FString& OutError)
+{
+    OutBuilt = 0;
+    if (Builds.Contains(BuildId))
+    {
+        OutError = FString::Printf(TEXT("build '%s' already exists; clear it first"), *BuildId);
+        return false;
+    }
+    Builds.Add(BuildId);
+
+    TMap<FString, AFGBuildable*> Machines;
+
+    for (const FSatAIPiece& Piece : Pieces)
+    {
+        auto Fail = [&](const FString& Why)
+            {
+                OutError = FString::Printf(TEXT("piece '%s': %s (%d of %d built; clear '%s' to undo)"),
+                    *Piece.Id, *Why, OutBuilt, Pieces.Num(), *BuildId);
+                return false;
+            };
+
+        FString Error;
+        if (Piece.Kind == TEXT("foundation") || Piece.Kind == TEXT("machine"))
+        {
+            FSatAISpawnResult Result;
+            if (!SpawnTracked(BuildId, Piece.ClassPath, Piece.BuiltWith, Piece.Transform, Result, Error))
+            {
+                return Fail(Error);
+            }
+            if (Piece.Kind == TEXT("machine"))
+            {
+                if (!Result.Actor)
+                {
+                    return Fail(TEXT("machine unexpectedly became lightweight"));
+                }
+                if (!SetMachineRecipe(Result.Actor, Piece.Recipe, Error))
+                {
+                    return Fail(Error);
+                }
+                Machines.Add(Piece.Id, Result.Actor);
+            }
+        }
+        else if (Piece.Kind == TEXT("belt"))
+        {
+            AFGBuildable** From = Machines.Find(Piece.From);
+            AFGBuildable** To = Machines.Find(Piece.To);
+            if (!From || !To)
+            {
+                return Fail(TEXT("from/to must be machines built earlier in this request"));
+            }
+            AFGBuildableConveyorBelt* Belt = ConnectWithBelt(*From, *To, Piece.ClassPath, Error);
+            if (!Belt)
+            {
+                return Fail(Error);
+            }
+            Builds.FindOrAdd(BuildId).Add({ Belt, nullptr, INDEX_NONE, Belt->GetActorLocation() });
+        }
+        else
+        {
+            return Fail(FString::Printf(TEXT("unknown kind '%s'"), *Piece.Kind));
+        }
+        ++OutBuilt;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: built '%s' (%d pieces)"), *BuildId, OutBuilt);
+    return true;
 }

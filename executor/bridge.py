@@ -58,6 +58,8 @@ class Bridge:
     def clear(self, build_id):
         return self.request("POST", "/clear", {"build_id": build_id})["destroyed"]
 
+    def build(self, build_id, pieces):
+        return self.request("POST", "/build", {"build_id": build_id, "pieces": pieces})
 
 if __name__ == "__main__":
     print(Bridge().ping())
