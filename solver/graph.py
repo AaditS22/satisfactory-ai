@@ -1,5 +1,6 @@
 import math
-from solver.solve import solve, recipes, items
+from solver.gamedata import items, recipe_by_id
+from solver.lp_solve import solve_lp
 
 
 def round_machines(count, mode="even"):
@@ -20,9 +21,8 @@ def pick_belt(rate, max_tier=6):
     cap = BELT_CAPACITY[max_tier - 1]
     return max_tier, math.ceil(rate / cap - 1e-9)
 
-def build_graph(target, rate, clock_mode="even", max_tier=6):
-    machines, raw, edges = solve(target, rate)
-    recipe_by_id = {r["id"]: r for r in recipes}
+def build_graph(target, rate, alternates=None, clock_mode="even", max_tier=6):
+    machines, raw, edges = solve_lp(target, rate, alternates)
 
     nodes = {}
     for rid, count in machines.items():
