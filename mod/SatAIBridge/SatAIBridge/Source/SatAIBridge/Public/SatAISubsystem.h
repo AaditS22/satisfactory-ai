@@ -10,6 +10,14 @@ class UFGFactoryConnectionComponent;
 class AFGBuildableConveyorBelt;
 class IHttpRouter;
 
+struct FSatAIPortGeometry
+{
+    FString Name;
+    FString Direction; 
+    FVector LocalPosCm;
+    FVector LocalFacing;  
+};
+
 struct FSatAISpawnResult
 {
     FString Name;
@@ -17,6 +25,7 @@ struct FSatAISpawnResult
     FBox LocalBounds = FBox(ForceInit);
     bool bLightweight = false;
     AFGBuildable* Actor = nullptr;
+    TArray<FSatAIPortGeometry> Ports;
 };
 
 struct FSatAITrackedPiece

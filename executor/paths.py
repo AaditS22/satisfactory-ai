@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 BUILDINGS = {
     "Build_SmelterMk1_C":        "/Game/FactoryGame/Buildable/Factory/SmelterMk1/Build_SmelterMk1.Build_SmelterMk1_C",
     "Build_ConstructorMk1_C":    "/Game/FactoryGame/Buildable/Factory/ConstructorMk1/Build_ConstructorMk1.Build_ConstructorMk1_C",
@@ -15,6 +18,12 @@ BUILT_WITH = {
     "Build_Foundation_8x1_01_C": "Recipe_Foundation_8x1_01_C",
 }
 
+
+_GENERATED = Path(__file__).resolve().parent.parent / "data" / "content_paths.json"
+if _GENERATED.exists():
+    _gen = json.loads(_GENERATED.read_text(encoding="utf-8"))
+    BUILDINGS = {**_gen.get("buildings", {}), **BUILDINGS}
+    RECIPES = {**_gen.get("recipes", {}), **RECIPES}
 
 def class_path(name):
     try:

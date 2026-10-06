@@ -1,0 +1,725 @@
+{
+  "schema": "satai.catalog",
+  "version": 0,
+  "source": "executor.catalog: each building spawned in-game at yaw 0, building-local metres",
+  "buildings": {
+    "Build_SmelterMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -2.3,
+        -5.013,
+        0.002
+      ],
+      "bounds_max": [
+        2.469,
+        4.026,
+        8.576
+      ],
+      "size": [
+        4.769,
+        9.039,
+        8.575
+      ],
+      "ports": [
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            0.0,
+            -3.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output2",
+          "dir": "out",
+          "pos": [
+            0.0,
+            2.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_ConstructorMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -3.787,
+        -4.974,
+        0.001
+      ],
+      "bounds_max": [
+        3.787,
+        4.658,
+        8.308
+      ],
+      "size": [
+        7.574,
+        9.632,
+        8.307
+      ],
+      "ports": [
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            3.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            0.0,
+            -3.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_AssemblerMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -4.834,
+        -7.759,
+        -0.199
+      ],
+      "bounds_max": [
+        5.04,
+        6.759,
+        10.697
+      ],
+      "size": [
+        9.874,
+        14.518,
+        10.895
+      ],
+      "ports": [
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            5.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input1",
+          "dir": "in",
+          "pos": [
+            -2.0,
+            -6.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            2.0,
+            -6.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_ManufacturerMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -9.38,
+        -9.699,
+        -0.217
+      ],
+      "bounds_max": [
+        9.657,
+        9.127,
+        14.52
+      ],
+      "size": [
+        19.037,
+        18.826,
+        14.737
+      ],
+      "ports": [
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            6.0,
+            -8.75,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input1",
+          "dir": "in",
+          "pos": [
+            2.0,
+            -8.75,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input2",
+          "dir": "in",
+          "pos": [
+            -2.0,
+            -8.75,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            8.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input3",
+          "dir": "in",
+          "pos": [
+            -6.0,
+            -8.75,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_FoundryMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -4.3,
+        -5.733,
+        0.001
+      ],
+      "bounds_max": [
+        4.484,
+        3.952,
+        8.772
+      ],
+      "size": [
+        8.784,
+        9.685,
+        8.771
+      ],
+      "ports": [
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            2.0,
+            -3.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output2",
+          "dir": "out",
+          "pos": [
+            -2.0,
+            2.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input1",
+          "dir": "in",
+          "pos": [
+            -2.0,
+            -3.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_ConveyorAttachmentSplitter_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -2.066,
+        -2.066,
+        -1.052
+      ],
+      "bounds_max": [
+        2.066,
+        2.066,
+        1.955
+      ],
+      "size": [
+        4.132,
+        4.132,
+        3.007
+      ],
+      "ports": [
+        {
+          "name": "Output1",
+          "dir": "out",
+          "pos": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input1",
+          "dir": "in",
+          "pos": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            -1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output3",
+          "dir": "out",
+          "pos": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output2",
+          "dir": "out",
+          "pos": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_ConveyorAttachmentMerger_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -2.066,
+        -2.066,
+        -1.118
+      ],
+      "bounds_max": [
+        2.066,
+        2.066,
+        2.026
+      ],
+      "size": [
+        4.132,
+        4.132,
+        3.144
+      ],
+      "ports": [
+        {
+          "name": "Input1",
+          "dir": "in",
+          "pos": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            -1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output1",
+          "dir": "out",
+          "pos": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input2",
+          "dir": "in",
+          "pos": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Input3",
+          "dir": "in",
+          "pos": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_StorageContainerMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -3.0,
+        -5.124,
+        0.15
+      ],
+      "bounds_max": [
+        3.0,
+        5.146,
+        4.495
+      ],
+      "size": [
+        6.0,
+        10.27,
+        4.345
+      ],
+      "ports": [
+        {
+          "name": "Input0",
+          "dir": "in",
+          "pos": [
+            0.0,
+            -4.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Output1",
+          "dir": "out",
+          "pos": [
+            0.0,
+            4.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_Foundation_8x1_01_C": {
+      "lightweight": true,
+      "bounds_min": [
+        -4.0,
+        -4.0,
+        -0.509
+      ],
+      "bounds_max": [
+        4.0,
+        4.0,
+        0.565
+      ],
+      "size": [
+        8.0,
+        8.0,
+        1.074
+      ],
+      "ports": []
+    },
+    "Build_Foundation_8x2_01_C": {
+      "lightweight": true,
+      "bounds_min": [
+        -4.0,
+        -4.0,
+        -1.004
+      ],
+      "bounds_max": [
+        4.0,
+        4.0,
+        1.065
+      ],
+      "size": [
+        8.0,
+        8.0,
+        2.069
+      ],
+      "ports": []
+    },
+    "Build_Foundation_8x4_01_C": {
+      "lightweight": true,
+      "bounds_min": [
+        -4.0,
+        -4.0,
+        -2.006
+      ],
+      "bounds_max": [
+        4.0,
+        4.0,
+        2.065
+      ],
+      "size": [
+        8.0,
+        8.0,
+        4.071
+      ],
+      "ports": []
+    },
+    "Build_ConveyorLiftMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -1.056,
+        -1.079,
+        -0.642
+      ],
+      "bounds_max": [
+        2.0,
+        1.079,
+        2.253
+      ],
+      "size": [
+        3.056,
+        2.157,
+        2.896
+      ],
+      "ports": [
+        {
+          "name": "ConveyorAny0",
+          "dir": "in",
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "ConveyorAny1",
+          "dir": "out",
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "facing": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_MinerMk1_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -3.336,
+        -4.982,
+        -1.825
+      ],
+      "bounds_max": [
+        3.336,
+        9.722,
+        18.346
+      ],
+      "size": [
+        6.673,
+        14.704,
+        20.171
+      ],
+      "ports": [
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            8.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_MinerMk2_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -3.321,
+        -4.815,
+        -1.833
+      ],
+      "bounds_max": [
+        3.321,
+        9.56,
+        18.346
+      ],
+      "size": [
+        6.642,
+        14.375,
+        20.18
+      ],
+      "ports": [
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            8.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    "Build_MinerMk3_C": {
+      "lightweight": false,
+      "bounds_min": [
+        -3.323,
+        -6.333,
+        -1.904
+      ],
+      "bounds_max": [
+        3.323,
+        9.561,
+        18.332
+      ],
+      "size": [
+        6.645,
+        15.894,
+        20.236
+      ],
+      "ports": [
+        {
+          "name": "Output0",
+          "dir": "out",
+          "pos": [
+            0.0,
+            8.0,
+            1.0
+          ],
+          "facing": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ]
+    }
+  },
+  "failed": {}
+}

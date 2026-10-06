@@ -20,6 +20,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "FGLightweightBuildableSubsystem.h"
+#include "AbstractInstanceInterface.h"
+#include "InstanceData.h"
+#include "Engine/StaticMesh.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
 
@@ -47,6 +50,16 @@ namespace
         }
         const FString Ip = Request.PeerAddress->ToString(false);
         return Ip.StartsWith(TEXT("127.")) || Ip == TEXT("::1") || Ip.StartsWith(TEXT("::ffff:127."));
+    }
+
+    const TCHAR* DirectionName(EFactoryConnectionDirection Dir)
+    {
+        switch (Dir)
+        {
+        case EFactoryConnectionDirection::FCD_INPUT:  return TEXT("in");
+        case EFactoryConnectionDirection::FCD_OUTPUT: return TEXT("out");
+        default:                                      return TEXT("any");
+        }
     }
 
     constexpr double CmPerMetre = 100.0;
@@ -354,6 +367,20 @@ void ASatAISubsystem::StartHttpServer()
                 Out->SetField(TEXT("bounds_min"), MakeShared<FJsonValueNull>());
                 Out->SetField(TEXT("bounds_max"), MakeShared<FJsonValueNull>());
             }
+            TArray<TSharedPtr<FJsonValue>> PortArray;
+            for (const FSatAIPortGeometry& Geo : Result.Ports)
+            {
+                TSharedRef<FJsonObject> J = MakeShared<FJsonObject>();
+                J->SetStringField(TEXT("name"), Geo.Name);
+                J->SetStringField(TEXT("dir"), Geo.Direction);
+                J->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(Geo.LocalPosCm));
+                J->SetArrayField(TEXT("facing"), TArray<TSharedPtr<FJsonValue>>{
+                    MakeShared<FJsonValueNumber>(Geo.LocalFacing.X),
+                        MakeShared<FJsonValueNumber>(Geo.LocalFacing.Y),
+                        MakeShared<FJsonValueNumber>(Geo.LocalFacing.Z) });
+                PortArray.Add(MakeShared<FJsonValueObject>(J));
+            }
+            Out->SetArrayField(TEXT("ports"), PortArray);
             return true;
         }));
 
@@ -665,6 +692,28 @@ bool ASatAISubsystem::SpawnTracked(const FString& BuildId, const FString& ClassP
         Out.Actor = Built;
         Out.Transform = Built->GetActorTransform();
         Out.LocalBounds = Built->CalculateComponentsBoundingBoxInLocalSpace(/*bNonColliding=*/ false);
+        if (!Out.LocalBounds.IsValid)
+        {
+            const TArray<FInstanceData> MeshInstances =
+                IAbstractInstanceInterface::Execute_GetActorLightweightInstanceData(Built);
+            for (const FInstanceData& MeshInstance : MeshInstances)
+            {
+                if (MeshInstance.StaticMesh)
+                {
+                    Out.LocalBounds += MeshInstance.StaticMesh->GetBoundingBox().TransformBy(MeshInstance.RelativeTransform);
+                }
+            }
+        }
+        TArray<UFGFactoryConnectionComponent*> Ports;
+        Built->GetComponents<UFGFactoryConnectionComponent>(Ports);
+        for (UFGFactoryConnectionComponent* Port : Ports)
+        {
+            FSatAIPortGeometry& Geo = Out.Ports.AddDefaulted_GetRef();
+            Geo.Name = Port->GetName();
+            Geo.Direction = DirectionName(Port->GetDirection());
+            Geo.LocalPosCm = Out.Transform.InverseTransformPosition(Port->GetComponentLocation());
+            Geo.LocalFacing = Out.Transform.InverseTransformVectorNoScale(Port->GetConnectorNormal());
+        }
         Builds.FindOrAdd(BuildId).Add({ Built, nullptr, INDEX_NONE, Out.Transform.GetLocation() });
         return true;
     }
