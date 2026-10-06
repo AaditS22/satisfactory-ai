@@ -25,6 +25,7 @@ struct FSatAITrackedPiece
     UClass* LightweightClass = nullptr;
     int32 LightweightIndex = INDEX_NONE;
     FVector Location = FVector::ZeroVector;
+    FString Id;
 };
 
 struct FSatAIPiece
@@ -36,6 +37,24 @@ struct FSatAIPiece
     FString Recipe;  
     FString From, To;  
     FTransform Transform;
+};
+
+struct FSatAIPortReport
+{
+    FString Name;
+    FString Direction; 
+    bool bConnected = false;
+    FString ConnectedTo;
+};
+
+struct FSatAIPieceReport
+{
+    FString Id;
+    FString ClassName;
+    bool bExists = false;
+    bool bLightweight = false;
+    FTransform Transform;
+    TArray<FSatAIPortReport> Ports;
 };
 
 UCLASS(Abstract, Blueprintable)
@@ -62,6 +81,7 @@ public:
         const FTransform& Transform, FSatAISpawnResult& Out, FString& OutError);
     int32 ClearBuild(const FString& BuildId);
     bool BuildPieces(const FString& BuildId, const TArray<FSatAIPiece>& Pieces, int32& OutBuilt, FString& OutError);
+    bool VerifyBuild(const FString& BuildId, TArray<FSatAIPieceReport>& Out, FString& OutError);
 
 private:
     int32 FindLightweightIndex(UClass* Class, const FVector& LocationCm) const;

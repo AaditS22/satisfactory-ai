@@ -4,3 +4,5 @@ data/game_data.json
 
 __pycache__/
 *.pyc
+
+.builds/

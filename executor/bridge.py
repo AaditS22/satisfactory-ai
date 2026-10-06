@@ -1,6 +1,7 @@
 import json
 import urllib.error
 import urllib.request
+import urllib.parse
 
 
 class BridgeError(RuntimeError):
@@ -60,6 +61,9 @@ class Bridge:
 
     def build(self, build_id, pieces):
         return self.request("POST", "/build", {"build_id": build_id, "pieces": pieces})
+
+    def verify(self, build_id):
+        return self.request("GET", "/verify?build_id=" + urllib.parse.quote(build_id))
 
 if __name__ == "__main__":
     print(Bridge().ping())

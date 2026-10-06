@@ -423,6 +423,53 @@ void ASatAISubsystem::StartHttpServer()
             return true;
         }));
 
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/verify"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            const FString* BuildId = Request.QueryParams.Find(TEXT("build_id"));
+            if (!BuildId)
+            {
+                OutError = TEXT("need ?build_id=...");
+                return false;
+            }
+            TArray<FSatAIPieceReport> Reports;
+            if (!Self.VerifyBuild(*BuildId, Reports, OutError))
+            {
+                return false;
+            }
+
+            TArray<TSharedPtr<FJsonValue>> PieceArray;
+            for (const FSatAIPieceReport& R : Reports)
+            {
+                TSharedRef<FJsonObject> P = MakeShared<FJsonObject>();
+                P->SetStringField(TEXT("id"), R.Id);
+                P->SetStringField(TEXT("class"), R.ClassName);
+                P->SetBoolField(TEXT("exists"), R.bExists);
+                P->SetBoolField(TEXT("lightweight"), R.bLightweight);
+                if (R.bExists)
+                {
+                    P->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(R.Transform.GetLocation()));
+                    P->SetNumberField(TEXT("yaw"), R.Transform.Rotator().Yaw);
+                }
+
+                TArray<TSharedPtr<FJsonValue>> PortArray;
+                for (const FSatAIPortReport& Port : R.Ports)
+                {
+                    TSharedRef<FJsonObject> J = MakeShared<FJsonObject>();
+                    J->SetStringField(TEXT("name"), Port.Name);
+                    J->SetStringField(TEXT("dir"), Port.Direction);
+                    J->SetBoolField(TEXT("connected"), Port.bConnected);
+                    J->SetStringField(TEXT("to"), Port.ConnectedTo);
+                    PortArray.Add(MakeShared<FJsonValueObject>(J));
+                }
+                P->SetArrayField(TEXT("ports"), PortArray);
+                PieceArray.Add(MakeShared<FJsonValueObject>(P));
+            }
+            Out->SetStringField(TEXT("build_id"), *BuildId);
+            Out->SetArrayField(TEXT("pieces"), PieceArray);
+            return true;
+        }));
+
     Http.StartAllListeners();
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: HTTP server listening on 127.0.0.1:%u (%d routes)"),
         HttpPort, HttpRoutes.Num());
@@ -728,6 +775,7 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
             {
                 return Fail(Error);
             }
+            Builds[BuildId].Last().Id = Piece.Id;
             if (Piece.Kind == TEXT("machine"))
             {
                 if (!Result.Actor)
@@ -754,7 +802,7 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
             {
                 return Fail(Error);
             }
-            Builds.FindOrAdd(BuildId).Add({ Belt, nullptr, INDEX_NONE, Belt->GetActorLocation() });
+            Builds.FindOrAdd(BuildId).Add({ Belt, nullptr, INDEX_NONE, Belt->GetActorLocation(), Piece.Id });
         }
         else
         {
@@ -764,5 +812,75 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
     }
 
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: built '%s' (%d pieces)"), *BuildId, OutBuilt);
+    return true;
+}
+
+bool ASatAISubsystem::VerifyBuild(const FString& BuildId, TArray<FSatAIPieceReport>& Out, FString& OutError)
+{
+    const TArray<FSatAITrackedPiece>* Pieces = Builds.Find(BuildId);
+    if (!Pieces)
+    {
+        OutError = FString::Printf(TEXT("no build '%s' (tracking is lost when the save is reloaded)"), *BuildId);
+        return false;
+    }
+
+    TMap<const AActor*, FString> IdByActor;
+    for (const FSatAITrackedPiece& Piece : *Pieces)
+    {
+        if (const AActor* Actor = Piece.Actor.Get())
+        {
+            IdByActor.Add(Actor, Piece.Id);
+        }
+    }
+
+    AFGLightweightBuildableSubsystem* Lightweight = AFGLightweightBuildableSubsystem::Get(GetWorld());
+    for (const FSatAITrackedPiece& Piece : *Pieces)
+    {
+        FSatAIPieceReport& Report = Out.AddDefaulted_GetRef();
+        Report.Id = Piece.Id;
+
+        if (Piece.LightweightClass)
+        {
+            Report.bLightweight = true;
+            Report.ClassName = Piece.LightweightClass->GetName();
+            FRuntimeBuildableInstanceData* Data = Lightweight
+                ? Lightweight->GetRuntimeDataForBuildableClassAndIndex(Piece.LightweightClass, Piece.LightweightIndex)
+                : nullptr;
+            if (Data && Data->Handles.Num() > 0 && Data->Transform.GetLocation().Equals(Piece.Location, 1.0))
+            {
+                Report.bExists = true;
+                Report.Transform = Data->Transform;
+            }
+            continue;
+        }
+
+        AActor* Actor = Piece.Actor.Get();
+        if (!Actor)
+        {
+            continue;
+        }
+        Report.bExists = true;
+        Report.ClassName = Actor->GetClass()->GetName();
+        Report.Transform = Actor->GetActorTransform();
+
+        TArray<UFGFactoryConnectionComponent*> Ports;
+        Actor->GetComponents<UFGFactoryConnectionComponent>(Ports);
+        for (UFGFactoryConnectionComponent* Port : Ports)
+        {
+            FSatAIPortReport& PortReport = Report.Ports.AddDefaulted_GetRef();
+            PortReport.Name = Port->GetName();
+            const EFactoryConnectionDirection Dir = Port->GetDirection();
+            PortReport.Direction = Dir == EFactoryConnectionDirection::FCD_INPUT ? TEXT("in")
+                : Dir == EFactoryConnectionDirection::FCD_OUTPUT ? TEXT("out") : TEXT("any");
+            PortReport.bConnected = Port->IsConnected();
+
+            if (UFGFactoryConnectionComponent* Other = Port->GetConnection())
+            {
+                const AActor* OtherActor = Other->GetOwner();
+                const FString* OtherId = IdByActor.Find(OtherActor);
+                PortReport.ConnectedTo = OtherId ? *OtherId : (OtherActor ? OtherActor->GetName() : FString());
+            }
+        }
+    }
     return true;
 }
