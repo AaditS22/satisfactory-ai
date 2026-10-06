@@ -1,6 +1,5 @@
 .venv
 data/raw
-data/game_data.json
 
 __pycache__/
 *.pyc

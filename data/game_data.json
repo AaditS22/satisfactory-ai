@@ -1,0 +1,7125 @@
+{
+  "items": {
+    "Desc_LiquidOil_C": {
+      "name": "Crude Oil",
+      "form": "RF_LIQUID"
+    },
+    "Desc_Water_C": {
+      "name": "Water",
+      "form": "RF_LIQUID"
+    },
+    "Desc_NitrogenGas_C": {
+      "name": "Nitrogen Gas",
+      "form": "RF_GAS"
+    },
+    "Desc_OreIron_C": {
+      "name": "Iron Ore",
+      "form": "RF_SOLID"
+    },
+    "Desc_Coal_C": {
+      "name": "Coal",
+      "form": "RF_SOLID"
+    },
+    "Desc_OreCopper_C": {
+      "name": "Copper Ore",
+      "form": "RF_SOLID"
+    },
+    "Desc_Stone_C": {
+      "name": "Limestone",
+      "form": "RF_SOLID"
+    },
+    "Desc_RawQuartz_C": {
+      "name": "Raw Quartz",
+      "form": "RF_SOLID"
+    },
+    "Desc_SAM_C": {
+      "name": "SAM",
+      "form": "RF_SOLID"
+    },
+    "Desc_OreBauxite_C": {
+      "name": "Bauxite",
+      "form": "RF_SOLID"
+    },
+    "Desc_OreGold_C": {
+      "name": "Caterium Ore",
+      "form": "RF_SOLID"
+    },
+    "Desc_Sulfur_C": {
+      "name": "Sulfur",
+      "form": "RF_SOLID"
+    },
+    "Desc_OreUranium_C": {
+      "name": "Uranium",
+      "form": "RF_SOLID"
+    },
+    "Desc_Fuel_C": {
+      "name": "Packaged Fuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_HeavyOilResidue_C": {
+      "name": "Heavy Oil Residue",
+      "form": "RF_LIQUID"
+    },
+    "Desc_DarkEnergy_C": {
+      "name": "Dark Matter Residue",
+      "form": "RF_GAS"
+    },
+    "Desc_QuantumEnergy_C": {
+      "name": "Excited Photonic Matter",
+      "form": "RF_GAS"
+    },
+    "Desc_IonizedFuel_C": {
+      "name": "Ionized Fuel",
+      "form": "RF_GAS"
+    },
+    "Desc_RocketFuel_C": {
+      "name": "Rocket Fuel",
+      "form": "RF_GAS"
+    },
+    "Desc_IronPlate_C": {
+      "name": "Iron Plate",
+      "form": "RF_SOLID"
+    },
+    "Desc_IronRod_C": {
+      "name": "Iron Rod",
+      "form": "RF_SOLID"
+    },
+    "Desc_Cable_C": {
+      "name": "Cable",
+      "form": "RF_SOLID"
+    },
+    "Desc_IronPlateReinforced_C": {
+      "name": "Reinforced Iron Plate",
+      "form": "RF_SOLID"
+    },
+    "Desc_Wire_C": {
+      "name": "Wire",
+      "form": "RF_SOLID"
+    },
+    "Desc_IronIngot_C": {
+      "name": "Iron Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_SteelIngot_C": {
+      "name": "Steel Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_HazmatFilter_C": {
+      "name": "Iodine-Infused Filter",
+      "form": "RF_SOLID"
+    },
+    "Desc_Filter_C": {
+      "name": "Gas Filter",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminumCasing_C": {
+      "name": "Aluminum Casing",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminumIngot_C": {
+      "name": "Aluminum Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminumPlate_C": {
+      "name": "Alclad Aluminum Sheet",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminumPlateReinforced_C": {
+      "name": "Heat Sink",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminumScrap_C": {
+      "name": "Aluminum Scrap",
+      "form": "RF_SOLID"
+    },
+    "Desc_Computer_C": {
+      "name": "Computer",
+      "form": "RF_SOLID"
+    },
+    "Desc_CopperIngot_C": {
+      "name": "Copper Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_CopperSheet_C": {
+      "name": "Copper Sheet",
+      "form": "RF_SOLID"
+    },
+    "Desc_ModularFrame_C": {
+      "name": "Modular Frame",
+      "form": "RF_SOLID"
+    },
+    "Desc_ModularFrameHeavy_C": {
+      "name": "Heavy Modular Frame",
+      "form": "RF_SOLID"
+    },
+    "Desc_Motor_C": {
+      "name": "Motor",
+      "form": "RF_SOLID"
+    },
+    "Desc_Rotor_C": {
+      "name": "Rotor",
+      "form": "RF_SOLID"
+    },
+    "Desc_SteelPipe_C": {
+      "name": "Steel Pipe",
+      "form": "RF_SOLID"
+    },
+    "Desc_SteelPlate_C": {
+      "name": "Steel Beam",
+      "form": "RF_SOLID"
+    },
+    "Desc_SteelPlateReinforced_C": {
+      "name": "Encased Industrial Beam",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedIonizedFuel_C": {
+      "name": "Packaged Ionized Fuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedRocketFuel_C": {
+      "name": "Packaged Rocket Fuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_TurboFuel_C": {
+      "name": "Packaged Turbofuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_Cement_C": {
+      "name": "Concrete",
+      "form": "RF_SOLID"
+    },
+    "Desc_IronScrew_C": {
+      "name": "Screws",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_1_C": {
+      "name": "Smart Plating",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_2_C": {
+      "name": "Versatile Framework",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_3_C": {
+      "name": "Automated Wiring",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_4_C": {
+      "name": "Modular Engine",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_5_C": {
+      "name": "Adaptive Control Unit",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_6_C": {
+      "name": "Magnetic Field Generator",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_7_C": {
+      "name": "Assembly Director System",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_8_C": {
+      "name": "Thermal Propulsion Rocket",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_9_C": {
+      "name": "Nuclear Pasta",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_11_C": {
+      "name": "Ballistic Warp Drive",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_12_C": {
+      "name": "AI Expansion Server",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpaceElevatorPart_10_C": {
+      "name": "Biochemical Sculptor",
+      "form": "RF_SOLID"
+    },
+    "Desc_Silica_C": {
+      "name": "Silica",
+      "form": "RF_SOLID"
+    },
+    "Desc_LiquidFuel_C": {
+      "name": "Fuel",
+      "form": "RF_LIQUID"
+    },
+    "Desc_Plastic_C": {
+      "name": "Plastic",
+      "form": "RF_SOLID"
+    },
+    "Desc_CircuitBoard_C": {
+      "name": "Circuit Board",
+      "form": "RF_SOLID"
+    },
+    "Desc_Rubber_C": {
+      "name": "Rubber",
+      "form": "RF_SOLID"
+    },
+    "Desc_PolymerResin_C": {
+      "name": "Polymer Resin",
+      "form": "RF_SOLID"
+    },
+    "Desc_PetroleumCoke_C": {
+      "name": "Petroleum Coke",
+      "form": "RF_SOLID"
+    },
+    "Desc_HighSpeedWire_C": {
+      "name": "Quickwire",
+      "form": "RF_SOLID"
+    },
+    "Desc_HighSpeedConnector_C": {
+      "name": "High-Speed Connector",
+      "form": "RF_SOLID"
+    },
+    "Desc_NuclearWaste_C": {
+      "name": "Uranium Waste",
+      "form": "RF_SOLID"
+    },
+    "Desc_PlutoniumWaste_C": {
+      "name": "Plutonium Waste",
+      "form": "RF_SOLID"
+    },
+    "Desc_CoolingSystem_C": {
+      "name": "Cooling System",
+      "form": "RF_SOLID"
+    },
+    "Desc_CrystalOscillator_C": {
+      "name": "Crystal Oscillator",
+      "form": "RF_SOLID"
+    },
+    "Desc_ElectromagneticControlRod_C": {
+      "name": "Electromagnetic Control Rod",
+      "form": "RF_SOLID"
+    },
+    "Desc_ModularFrameFused_C": {
+      "name": "Fused Modular Frame",
+      "form": "RF_SOLID"
+    },
+    "Desc_MotorLightweight_C": {
+      "name": "Turbo Motor",
+      "form": "RF_SOLID"
+    },
+    "Desc_QuartzCrystal_C": {
+      "name": "Quartz Crystal",
+      "form": "RF_SOLID"
+    },
+    "Desc_Stator_C": {
+      "name": "Stator",
+      "form": "RF_SOLID"
+    },
+    "Desc_Crystal_C": {
+      "name": "Blue Power Slug",
+      "form": "RF_SOLID"
+    },
+    "Desc_Crystal_mk2_C": {
+      "name": "Yellow Power Slug",
+      "form": "RF_SOLID"
+    },
+    "Desc_Crystal_mk3_C": {
+      "name": "Purple Power Slug",
+      "form": "RF_SOLID"
+    },
+    "Desc_Battery_C": {
+      "name": "Battery",
+      "form": "RF_SOLID"
+    },
+    "Desc_GoldIngot_C": {
+      "name": "Caterium Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_CircuitBoardHighSpeed_C": {
+      "name": "AI Limiter",
+      "form": "RF_SOLID"
+    },
+    "Desc_NitricAcid_C": {
+      "name": "Nitric Acid",
+      "form": "RF_LIQUID"
+    },
+    "Desc_SulfuricAcid_C": {
+      "name": "Sulfuric Acid",
+      "form": "RF_LIQUID"
+    },
+    "Desc_GasTank_C": {
+      "name": "Empty Fluid Tank",
+      "form": "RF_SOLID"
+    },
+    "Desc_Gunpowder_C": {
+      "name": "Black Powder",
+      "form": "RF_SOLID"
+    },
+    "Desc_PlutoniumCell_C": {
+      "name": "Encased Plutonium Cell",
+      "form": "RF_SOLID"
+    },
+    "Desc_PlutoniumPellet_C": {
+      "name": "Plutonium Pellet",
+      "form": "RF_SOLID"
+    },
+    "Desc_ModularFrameLightweight_C": {
+      "name": "Radio Control Unit",
+      "form": "RF_SOLID"
+    },
+    "Desc_PressureConversionCube_C": {
+      "name": "Pressure Conversion Cube",
+      "form": "RF_SOLID"
+    },
+    "Desc_NonFissibleUranium_C": {
+      "name": "Non-Fissile Uranium",
+      "form": "RF_SOLID"
+    },
+    "Desc_ComputerSuper_C": {
+      "name": "Supercomputer",
+      "form": "RF_SOLID"
+    },
+    "Desc_CopperDust_C": {
+      "name": "Copper Powder",
+      "form": "RF_SOLID"
+    },
+    "Desc_TimeCrystal_C": {
+      "name": "Time Crystal",
+      "form": "RF_SOLID"
+    },
+    "Desc_Diamond_C": {
+      "name": "Diamonds",
+      "form": "RF_SOLID"
+    },
+    "Desc_SAMFluctuator_C": {
+      "name": "SAM Fluctuator",
+      "form": "RF_SOLID"
+    },
+    "Desc_SAMIngot_C": {
+      "name": "Reanimated SAM",
+      "form": "RF_SOLID"
+    },
+    "Desc_FicsiteIngot_C": {
+      "name": "Ficsite Ingot",
+      "form": "RF_SOLID"
+    },
+    "Desc_FicsiteMesh_C": {
+      "name": "Ficsite Trigon",
+      "form": "RF_SOLID"
+    },
+    "Desc_DarkMatter_C": {
+      "name": "Dark Matter Crystal",
+      "form": "RF_SOLID"
+    },
+    "Desc_QuantumOscillator_C": {
+      "name": "Superposition Oscillator",
+      "form": "RF_SOLID"
+    },
+    "Desc_TemporalProcessor_C": {
+      "name": "Neural-Quantum Processor",
+      "form": "RF_SOLID"
+    },
+    "Desc_LiquidTurboFuel_C": {
+      "name": "Turbofuel",
+      "form": "RF_LIQUID"
+    },
+    "Desc_CompactedCoal_C": {
+      "name": "Compacted Coal",
+      "form": "RF_SOLID"
+    },
+    "Desc_UraniumCell_C": {
+      "name": "Encased Uranium Cell",
+      "form": "RF_SOLID"
+    },
+    "Desc_AluminaSolution_C": {
+      "name": "Alumina Solution",
+      "form": "RF_LIQUID"
+    },
+    "Desc_FluidCanister_C": {
+      "name": "Empty Canister",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedOil_C": {
+      "name": "Packaged Oil",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedOilResidue_C": {
+      "name": "Packaged Heavy Oil Residue",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedWater_C": {
+      "name": "Packaged Water",
+      "form": "RF_SOLID"
+    },
+    "Desc_GunpowderMK2_C": {
+      "name": "Smokeless Powder",
+      "form": "RF_SOLID"
+    },
+    "Desc_AlienProtein_C": {
+      "name": "Alien Protein",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasStar_C": {
+      "name": "FICSMAS Wonder Star",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBallCluster_C": {
+      "name": "FICSMAS Ornament Bundle",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBranch_C": {
+      "name": "FICSMAS Tree Branch",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasWreath_C": {
+      "name": "FICSMAS Wreath",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasDataCartridge4_C": {
+      "name": "FICSMAS Data Cartridge Day 14",
+      "form": "RF_SOLID"
+    },
+    "Desc_Gift_C": {
+      "name": "FICSMAS Gift",
+      "form": "RF_SOLID"
+    },
+    "Desc_Snow_C": {
+      "name": "FICSMAS Actual Snow",
+      "form": "RF_SOLID"
+    },
+    "Desc_CandyCane_C": {
+      "name": "Candy Cane",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBow_C": {
+      "name": "FICSMAS Bow",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasDataCartridge3_C": {
+      "name": "FICSMAS Data Cartridge Day 8",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBall1_C": {
+      "name": "Red FICSMAS Ornament",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBall2_C": {
+      "name": "Blue FICSMAS Ornament",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBall3_C": {
+      "name": "Copper FICSMAS Ornament",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasBall4_C": {
+      "name": "Iron FICSMAS Ornament",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasDataCartridge2_C": {
+      "name": "FICSMAS Data Cartridge Day 4",
+      "form": "RF_SOLID"
+    },
+    "Desc_XmasDataCartridge1_C": {
+      "name": "FICSMAS Data Cartridge Day 1",
+      "form": "RF_SOLID"
+    },
+    "Desc_WAT2_C": {
+      "name": "Mercer Sphere",
+      "form": "RF_SOLID"
+    },
+    "Desc_SingularityCell_C": {
+      "name": "Singularity Cell",
+      "form": "RF_SOLID"
+    },
+    "Desc_AlienDNACapsule_C": {
+      "name": "Alien DNA Capsule",
+      "form": "RF_SOLID"
+    },
+    "Desc_Ficsonium_C": {
+      "name": "Ficsonium",
+      "form": "RF_SOLID"
+    },
+    "Desc_DissolvedSilica_C": {
+      "name": "Dissolved Silica",
+      "form": "RF_LIQUID"
+    },
+    "BP_EquipmentDescriptorShockShank_C": {
+      "name": "Xeno-Zapper",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorObjectScanner_C": {
+      "name": "Object Scanner",
+      "form": "RF_SOLID"
+    },
+    "Desc_RebarGunProjectile_C": {
+      "name": "Rebar Gun",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorRifle_C": {
+      "name": "Rifle",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorGasmask_C": {
+      "name": "Gas Mask",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorJetPack_C": {
+      "name": "Jetpack",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorNobeliskDetonator_C": {
+      "name": "Nobelisk Detonator",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorHazmatSuit_C": {
+      "name": "Hazmat Suit",
+      "form": "RF_SOLID"
+    },
+    "BP_ItemDescriptorPortableMiner_C": {
+      "name": "Portable Miner",
+      "form": "RF_SOLID"
+    },
+    "Desc_GolfCart_C": {
+      "name": "Factory Cart\u2122",
+      "form": "RF_SOLID"
+    },
+    "Desc_GolfCartGold_C": {
+      "name": "Golden Factory Cart\u2122",
+      "form": "RF_SOLID"
+    },
+    "Desc_Chainsaw_C": {
+      "name": "Chainsaw",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorCandyCane_C": {
+      "name": "Candy Cane Basher",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorJumpingStilts_C": {
+      "name": "Blade Runners",
+      "form": "RF_SOLID"
+    },
+    "BP_EqDescZipLine_C": {
+      "name": "Zipline",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorHoverPack_C": {
+      "name": "Hoverpack",
+      "form": "RF_SOLID"
+    },
+    "BP_EquipmentDescriptorStunSpear_C": {
+      "name": "Xeno-Basher",
+      "form": "RF_SOLID"
+    },
+    "Desc_Biofuel_C": {
+      "name": "Solid Biofuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_Wood_C": {
+      "name": "Wood",
+      "form": "RF_SOLID"
+    },
+    "Desc_Leaves_C": {
+      "name": "Leaves",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedBiofuel_C": {
+      "name": "Packaged Liquid Biofuel",
+      "form": "RF_SOLID"
+    },
+    "Desc_GenericBiomass_C": {
+      "name": "Biomass",
+      "form": "RF_SOLID"
+    },
+    "Desc_HogParts_C": {
+      "name": "Hog Remains",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpitterParts_C": {
+      "name": "Spitter Remains",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedNitricAcid_C": {
+      "name": "Packaged Nitric Acid",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedNitrogenGas_C": {
+      "name": "Packaged Nitrogen Gas",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedAlumina_C": {
+      "name": "Packaged Alumina Solution",
+      "form": "RF_SOLID"
+    },
+    "Desc_LiquidBiofuel_C": {
+      "name": "Liquid Biofuel",
+      "form": "RF_LIQUID"
+    },
+    "Desc_Fabric_C": {
+      "name": "Fabric",
+      "form": "RF_SOLID"
+    },
+    "Desc_Mycelia_C": {
+      "name": "Mycelia",
+      "form": "RF_SOLID"
+    },
+    "Desc_StingerParts_C": {
+      "name": "Stinger Remains",
+      "form": "RF_SOLID"
+    },
+    "Desc_HatcherParts_C": {
+      "name": "Hatcher Remains",
+      "form": "RF_SOLID"
+    },
+    "Desc_PackagedSulfuricAcid_C": {
+      "name": "Packaged Sulfuric Acid",
+      "form": "RF_SOLID"
+    },
+    "Desc_Berry_C": {
+      "name": "Paleberry",
+      "form": "RF_SOLID"
+    },
+    "Desc_Nut_C": {
+      "name": "Beryl Nut",
+      "form": "RF_SOLID"
+    },
+    "Desc_Medkit_C": {
+      "name": "Medicinal Inhaler",
+      "form": "RF_SOLID"
+    },
+    "Desc_Shroom_C": {
+      "name": "Bacon Agaric",
+      "form": "RF_SOLID"
+    },
+    "Desc_Parachute_C": {
+      "name": "Parachute",
+      "form": "RF_SOLID"
+    },
+    "Desc_WorkBench_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_VehiclePath_Universal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Workshop_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Painted_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TradingPost_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorPole_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorCeilingAttachment_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorPoleWall_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWall_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerLine_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stairs_Left_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stairs_Right_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_03_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Fence_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WalkwayCross_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WalkwayRamp_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WalkwayStraight_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WalkwayT_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WalkwayTurn_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_04_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarTop_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_JumpPad_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_JumpPadTilted_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_GeneratorBiomass_Automated_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StorageContainerMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_MinerMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConstructorMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SpaceElevator_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SmelterMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Window_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Window_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Window_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_Window_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_Window_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_Window_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_8x4_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Window_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_Window_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Corner_2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x8_Corner_2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_Angular_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_Angular_8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_FlipTris_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_FlipTris_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_FlipTris_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_FlipTris_8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_Tris_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_Tris_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_Tris_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_Tris_8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Steel_8x4_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Steel_8x4_Corner_2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Steel_8x8_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Steel_8x8_Corner_2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WallSet_Steel_Angular_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WallSet_Steel_Angular_8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BigGarageDoor_16x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BigGarageDoor_16x8_Concrete_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BigGarageDoor_16x8_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x8_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_CDoor_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_SDoor_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Door_8x4_01_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Door_8x4_03_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x1_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x2_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x8_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x1_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x2_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x8_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_Gate_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SteelWall_8x4_Gate_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Gate_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x4_Corner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x8_Corner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_Angular_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_Angular_8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Door_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Door_8x4_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FoundryMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_ConveyorHole_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_ConveyorHole_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Concrete_8x4_ConveyorHole_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_01_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_02_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Conveyor_8x4_03_Steel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x4_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x8_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x1_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x2_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x1_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x2_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x4_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x4_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x8_FlipTris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Orange_8x8_Tris_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_LookoutTower_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Flat_Frame_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Frame_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FoundationGlass_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Frame_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Frame_Inverted_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Frame_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Railing_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Pillar_Small_Metal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarBase_Small_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarBase_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarMiddle_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ladder_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Grip_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Grip_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Grip_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Grip_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Grip_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Grip_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Grip_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipe_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeInCorner_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeOutCorner_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeInCorner_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeOutCorner_Grip_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_GripMetal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_GripMetal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_GripMetal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_8x1_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_8x2_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x1_Corner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x1_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x2_Corner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x2_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x4_Corner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Ficsit_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Ficsit_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Ficsit_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Ficsit_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Ficsit_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Ficsit_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Ficsit_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Ficsit_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Ficsit_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_8x1_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_8x2_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_8x8x8_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_8x4_Inverted_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x2_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeCorner_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_FicsitSet_8x1_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_FicsitSet_8x2_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_FicsitSet_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Concrete_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Concrete_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Concrete_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipe_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeInCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeOutCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeInCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeOutCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Asphalt_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Asphalt_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_Asphalt_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipe_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeInCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeOutCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeInCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeOutCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_DCorner_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_DownCorner_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_PolishedConcrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_PolishedConcrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleInCorner_PolishedConcrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_PolishedConcrete_4x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_PolishedConcrete_4x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddleOutCorner_PolishedConcrete_4x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Foundation_ConcretePolished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Foundation_ConcretePolished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Foundation_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_PolishedConcrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_PolishedConcrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeMiddle_PolishedConcrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipe_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeInCorner_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DownQuarterPipeOutCorner_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipe_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeInCorner_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuarterPipeOutCorner_ConcretePolished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_PolishedConcrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_PolishedConcrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Stair_PolishedConcrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Concrete_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Concrete_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Concrete_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Asphalt_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Asphalt_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Asphalt_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampDouble_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Polished_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Polished_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Polished_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x1_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x1_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x2_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x2_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RampInverted_8x4_Corner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_Diagonal_8x4_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_InvertedRamp_UCorner_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Metal_8x2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Metal_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Ramp_UpCorner_Metal_8x1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWallDouble_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Gate_Automated_8x4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWallDoubleMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWallMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWallDoubleMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleWallMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_OilRefinery_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipeStorageTank_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_OilPump_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Valve_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HyperTubeWallHole_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HyperPoleStackable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipeHyperSupport_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineSupportWall_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineSupportWallHole_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineSupport_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FoundationPassthrough_Pipe_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HyperTubeWallSupport_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipeHyperStart_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HyperTubeJunction_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HypertubeTJunction_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipeHyper_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineJunction_Cross_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineJunction_T_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_GeneratorCoal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelinePump_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerPoleMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_VehiclePath_FactoryCart_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WaterPump_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ResourceSink_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ResourceSinkShop_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Pipeline_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_LargeFan_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_LargeVent_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StreetLight_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CeilingLight_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_MinerMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FloodlightPole_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FloodlightWall_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StackableShelf_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_InCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_InCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_InCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_OutCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_OutCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Metal_OutCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_A_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_A_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_A_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_A_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_InCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_InCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_InCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_OutCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_OutCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_OutCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Orange_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_InCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_InCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_InCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_OutCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_OutCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_OutCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Tar_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_04_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_InCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_InCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_OutCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_OutCorner_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_OutCorner_03_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Roof_Window_InCorner_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ElevatorFloorStop_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Elevator_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineMK2_NoIndicator_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelineMK2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipelinePumpMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Pipeline_NoIndicator_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StorageMedkit_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_LightsControlPanel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Small_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_SmallVeryWide_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_SmallWide_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Square_Tiny_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FoundationPassthrough_Hypertube_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StorageHazard_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_Thin_8x4_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_Thin_8x4_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_05_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_06_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Wall_Window_8x4_07_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Pillar_Small_Frame_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarMiddle_Frame_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ChainLinkFence_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TarpFence_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Barrier_Low_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Barrier_Tall_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Barrier_Corner_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Concrete_Barrier_01_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Medium_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Square_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Square_Small_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Portrait_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorWallHole_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorMonitor_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FoundationPassthrough_Lift_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Pillar_Small_Concrete_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PillarMiddle_Concrete_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkTurn_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkCross_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkRamp_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkStairs_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkStraight_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CatwalkT_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Huge_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StandaloneWidgetSign_Large_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Connector_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Connector_Double_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Cable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Cable_Cluster_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Support_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Concrete_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Cross_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_H_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Beam_Shelf_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_HadronCollider_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk5_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk5_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Converter_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_QuantumEncoder_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FrackingExtractor_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FrackingSmasher_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_GeneratorNuclear_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_MinerMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_DroneStation_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Packager_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ManufacturerMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_AssemblerMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_WreathDecor_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SnowDispenser_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_SnowCannon_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_xmassLights_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TreeGiftProducer_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Snowman_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_XMassTree_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CandyCaneDecor_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorAttachmentMergerPriority_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RadarTower_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_VehiclePath_Explorer_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_GeneratorGeoThermal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorAttachmentSplitterProgrammable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PriorityPowerSwitch_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerSwitch_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorAttachmentSplitterSmart_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_AlienPowerBuilding_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PortalPotty_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_CentralStorage_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk6_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk6_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Portal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PortalSatellite_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BlueprintDesigner_MK3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Blender_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RailroadPathSignal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RailroadBlockSignal_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BlueprintDesigner_MK2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RailroadTrack_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_RailroadEndStop_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TrainStation_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TrainDockingStation_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TrainDockingStationLiquid_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TrainPlatformEmpty_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TrainPlatformEmpty_02_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_VehiclePath_Truck_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk4_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_FluidTruckStation_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_GeneratorFuel_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_IndustrialTank_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PipeSupportStackable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StorageContainerMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk3_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_BlueprintDesigner_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerTower_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerTowerPlatform_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_PowerStorageMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_VehiclePath_Tractor_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_TruckStation_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorBeltMk2_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorPoleStackable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_JumpPadAdjustable_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_LandingPad_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_StoragePlayer_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Mam_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorLiftMk1_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorAttachmentMerger_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_ConveyorAttachmentSplitter_C": {
+      "name": "",
+      "form": "RF_INVALID"
+    },
+    "Desc_Fireworks_Projectile_01_C": {
+      "name": "Sweet Fireworks",
+      "form": "RF_SOLID"
+    },
+    "Desc_Fireworks_Projectile_03_C": {
+      "name": "Sparkly Fireworks",
+      "form": "RF_SOLID"
+    },
+    "Desc_Fireworks_Projectile_02_C": {
+      "name": "Fancy Fireworks",
+      "form": "RF_SOLID"
+    },
+    "Desc_SnowballProjectile_C": {
+      "name": "Snowball",
+      "form": "RF_SOLID"
+    },
+    "Desc_Rebar_Explosive_C": {
+      "name": "Explosive Rebar",
+      "form": "RF_SOLID"
+    },
+    "Desc_Rebar_Stunshot_C": {
+      "name": "Stun Rebar",
+      "form": "RF_SOLID"
+    },
+    "Desc_SpikedRebar_C": {
+      "name": "Iron Rebar",
+      "form": "RF_SOLID"
+    },
+    "Desc_CartridgeSmartProjectile_C": {
+      "name": "Homing Rifle Ammo",
+      "form": "RF_SOLID"
+    },
+    "Desc_NobeliskExplosive_C": {
+      "name": "Nobelisk",
+      "form": "RF_SOLID"
+    },
+    "Desc_NobeliskCluster_C": {
+      "name": "Cluster Nobelisk",
+      "form": "RF_SOLID"
+    },
+    "Desc_NobeliskGas_C": {
+      "name": "Gas Nobelisk",
+      "form": "RF_SOLID"
+    },
+    "Desc_NobeliskNuke_C": {
+      "name": "Nuke Nobelisk",
+      "form": "RF_SOLID"
+    },
+    "Desc_NobeliskShockwave_C": {
+      "name": "Pulse Nobelisk",
+      "form": "RF_SOLID"
+    },
+    "Desc_Rebar_Spreadshot_C": {
+      "name": "Shatter Rebar",
+      "form": "RF_SOLID"
+    },
+    "Desc_CartridgeChaos_C": {
+      "name": "Turbo Rifle Ammo",
+      "form": "RF_SOLID"
+    },
+    "Desc_CartridgeStandard_C": {
+      "name": "Rifle Ammo",
+      "form": "RF_SOLID"
+    },
+    "Desc_NuclearFuelRod_C": {
+      "name": "Uranium Fuel Rod",
+      "form": "RF_SOLID"
+    },
+    "Desc_PlutoniumFuelRod_C": {
+      "name": "Plutonium Fuel Rod",
+      "form": "RF_SOLID"
+    },
+    "Desc_FicsoniumFuelRod_C": {
+      "name": "Ficsonium Fuel Rod",
+      "form": "RF_SOLID"
+    },
+    "Desc_CyberWagon_C": {
+      "name": "Cyber Wagon",
+      "form": "RF_INVALID"
+    },
+    "Desc_DroneTransport_C": {
+      "name": "Drone",
+      "form": "RF_INVALID"
+    },
+    "Desc_Explorer_C": {
+      "name": "Explorer",
+      "form": "RF_INVALID"
+    },
+    "Desc_FreightWagon_C": {
+      "name": "Freight Car",
+      "form": "RF_INVALID"
+    },
+    "Desc_Locomotive_C": {
+      "name": "Electric Locomotive",
+      "form": "RF_INVALID"
+    },
+    "Desc_FluidTruck_C": {
+      "name": "Fluid Truck",
+      "form": "RF_INVALID"
+    },
+    "Desc_Truck_C": {
+      "name": "Truck",
+      "form": "RF_INVALID"
+    },
+    "Desc_Tractor_C": {
+      "name": "Tractor",
+      "form": "RF_INVALID"
+    },
+    "Desc_CrystalShard_C": {
+      "name": "Power Shard",
+      "form": "RF_SOLID"
+    },
+    "Desc_WAT1_C": {
+      "name": "Somersloop",
+      "form": "RF_SOLID"
+    },
+    "Desc_AlienPowerFuel_C": {
+      "name": "Alien Power Matrix",
+      "form": "RF_SOLID"
+    }
+  },
+  "recipes": [
+    {
+      "id": "Recipe_IronPlate_C",
+      "name": "Iron Plate",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_IronIngot_C": 30.0
+      },
+      "outputs": {
+        "Desc_IronPlate_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_IronRod_C",
+      "name": "Iron Rod",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_IronIngot_C": 15.0
+      },
+      "outputs": {
+        "Desc_IronRod_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_IngotIron_C",
+      "name": "Iron Ingot",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_OreIron_C": 30.0
+      },
+      "outputs": {
+        "Desc_IronIngot_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Biomass_Leaves_C",
+      "name": "Biomass (Leaves)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 5.0,
+      "inputs": {
+        "Desc_Leaves_C": 120.0
+      },
+      "outputs": {
+        "Desc_GenericBiomass_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Biomass_Wood_C",
+      "name": "Biomass (Wood)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Wood_C": 60.0
+      },
+      "outputs": {
+        "Desc_GenericBiomass_C": 300.0
+      }
+    },
+    {
+      "id": "Recipe_Cable_C",
+      "name": "Cable",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_Wire_C": 60.0
+      },
+      "outputs": {
+        "Desc_Cable_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Wire_C",
+      "name": "Wire",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_CopperIngot_C": 15.0
+      },
+      "outputs": {
+        "Desc_Wire_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_IngotCopper_C",
+      "name": "Copper Ingot",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_OreCopper_C": 30.0
+      },
+      "outputs": {
+        "Desc_CopperIngot_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Concrete_C",
+      "name": "Concrete",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Stone_C": 45.0
+      },
+      "outputs": {
+        "Desc_Cement_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_IronPlateReinforced_C",
+      "name": "Reinforced Iron Plate",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_IronPlate_C": 30.0,
+        "Desc_IronScrew_C": 60.0
+      },
+      "outputs": {
+        "Desc_IronPlateReinforced_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Screw_C",
+      "name": "Screws",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_IronRod_C": 10.0
+      },
+      "outputs": {
+        "Desc_IronScrew_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_SteelBeam_C",
+      "name": "Steel Beam",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 60.0
+      },
+      "outputs": {
+        "Desc_SteelPlate_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_SteelPipe_C",
+      "name": "Steel Pipe",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 30.0
+      },
+      "outputs": {
+        "Desc_SteelPipe_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_IngotSteel_C",
+      "name": "Steel Ingot",
+      "alternate": false,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_OreIron_C": 45.0,
+        "Desc_Coal_C": 45.0
+      },
+      "outputs": {
+        "Desc_SteelIngot_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_2_C",
+      "name": "Versatile Framework",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_ModularFrame_C": 2.5,
+        "Desc_SteelPlate_C": 30.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_2_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Silica_C",
+      "name": "Silica",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 22.5
+      },
+      "outputs": {
+        "Desc_Silica_C": 37.5
+      }
+    },
+    {
+      "id": "Recipe_ResidualFuel_C",
+      "name": "Residual Fuel",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 60.0
+      },
+      "outputs": {
+        "Desc_LiquidFuel_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Plastic_C",
+      "name": "Plastic",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 30.0
+      },
+      "outputs": {
+        "Desc_Plastic_C": 20.0,
+        "Desc_HeavyOilResidue_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_CircuitBoard_C",
+      "name": "Circuit Board",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_CopperSheet_C": 15.0,
+        "Desc_Plastic_C": 30.0
+      },
+      "outputs": {
+        "Desc_CircuitBoard_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Rubber_C",
+      "name": "Rubber",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 30.0
+      },
+      "outputs": {
+        "Desc_Rubber_C": 20.0,
+        "Desc_HeavyOilResidue_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_ResidualRubber_C",
+      "name": "Residual Rubber",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_PolymerResin_C": 40.0,
+        "Desc_Water_C": 40.0
+      },
+      "outputs": {
+        "Desc_Rubber_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_LiquidFuel_C",
+      "name": "Fuel",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 60.0
+      },
+      "outputs": {
+        "Desc_LiquidFuel_C": 40.0,
+        "Desc_PolymerResin_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_ResidualPlastic_C",
+      "name": "Residual Plastic",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_PolymerResin_C": 60.0,
+        "Desc_Water_C": 20.0
+      },
+      "outputs": {
+        "Desc_Plastic_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_PetroleumCoke_C",
+      "name": "Petroleum Coke",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 40.0
+      },
+      "outputs": {
+        "Desc_PetroleumCoke_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_EncasedIndustrialBeam_C",
+      "name": "Encased Industrial Beam",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 10.0,
+      "inputs": {
+        "Desc_SteelPlate_C": 18.0,
+        "Desc_Cement_C": 36.0
+      },
+      "outputs": {
+        "Desc_SteelPlateReinforced_C": 6.0
+      }
+    },
+    {
+      "id": "Recipe_Motor_C",
+      "name": "Motor",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Rotor_C": 10.0,
+        "Desc_Stator_C": 10.0
+      },
+      "outputs": {
+        "Desc_Motor_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Stator_C",
+      "name": "Stator",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SteelPipe_C": 15.0,
+        "Desc_Wire_C": 40.0
+      },
+      "outputs": {
+        "Desc_Stator_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_3_C",
+      "name": "Automated Wiring",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_Stator_C": 2.5,
+        "Desc_Cable_C": 50.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_3_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_Quickwire_C",
+      "name": "Quickwire",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 5.0,
+      "inputs": {
+        "Desc_GoldIngot_C": 12.0
+      },
+      "outputs": {
+        "Desc_HighSpeedWire_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_QuartzCrystal_C",
+      "name": "Quartz Crystal",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 37.5
+      },
+      "outputs": {
+        "Desc_QuartzCrystal_C": 22.5
+      }
+    },
+    {
+      "id": "Recipe_CrystalOscillator_C",
+      "name": "Crystal Oscillator",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_QuartzCrystal_C": 18.0,
+        "Desc_Cable_C": 14.0,
+        "Desc_IronPlateReinforced_C": 2.5
+      },
+      "outputs": {
+        "Desc_CrystalOscillator_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_SpikedRebar_C",
+      "name": "Iron Rebar",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_IronRod_C": 15.0
+      },
+      "outputs": {
+        "Desc_SpikedRebar_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_NitricAcid_C",
+      "name": "Nitric Acid",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_NitrogenGas_C": 120.0,
+        "Desc_Water_C": 30.0,
+        "Desc_IronPlate_C": 10.0
+      },
+      "outputs": {
+        "Desc_NitricAcid_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Nobelisk_C",
+      "name": "Nobelisk",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_Gunpowder_C": 20.0,
+        "Desc_SteelPipe_C": 20.0
+      },
+      "outputs": {
+        "Desc_NobeliskExplosive_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_PlutoniumFuelRod_C",
+      "name": "Plutonium Fuel Rod",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 240.0,
+      "inputs": {
+        "Desc_PlutoniumCell_C": 7.5,
+        "Desc_SteelPlate_C": 4.5,
+        "Desc_ElectromagneticControlRod_C": 1.5,
+        "Desc_AluminumPlateReinforced_C": 2.5
+      },
+      "outputs": {
+        "Desc_PlutoniumFuelRod_C": 0.25
+      }
+    },
+    {
+      "id": "Recipe_PlutoniumCell_C",
+      "name": "Encased Plutonium Cell",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_PlutoniumPellet_C": 10.0,
+        "Desc_Cement_C": 20.0
+      },
+      "outputs": {
+        "Desc_PlutoniumCell_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_PressureConversionCube_C",
+      "name": "Pressure Conversion Cube",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_ModularFrameFused_C": 1.0,
+        "Desc_ModularFrameLightweight_C": 2.0
+      },
+      "outputs": {
+        "Desc_PressureConversionCube_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_Plutonium_C",
+      "name": "Plutonium Pellet",
+      "alternate": false,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_NonFissibleUranium_C": 100.0,
+        "Desc_NuclearWaste_C": 25.0
+      },
+      "outputs": {
+        "Desc_PlutoniumPellet_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_NonFissileUranium_C",
+      "name": "Non-Fissile Uranium",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_NuclearWaste_C": 37.5,
+        "Desc_Silica_C": 25.0,
+        "Desc_NitricAcid_C": 15.0,
+        "Desc_SulfuricAcid_C": 15.0
+      },
+      "outputs": {
+        "Desc_NonFissibleUranium_C": 50.0,
+        "Desc_Water_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_CopperDust_C",
+      "name": "Copper Powder",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_CopperIngot_C": 300.0
+      },
+      "outputs": {
+        "Desc_CopperDust_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_9_C",
+      "name": "Nuclear Pasta",
+      "alternate": false,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_CopperDust_C": 100.0,
+        "Desc_PressureConversionCube_C": 0.5
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_9_C": 0.5
+      }
+    },
+    {
+      "id": "Recipe_PackagedNitricAcid_C",
+      "name": "Packaged Nitric Acid",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_NitricAcid_C": 30.0,
+        "Desc_GasTank_C": 30.0
+      },
+      "outputs": {
+        "Desc_PackagedNitricAcid_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageNitricAcid_C",
+      "name": "Unpackage Nitric Acid",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_PackagedNitricAcid_C": 20.0
+      },
+      "outputs": {
+        "Desc_NitricAcid_C": 20.0,
+        "Desc_GasTank_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_TimeCrystal_C",
+      "name": "Time Crystal",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 10.0,
+      "inputs": {
+        "Desc_Diamond_C": 12.0
+      },
+      "outputs": {
+        "Desc_TimeCrystal_C": 6.0
+      }
+    },
+    {
+      "id": "Recipe_Diamond_C",
+      "name": "Diamonds",
+      "alternate": false,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_Coal_C": 600.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_SAMFluctuator_C",
+      "name": "SAM Fluctuator",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 60.0,
+        "Desc_Wire_C": 50.0,
+        "Desc_SteelPipe_C": 30.0
+      },
+      "outputs": {
+        "Desc_SAMFluctuator_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_IngotSAM_C",
+      "name": "Reanimated SAM",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_SAM_C": 120.0
+      },
+      "outputs": {
+        "Desc_SAMIngot_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Coal_Iron_C",
+      "name": "Coal (Iron)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreIron_C": 180.0
+      },
+      "outputs": {
+        "Desc_Coal_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Coal_Limestone_C",
+      "name": "Coal (Limestone)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Stone_C": 360.0
+      },
+      "outputs": {
+        "Desc_Coal_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Copper_Quartz_C",
+      "name": "Copper Ore (Quartz)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_RawQuartz_C": 100.0
+      },
+      "outputs": {
+        "Desc_OreCopper_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Iron_Limestone_C",
+      "name": "Iron Ore (Limestone)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Stone_C": 240.0
+      },
+      "outputs": {
+        "Desc_OreIron_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Quartz_Coal_C",
+      "name": "Raw Quartz (Coal)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Coal_C": 240.0
+      },
+      "outputs": {
+        "Desc_RawQuartz_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_FicsiteMesh_C",
+      "name": "Ficsite Trigon",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_FicsiteIngot_C": 10.0
+      },
+      "outputs": {
+        "Desc_FicsiteMesh_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_FicsiteIngot_Iron_C",
+      "name": "Ficsite Ingot (Iron)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 40.0,
+        "Desc_IronIngot_C": 240.0
+      },
+      "outputs": {
+        "Desc_FicsiteIngot_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_FicsiteIngot_AL_C",
+      "name": "Ficsite Ingot (Aluminum)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 60.0,
+        "Desc_AluminumIngot_C": 120.0
+      },
+      "outputs": {
+        "Desc_FicsiteIngot_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_FicsiteIngot_CAT_C",
+      "name": "Ficsite Ingot (Caterium)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 45.0,
+        "Desc_GoldIngot_C": 60.0
+      },
+      "outputs": {
+        "Desc_FicsiteIngot_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_10_C",
+      "name": "Biochemical Sculptor",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_7_C": 0.5,
+        "Desc_FicsiteMesh_C": 40.0,
+        "Desc_Water_C": 10.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_10_C": 2.0
+      }
+    },
+    {
+      "id": "Recipe_Bauxite_Copper_C",
+      "name": "Bauxite (Copper)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreCopper_C": 180.0
+      },
+      "outputs": {
+        "Desc_OreBauxite_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Nitrogen_Bauxite_C",
+      "name": "Nitrogen Gas (Bauxite)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreBauxite_C": 100.0
+      },
+      "outputs": {
+        "Desc_NitrogenGas_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Quartz_Bauxite_C",
+      "name": "Raw Quartz (Bauxite)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreBauxite_C": 100.0
+      },
+      "outputs": {
+        "Desc_RawQuartz_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Caterium_Copper_C",
+      "name": "Caterium Ore (Copper)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreCopper_C": 150.0
+      },
+      "outputs": {
+        "Desc_OreGold_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Caterium_Quartz_C",
+      "name": "Caterium Ore (Quartz)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_RawQuartz_C": 120.0
+      },
+      "outputs": {
+        "Desc_OreGold_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Nitrogen_Caterium_C",
+      "name": "Nitrogen Gas (Caterium)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreGold_C": 120.0
+      },
+      "outputs": {
+        "Desc_NitrogenGas_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Bauxite_Caterium_C",
+      "name": "Bauxite (Caterium)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreGold_C": 150.0
+      },
+      "outputs": {
+        "Desc_OreBauxite_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Copper_Sulfur_C",
+      "name": "Copper Ore (Sulfur)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Sulfur_C": 120.0
+      },
+      "outputs": {
+        "Desc_OreCopper_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Limestone_Sulfur_C",
+      "name": "Limestone (Sulfur)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Sulfur_C": 20.0
+      },
+      "outputs": {
+        "Desc_Stone_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Sulfur_Coal_C",
+      "name": "Sulfur (Coal)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_Coal_C": 200.0
+      },
+      "outputs": {
+        "Desc_Sulfur_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Sulfur_Iron_C",
+      "name": "Sulfur (Iron)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreIron_C": 300.0
+      },
+      "outputs": {
+        "Desc_Sulfur_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Uranium_Bauxite_C",
+      "name": "Uranium Ore (Bauxite)",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 10.0,
+        "Desc_OreBauxite_C": 480.0
+      },
+      "outputs": {
+        "Desc_OreUranium_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_SyntheticPowerShard_C",
+      "name": "Synthetic Power Shard",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_TimeCrystal_C": 10.0,
+        "Desc_DarkMatter_C": 10.0,
+        "Desc_QuartzCrystal_C": 60.0,
+        "Desc_QuantumEnergy_C": 60.0
+      },
+      "outputs": {
+        "Desc_CrystalShard_C": 5.0,
+        "Desc_DarkEnergy_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_DarkEnergy_C",
+      "name": "Dark Matter Residue",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SAMIngot_C": 50.0
+      },
+      "outputs": {
+        "Desc_DarkEnergy_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_QuantumEnergy_C",
+      "name": "Excited Photonic Matter",
+      "alternate": false,
+      "machine": "Build_Converter_C",
+      "duration_s": 3.0,
+      "inputs": {},
+      "outputs": {
+        "Desc_QuantumEnergy_C": 200.0
+      }
+    },
+    {
+      "id": "Recipe_DarkMatter_C",
+      "name": "Dark Matter Crystal",
+      "alternate": false,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_Diamond_C": 30.0,
+        "Desc_DarkEnergy_C": 150.0
+      },
+      "outputs": {
+        "Desc_DarkMatter_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_SuperpositionOscillator_C",
+      "name": "Superposition Oscillator",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_DarkMatter_C": 30.0,
+        "Desc_CrystalOscillator_C": 5.0,
+        "Desc_AluminumPlate_C": 45.0,
+        "Desc_QuantumEnergy_C": 125.0
+      },
+      "outputs": {
+        "Desc_QuantumOscillator_C": 5.0,
+        "Desc_DarkEnergy_C": 125.0
+      }
+    },
+    {
+      "id": "Recipe_TemporalProcessor_C",
+      "name": "Neural-Quantum Processor",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 20.0,
+      "inputs": {
+        "Desc_TimeCrystal_C": 15.0,
+        "Desc_ComputerSuper_C": 3.0,
+        "Desc_FicsiteMesh_C": 45.0,
+        "Desc_QuantumEnergy_C": 75.0
+      },
+      "outputs": {
+        "Desc_TemporalProcessor_C": 3.0,
+        "Desc_DarkEnergy_C": 75.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_12_C",
+      "name": "AI Expansion Server",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_6_C": 4.0,
+        "Desc_TemporalProcessor_C": 4.0,
+        "Desc_QuantumOscillator_C": 4.0,
+        "Desc_QuantumEnergy_C": 100.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_12_C": 4.0,
+        "Desc_DarkEnergy_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedRocketFuel_C",
+      "name": "Packaged Rocket Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_RocketFuel_C": 120.0,
+        "Desc_GasTank_C": 60.0
+      },
+      "outputs": {
+        "Desc_PackagedRocketFuel_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageRocketFuel_C",
+      "name": "Unpackage Rocket Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_PackagedRocketFuel_C": 60.0
+      },
+      "outputs": {
+        "Desc_RocketFuel_C": 120.0,
+        "Desc_GasTank_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_RocketFuel_C",
+      "name": "Rocket Fuel",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidTurboFuel_C": 60.0,
+        "Desc_NitricAcid_C": 10.0
+      },
+      "outputs": {
+        "Desc_RocketFuel_C": 100.0,
+        "Desc_CompactedCoal_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_IonizedFuel_C",
+      "name": "Ionized Fuel",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_RocketFuel_C": 40.0,
+        "Desc_CrystalShard_C": 2.5
+      },
+      "outputs": {
+        "Desc_IonizedFuel_C": 40.0,
+        "Desc_CompactedCoal_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedIonizedFuel_C",
+      "name": "Packaged Ionized Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_IonizedFuel_C": 80.0,
+        "Desc_GasTank_C": 40.0
+      },
+      "outputs": {
+        "Desc_PackagedIonizedFuel_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageIonizedFuel_C",
+      "name": "Unpackage Ionized Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_PackagedIonizedFuel_C": 40.0
+      },
+      "outputs": {
+        "Desc_IonizedFuel_C": 80.0,
+        "Desc_GasTank_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_HeatSink_C",
+      "name": "Heat Sink",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_AluminumPlate_C": 37.5,
+        "Desc_CopperSheet_C": 22.5
+      },
+      "outputs": {
+        "Desc_AluminumPlateReinforced_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_CoolingSystem_C",
+      "name": "Cooling System",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 10.0,
+      "inputs": {
+        "Desc_AluminumPlateReinforced_C": 12.0,
+        "Desc_Rubber_C": 12.0,
+        "Desc_Water_C": 30.0,
+        "Desc_NitrogenGas_C": 150.0
+      },
+      "outputs": {
+        "Desc_CoolingSystem_C": 6.0
+      }
+    },
+    {
+      "id": "Recipe_FusedModularFrame_C",
+      "name": "Fused Modular Frame",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 40.0,
+      "inputs": {
+        "Desc_ModularFrameHeavy_C": 1.5,
+        "Desc_AluminumCasing_C": 75.0,
+        "Desc_NitrogenGas_C": 37.5
+      },
+      "outputs": {
+        "Desc_ModularFrameFused_C": 1.5
+      }
+    },
+    {
+      "id": "Recipe_GasTank_C",
+      "name": "Empty Fluid Tank",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 60.0
+      },
+      "outputs": {
+        "Desc_GasTank_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedNitrogen_C",
+      "name": "Packaged Nitrogen Gas",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_NitrogenGas_C": 240.0,
+        "Desc_GasTank_C": 60.0
+      },
+      "outputs": {
+        "Desc_PackagedNitrogenGas_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageNitrogen_C",
+      "name": "Unpackage Nitrogen Gas",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_PackagedNitrogenGas_C": 60.0
+      },
+      "outputs": {
+        "Desc_NitrogenGas_C": 240.0,
+        "Desc_GasTank_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_ElectromagneticControlRod_C",
+      "name": "Electromagnetic Control Rod",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 30.0,
+      "inputs": {
+        "Desc_Stator_C": 6.0,
+        "Desc_CircuitBoardHighSpeed_C": 4.0
+      },
+      "outputs": {
+        "Desc_ElectromagneticControlRod_C": 4.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_6_C",
+      "name": "Magnetic Field Generator",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_2_C": 2.5,
+        "Desc_ElectromagneticControlRod_C": 1.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_6_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_UraniumCell_C",
+      "name": "Encased Uranium Cell",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreUranium_C": 50.0,
+        "Desc_Cement_C": 15.0,
+        "Desc_SulfuricAcid_C": 40.0
+      },
+      "outputs": {
+        "Desc_UraniumCell_C": 25.0,
+        "Desc_SulfuricAcid_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_NuclearFuelRod_C",
+      "name": "Uranium Fuel Rod",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 150.0,
+      "inputs": {
+        "Desc_UraniumCell_C": 20.0,
+        "Desc_SteelPlateReinforced_C": 1.2,
+        "Desc_ElectromagneticControlRod_C": 2.0
+      },
+      "outputs": {
+        "Desc_NuclearFuelRod_C": 0.4
+      }
+    },
+    {
+      "id": "Recipe_MotorTurbo_C",
+      "name": "Turbo Motor",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_CoolingSystem_C": 7.5,
+        "Desc_ModularFrameLightweight_C": 3.75,
+        "Desc_Motor_C": 7.5,
+        "Desc_Rubber_C": 45.0
+      },
+      "outputs": {
+        "Desc_MotorLightweight_C": 1.875
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_8_C",
+      "name": "Thermal Propulsion Rocket",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_4_C": 2.5,
+        "Desc_MotorLightweight_C": 1.0,
+        "Desc_CoolingSystem_C": 3.0,
+        "Desc_ModularFrameFused_C": 1.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_8_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_ComputerSuper_C",
+      "name": "Supercomputer",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_Computer_C": 7.5,
+        "Desc_CircuitBoardHighSpeed_C": 3.75,
+        "Desc_HighSpeedConnector_C": 5.625,
+        "Desc_Plastic_C": 52.5
+      },
+      "outputs": {
+        "Desc_ComputerSuper_C": 1.875
+      }
+    },
+    {
+      "id": "Recipe_AluminumCasing_C",
+      "name": "Aluminum Casing",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 90.0
+      },
+      "outputs": {
+        "Desc_AluminumCasing_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_AluminumSheet_C",
+      "name": "Alclad Aluminum Sheet",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 30.0,
+        "Desc_CopperIngot_C": 10.0
+      },
+      "outputs": {
+        "Desc_AluminumPlate_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_IngotAluminum_C",
+      "name": "Aluminum Ingot",
+      "alternate": false,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_AluminumScrap_C": 90.0,
+        "Desc_Silica_C": 75.0
+      },
+      "outputs": {
+        "Desc_AluminumIngot_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_AluminaSolution_C",
+      "name": "Alumina Solution",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_OreBauxite_C": 120.0,
+        "Desc_Water_C": 180.0
+      },
+      "outputs": {
+        "Desc_AluminaSolution_C": 120.0,
+        "Desc_Silica_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_AluminumScrap_C",
+      "name": "Aluminum Scrap",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_AluminaSolution_C": 240.0,
+        "Desc_Coal_C": 120.0
+      },
+      "outputs": {
+        "Desc_AluminumScrap_C": 360.0,
+        "Desc_Water_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedAlumina_C",
+      "name": "Packaged Alumina Solution",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_AluminaSolution_C": 120.0,
+        "Desc_FluidCanister_C": 120.0
+      },
+      "outputs": {
+        "Desc_PackagedAlumina_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageAlumina_C",
+      "name": "Unpackage Alumina Solution",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_PackagedAlumina_C": 120.0
+      },
+      "outputs": {
+        "Desc_AluminaSolution_C": 120.0,
+        "Desc_FluidCanister_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_RadioControlUnit_C",
+      "name": "Radio Control Unit",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 48.0,
+      "inputs": {
+        "Desc_AluminumCasing_C": 40.0,
+        "Desc_CrystalOscillator_C": 1.25,
+        "Desc_Computer_C": 2.5
+      },
+      "outputs": {
+        "Desc_ModularFrameLightweight_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_FluidCanister_C",
+      "name": "Empty Canister",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Plastic_C": 30.0
+      },
+      "outputs": {
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Fuel_C",
+      "name": "Packaged Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_LiquidFuel_C": 40.0,
+        "Desc_FluidCanister_C": 40.0
+      },
+      "outputs": {
+        "Desc_Fuel_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Turbofuel_C",
+      "name": "Turbofuel",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_LiquidFuel_C": 22.5,
+        "Desc_CompactedCoal_C": 15.0
+      },
+      "outputs": {
+        "Desc_LiquidTurboFuel_C": 18.75
+      }
+    },
+    {
+      "id": "Recipe_PackagedTurboFuel_C",
+      "name": "Packaged Turbofuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidTurboFuel_C": 20.0,
+        "Desc_FluidCanister_C": 20.0
+      },
+      "outputs": {
+        "Desc_TurboFuel_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageFuel_C",
+      "name": "Unpackage Fuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_Fuel_C": 60.0
+      },
+      "outputs": {
+        "Desc_LiquidFuel_C": 60.0,
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageTurboFuel_C",
+      "name": "Unpackage Turbofuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_TurboFuel_C": 20.0
+      },
+      "outputs": {
+        "Desc_LiquidTurboFuel_C": 20.0,
+        "Desc_FluidCanister_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_LiquidBiofuel_C",
+      "name": "Liquid Biofuel",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Biofuel_C": 90.0,
+        "Desc_Water_C": 45.0
+      },
+      "outputs": {
+        "Desc_LiquidBiofuel_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedBiofuel_C",
+      "name": "Packaged Liquid Biofuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_LiquidBiofuel_C": 40.0,
+        "Desc_FluidCanister_C": 40.0
+      },
+      "outputs": {
+        "Desc_PackagedBiofuel_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageBioFuel_C",
+      "name": "Unpackage Liquid Biofuel",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_PackagedBiofuel_C": 60.0
+      },
+      "outputs": {
+        "Desc_LiquidBiofuel_C": 60.0,
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedCrudeOil_C",
+      "name": "Packaged Oil",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 30.0,
+        "Desc_FluidCanister_C": 30.0
+      },
+      "outputs": {
+        "Desc_PackagedOil_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageOil_C",
+      "name": "Unpackage Oil",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_PackagedOil_C": 60.0
+      },
+      "outputs": {
+        "Desc_LiquidOil_C": 60.0,
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedOilResidue_C",
+      "name": "Packaged Heavy Oil Residue",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 30.0,
+        "Desc_FluidCanister_C": 30.0
+      },
+      "outputs": {
+        "Desc_PackagedOilResidue_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageOilResidue_C",
+      "name": "Unpackage Heavy Oil Residue",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_PackagedOilResidue_C": 20.0
+      },
+      "outputs": {
+        "Desc_HeavyOilResidue_C": 20.0,
+        "Desc_FluidCanister_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_PackagedWater_C",
+      "name": "Packaged Water",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_Water_C": 60.0,
+        "Desc_FluidCanister_C": 60.0
+      },
+      "outputs": {
+        "Desc_PackagedWater_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageWater_C",
+      "name": "Unpackage Water",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_PackagedWater_C": 120.0
+      },
+      "outputs": {
+        "Desc_Water_C": 120.0,
+        "Desc_FluidCanister_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Coal_1_C",
+      "name": "Alternate: Charcoal",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Wood_C": 15.0
+      },
+      "outputs": {
+        "Desc_Coal_C": 150.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Coal_2_C",
+      "name": "Alternate: Biocoal",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_GenericBiomass_C": 37.5
+      },
+      "outputs": {
+        "Desc_Coal_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_EnrichedCoal_C",
+      "name": "Alternate: Compacted Coal",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Coal_C": 25.0,
+        "Desc_Sulfur_C": 25.0
+      },
+      "outputs": {
+        "Desc_CompactedCoal_C": 25.0
+      }
+    },
+    {
+      "id": "Recipe_Computer_C",
+      "name": "Computer",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_CircuitBoard_C": 10.0,
+        "Desc_Cable_C": 20.0,
+        "Desc_Plastic_C": 40.0
+      },
+      "outputs": {
+        "Desc_Computer_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_ModularFrameHeavy_C",
+      "name": "Heavy Modular Frame",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 30.0,
+      "inputs": {
+        "Desc_ModularFrame_C": 10.0,
+        "Desc_SteelPipe_C": 40.0,
+        "Desc_SteelPlateReinforced_C": 10.0,
+        "Desc_IronScrew_C": 240.0
+      },
+      "outputs": {
+        "Desc_ModularFrameHeavy_C": 2.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_4_C",
+      "name": "Modular Engine",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_Motor_C": 2.0,
+        "Desc_Rubber_C": 15.0,
+        "Desc_SpaceElevatorPart_1_C": 2.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_4_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_5_C",
+      "name": "Adaptive Control Unit",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_3_C": 5.0,
+        "Desc_CircuitBoard_C": 5.0,
+        "Desc_ModularFrameHeavy_C": 1.0,
+        "Desc_Computer_C": 2.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_5_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_GunpowderMK2_C",
+      "name": "Smokeless Powder",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_Gunpowder_C": 20.0,
+        "Desc_HeavyOilResidue_C": 10.0
+      },
+      "outputs": {
+        "Desc_GunpowderMK2_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_HighSpeedConnector_C",
+      "name": "High-Speed Connector",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_HighSpeedWire_C": 210.0,
+        "Desc_Cable_C": 37.5,
+        "Desc_CircuitBoard_C": 3.75
+      },
+      "outputs": {
+        "Desc_HighSpeedConnector_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Gunpowder_C",
+      "name": "Black Powder",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Coal_C": 15.0,
+        "Desc_Sulfur_C": 15.0
+      },
+      "outputs": {
+        "Desc_Gunpowder_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_ModularFrame_C",
+      "name": "Modular Frame",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_IronPlateReinforced_C": 3.0,
+        "Desc_IronRod_C": 12.0
+      },
+      "outputs": {
+        "Desc_ModularFrame_C": 2.0
+      }
+    },
+    {
+      "id": "Recipe_Rotor_C",
+      "name": "Rotor",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_IronRod_C": 20.0,
+        "Desc_IronScrew_C": 100.0
+      },
+      "outputs": {
+        "Desc_Rotor_C": 4.0
+      }
+    },
+    {
+      "id": "Recipe_CopperSheet_C",
+      "name": "Copper Sheet",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_CopperIngot_C": 20.0
+      },
+      "outputs": {
+        "Desc_CopperSheet_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_1_C",
+      "name": "Smart Plating",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 30.0,
+      "inputs": {
+        "Desc_IronPlateReinforced_C": 2.0,
+        "Desc_Rotor_C": 2.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_1_C": 2.0
+      }
+    },
+    {
+      "id": "Recipe_Fabric_C",
+      "name": "Fabric",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Mycelia_C": 15.0,
+        "Desc_GenericBiomass_C": 75.0
+      },
+      "outputs": {
+        "Desc_Fabric_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_Biofuel_C",
+      "name": "Solid Biofuel",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_GenericBiomass_C": 120.0
+      },
+      "outputs": {
+        "Desc_Biofuel_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_AILimiter_C",
+      "name": "AI Limiter",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_CopperSheet_C": 25.0,
+        "Desc_HighSpeedWire_C": 100.0
+      },
+      "outputs": {
+        "Desc_CircuitBoardHighSpeed_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_CartridgeChaos_C",
+      "name": "Turbo Rifle Ammo",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_CartridgeStandard_C": 125.0,
+        "Desc_AluminumCasing_C": 15.0,
+        "Desc_LiquidTurboFuel_C": 15.0
+      },
+      "outputs": {
+        "Desc_CartridgeChaos_C": 250.0
+      }
+    },
+    {
+      "id": "Recipe_CartridgeChaos_Packaged_C",
+      "name": "Turbo Rifle Ammo",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_CartridgeStandard_C": 125.0,
+        "Desc_AluminumCasing_C": 15.0,
+        "Desc_TurboFuel_C": 15.0
+      },
+      "outputs": {
+        "Desc_CartridgeChaos_C": 250.0
+      }
+    },
+    {
+      "id": "Recipe_CartridgeSmart_C",
+      "name": "Homing Rifle Ammo",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_CartridgeStandard_C": 50.0,
+        "Desc_HighSpeedConnector_C": 2.5
+      },
+      "outputs": {
+        "Desc_CartridgeSmartProjectile_C": 25.0
+      }
+    },
+    {
+      "id": "Recipe_Rebar_Stunshot_C",
+      "name": "Stun Rebar",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SpikedRebar_C": 10.0,
+        "Desc_HighSpeedWire_C": 50.0
+      },
+      "outputs": {
+        "Desc_Rebar_Stunshot_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Rebar_Spreadshot_C",
+      "name": "Shatter Rebar",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SpikedRebar_C": 10.0,
+        "Desc_QuartzCrystal_C": 15.0
+      },
+      "outputs": {
+        "Desc_Rebar_Spreadshot_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Rebar_Explosive_C",
+      "name": "Explosive Rebar",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SpikedRebar_C": 10.0,
+        "Desc_GunpowderMK2_C": 10.0,
+        "Desc_SteelPipe_C": 10.0
+      },
+      "outputs": {
+        "Desc_Rebar_Explosive_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_FilterHazmat_C",
+      "name": "Iodine-Infused Filter",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_Filter_C": 3.75,
+        "Desc_HighSpeedWire_C": 30.0,
+        "Desc_AluminumCasing_C": 3.75
+      },
+      "outputs": {
+        "Desc_HazmatFilter_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_NobeliskShockwave_C",
+      "name": "Pulse Nobelisk",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_NobeliskExplosive_C": 5.0,
+        "Desc_CrystalOscillator_C": 1.0
+      },
+      "outputs": {
+        "Desc_NobeliskShockwave_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_NobeliskGas_C",
+      "name": "Gas Nobelisk",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_NobeliskExplosive_C": 5.0,
+        "Desc_GenericBiomass_C": 50.0
+      },
+      "outputs": {
+        "Desc_NobeliskGas_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_NobeliskCluster_C",
+      "name": "Cluster Nobelisk",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_NobeliskExplosive_C": 7.5,
+        "Desc_GunpowderMK2_C": 10.0
+      },
+      "outputs": {
+        "Desc_NobeliskCluster_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_FilterGasMask_C",
+      "name": "Gas Filter",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_Fabric_C": 15.0,
+        "Desc_Coal_C": 30.0,
+        "Desc_IronPlate_C": 15.0
+      },
+      "outputs": {
+        "Desc_Filter_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Cartridge_C",
+      "name": "Rifle Ammo",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_CopperSheet_C": 15.0,
+        "Desc_GunpowderMK2_C": 10.0
+      },
+      "outputs": {
+        "Desc_CartridgeStandard_C": 75.0
+      }
+    },
+    {
+      "id": "Recipe_XmasWreath_C",
+      "name": "FICSMAS Wreath",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_XmasBranch_C": 15.0,
+        "Desc_XmasBallCluster_C": 6.0
+      },
+      "outputs": {
+        "Desc_XmasWreath_C": 2.0
+      }
+    },
+    {
+      "id": "Recipe_Snowball_C",
+      "name": "Snowball",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Snow_C": 15.0
+      },
+      "outputs": {
+        "Desc_SnowballProjectile_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_XmasStar_C",
+      "name": "FICSMAS Wonder Star",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_XmasWreath_C": 5.0,
+        "Desc_CandyCane_C": 20.0
+      },
+      "outputs": {
+        "Desc_XmasStar_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBall3_C",
+      "name": "Copper FICSMAS Ornament",
+      "alternate": false,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_XmasBall1_C": 10.0,
+        "Desc_CopperIngot_C": 10.0
+      },
+      "outputs": {
+        "Desc_XmasBall3_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBall4_C",
+      "name": "Iron FICSMAS Ornament",
+      "alternate": false,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_XmasBall2_C": 15.0,
+        "Desc_IronIngot_C": 15.0
+      },
+      "outputs": {
+        "Desc_XmasBall4_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBallCluster_C",
+      "name": "FICSMAS Ornament Bundle",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_XmasBall3_C": 5.0,
+        "Desc_XmasBall4_C": 5.0
+      },
+      "outputs": {
+        "Desc_XmasBallCluster_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBall1_C",
+      "name": "Red FICSMAS Ornament",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Gift_C": 5.0
+      },
+      "outputs": {
+        "Desc_XmasBall1_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBall2_C",
+      "name": "Blue FICSMAS Ornament",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Gift_C": 5.0
+      },
+      "outputs": {
+        "Desc_XmasBall2_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Snow_C",
+      "name": "FICSMAS Actual Snow",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Gift_C": 25.0
+      },
+      "outputs": {
+        "Desc_Snow_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBranch_C",
+      "name": "FICSMAS Tree Branch",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_Gift_C": 10.0
+      },
+      "outputs": {
+        "Desc_XmasBranch_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_XmasBow_C",
+      "name": "FICSMAS Bow",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Gift_C": 10.0
+      },
+      "outputs": {
+        "Desc_XmasBow_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_CandyCane_C",
+      "name": "Candy Cane",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Gift_C": 15.0
+      },
+      "outputs": {
+        "Desc_CandyCane_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_NobeliskNuke_C",
+      "name": "Nuke Nobelisk",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_NobeliskExplosive_C": 2.5,
+        "Desc_UraniumCell_C": 10.0,
+        "Desc_GunpowderMK2_C": 5.0,
+        "Desc_CircuitBoardHighSpeed_C": 3.0
+      },
+      "outputs": {
+        "Desc_NobeliskNuke_C": 0.5
+      }
+    },
+    {
+      "id": "Recipe_PowerCrystalShard_3_C",
+      "name": "Power Shard (5)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_Crystal_mk3_C": 2.5
+      },
+      "outputs": {
+        "Desc_CrystalShard_C": 12.5
+      }
+    },
+    {
+      "id": "Recipe_PowerCrystalShard_2_C",
+      "name": "Power Shard (2)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Crystal_mk2_C": 5.0
+      },
+      "outputs": {
+        "Desc_CrystalShard_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_PowerCrystalShard_1_C",
+      "name": "Power Shard (1)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_Crystal_C": 7.5
+      },
+      "outputs": {
+        "Desc_CrystalShard_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PolyesterFabric_C",
+      "name": "Alternate: Polyester Fabric",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_PolymerResin_C": 30.0,
+        "Desc_Water_C": 30.0
+      },
+      "outputs": {
+        "Desc_Fabric_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Biomass_Mycelia_C",
+      "name": "Biomass (Mycelia)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Mycelia_C": 15.0
+      },
+      "outputs": {
+        "Desc_GenericBiomass_C": 150.0
+      }
+    },
+    {
+      "id": "Recipe_IngotCaterium_C",
+      "name": "Caterium Ingot",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_OreGold_C": 45.0
+      },
+      "outputs": {
+        "Desc_GoldIngot_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_AlienPowerFuel_C",
+      "name": "Alien Power Matrix",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_SAMFluctuator_C": 12.5,
+        "Desc_CrystalShard_C": 7.5,
+        "Desc_QuantumOscillator_C": 7.5,
+        "Desc_QuantumEnergy_C": 60.0
+      },
+      "outputs": {
+        "Desc_AlienPowerFuel_C": 2.5,
+        "Desc_DarkEnergy_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Protein_Stinger_C",
+      "name": "Stinger Protein",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_StingerParts_C": 20.0
+      },
+      "outputs": {
+        "Desc_AlienProtein_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Protein_Crab_C",
+      "name": "Hatcher Protein",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_HatcherParts_C": 20.0
+      },
+      "outputs": {
+        "Desc_AlienProtein_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_AlienDNACapsule_C",
+      "name": "Alien DNA Capsule",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_AlienProtein_C": 10.0
+      },
+      "outputs": {
+        "Desc_AlienDNACapsule_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Biomass_AlienProtein_C",
+      "name": "Biomass (Alien Protein)",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_AlienProtein_C": 15.0
+      },
+      "outputs": {
+        "Desc_GenericBiomass_C": 1500.0
+      }
+    },
+    {
+      "id": "Recipe_Protein_Spitter_C",
+      "name": "Spitter Protein",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_SpitterParts_C": 20.0
+      },
+      "outputs": {
+        "Desc_AlienProtein_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Protein_Hog_C",
+      "name": "Hog Protein",
+      "alternate": false,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_HogParts_C": 20.0
+      },
+      "outputs": {
+        "Desc_AlienProtein_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Ficsonium_C",
+      "name": "Ficsonium",
+      "alternate": false,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_PlutoniumWaste_C": 10.0,
+        "Desc_SingularityCell_C": 10.0,
+        "Desc_DarkEnergy_C": 200.0
+      },
+      "outputs": {
+        "Desc_Ficsonium_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_FicsoniumFuelRod_C",
+      "name": "Ficsonium Fuel Rod",
+      "alternate": false,
+      "machine": "Build_QuantumEncoder_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_Ficsonium_C": 5.0,
+        "Desc_ElectromagneticControlRod_C": 5.0,
+        "Desc_FicsiteMesh_C": 100.0,
+        "Desc_QuantumEnergy_C": 50.0
+      },
+      "outputs": {
+        "Desc_FicsoniumFuelRod_C": 2.5,
+        "Desc_DarkEnergy_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_SingularityCell_C",
+      "name": "Singularity Cell",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_9_C": 1.0,
+        "Desc_DarkMatter_C": 20.0,
+        "Desc_IronPlate_C": 100.0,
+        "Desc_Cement_C": 200.0
+      },
+      "outputs": {
+        "Desc_SingularityCell_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_11_C",
+      "name": "Ballistic Warp Drive",
+      "alternate": false,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_8_C": 1.0,
+        "Desc_SingularityCell_C": 5.0,
+        "Desc_QuantumOscillator_C": 2.0,
+        "Desc_DarkMatter_C": 40.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_11_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_Battery_C",
+      "name": "Battery",
+      "alternate": false,
+      "machine": "Build_Blender_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_SulfuricAcid_C": 50.0,
+        "Desc_AluminaSolution_C": 40.0,
+        "Desc_AluminumCasing_C": 20.0
+      },
+      "outputs": {
+        "Desc_Battery_C": 20.0,
+        "Desc_Water_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_SulfuricAcid_C",
+      "name": "Sulfuric Acid",
+      "alternate": false,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_Sulfur_C": 50.0,
+        "Desc_Water_C": 50.0
+      },
+      "outputs": {
+        "Desc_SulfuricAcid_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_SpaceElevatorPart_7_C",
+      "name": "Assembly Director System",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 80.0,
+      "inputs": {
+        "Desc_SpaceElevatorPart_5_C": 1.5,
+        "Desc_ComputerSuper_C": 0.75
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_7_C": 0.75
+      }
+    },
+    {
+      "id": "Recipe_PackagedSulfuricAcid_C",
+      "name": "Packaged Sulfuric Acid",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_SulfuricAcid_C": 40.0,
+        "Desc_FluidCanister_C": 40.0
+      },
+      "outputs": {
+        "Desc_PackagedSulfuricAcid_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_UnpackageSulfuricAcid_C",
+      "name": "Unpackage Sulfuric Acid",
+      "alternate": false,
+      "machine": "Build_Packager_C",
+      "duration_s": 1.0,
+      "inputs": {
+        "Desc_PackagedSulfuricAcid_C": 60.0
+      },
+      "outputs": {
+        "Desc_SulfuricAcid_C": 60.0,
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Wire_2_C",
+      "name": "Alternate: Caterium Wire",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_GoldIngot_C": 15.0
+      },
+      "outputs": {
+        "Desc_Wire_C": 120.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Wire_1_C",
+      "name": "Alternate: Iron Wire",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_IronIngot_C": 12.5
+      },
+      "outputs": {
+        "Desc_Wire_C": 22.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_UraniumCell_1_C",
+      "name": "Alternate: Infused Uranium Cell",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreUranium_C": 25.0,
+        "Desc_Silica_C": 15.0,
+        "Desc_Sulfur_C": 25.0,
+        "Desc_HighSpeedWire_C": 75.0
+      },
+      "outputs": {
+        "Desc_UraniumCell_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_TurboMotor_1_C",
+      "name": "Alternate: Turbo Electric Motor",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 64.0,
+      "inputs": {
+        "Desc_Motor_C": 6.5625,
+        "Desc_ModularFrameLightweight_C": 8.4375,
+        "Desc_ElectromagneticControlRod_C": 4.6875,
+        "Desc_Rotor_C": 6.5625
+      },
+      "outputs": {
+        "Desc_MotorLightweight_C": 2.8125
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Stator_C",
+      "name": "Alternate: Quickwire Stator",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_SteelPipe_C": 16.0,
+        "Desc_HighSpeedWire_C": 60.0
+      },
+      "outputs": {
+        "Desc_Stator_C": 8.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Silica_C",
+      "name": "Alternate: Cheap Silica",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 22.5,
+        "Desc_Stone_C": 37.5
+      },
+      "outputs": {
+        "Desc_Silica_C": 52.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Screw_2_C",
+      "name": "Alternate: Steel Screws",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SteelPlate_C": 5.0
+      },
+      "outputs": {
+        "Desc_IronScrew_C": 260.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Screw_C",
+      "name": "Alternate: Cast Screws",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_IronIngot_C": 12.5
+      },
+      "outputs": {
+        "Desc_IronScrew_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Rotor_C",
+      "name": "Alternate: Steel Rotor",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SteelPipe_C": 10.0,
+        "Desc_Wire_C": 30.0
+      },
+      "outputs": {
+        "Desc_Rotor_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_EncasedIndustrialBeam_C",
+      "name": "Alternate: Encased Industrial Pipe",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_SteelPipe_C": 24.0,
+        "Desc_Cement_C": 20.0
+      },
+      "outputs": {
+        "Desc_SteelPlateReinforced_C": 4.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ReinforcedIronPlate_2_C",
+      "name": "Alternate: Stitched Iron Plate",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_IronPlate_C": 18.75,
+        "Desc_Wire_C": 37.5
+      },
+      "outputs": {
+        "Desc_IronPlateReinforced_C": 5.625
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ReinforcedIronPlate_1_C",
+      "name": "Alternate: Bolted Iron Plate",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_IronPlate_C": 90.0,
+        "Desc_IronScrew_C": 250.0
+      },
+      "outputs": {
+        "Desc_IronPlateReinforced_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_RadioControlUnit_1_C",
+      "name": "Alternate: Radio Connection Unit",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_AluminumPlateReinforced_C": 15.0,
+        "Desc_HighSpeedConnector_C": 7.5,
+        "Desc_QuartzCrystal_C": 45.0
+      },
+      "outputs": {
+        "Desc_ModularFrameLightweight_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Quickwire_C",
+      "name": "Alternate: Fused Quickwire",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_GoldIngot_C": 7.5,
+        "Desc_CopperIngot_C": 37.5
+      },
+      "outputs": {
+        "Desc_HighSpeedWire_C": 90.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Plastic_1_C",
+      "name": "Alternate: Recycled Plastic",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Rubber_C": 30.0,
+        "Desc_LiquidFuel_C": 30.0
+      },
+      "outputs": {
+        "Desc_Plastic_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_NuclearFuelRod_1_C",
+      "name": "Alternate: Uranium Fuel Unit",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 300.0,
+      "inputs": {
+        "Desc_UraniumCell_C": 20.0,
+        "Desc_ElectromagneticControlRod_C": 2.0,
+        "Desc_CrystalOscillator_C": 0.6,
+        "Desc_Rotor_C": 2.0
+      },
+      "outputs": {
+        "Desc_NuclearFuelRod_C": 0.6
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Motor_1_C",
+      "name": "Alternate: Rigor Motor",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 48.0,
+      "inputs": {
+        "Desc_Rotor_C": 3.75,
+        "Desc_Stator_C": 3.75,
+        "Desc_CrystalOscillator_C": 1.25
+      },
+      "outputs": {
+        "Desc_Motor_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ModularFrame_C",
+      "name": "Alternate: Steeled Frame",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_IronPlateReinforced_C": 2.0,
+        "Desc_SteelPipe_C": 10.0
+      },
+      "outputs": {
+        "Desc_ModularFrame_C": 3.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IngotSteel_2_C",
+      "name": "Alternate: Compacted Steel Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_OreIron_C": 5.0,
+        "Desc_CompactedCoal_C": 2.5
+      },
+      "outputs": {
+        "Desc_SteelIngot_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IngotSteel_1_C",
+      "name": "Alternate: Solid Steel Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_IronIngot_C": 40.0,
+        "Desc_Coal_C": 40.0
+      },
+      "outputs": {
+        "Desc_SteelIngot_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IngotIron_C",
+      "name": "Alternate: Iron Alloy Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreIron_C": 40.0,
+        "Desc_OreCopper_C": 10.0
+      },
+      "outputs": {
+        "Desc_IronIngot_C": 75.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HighSpeedConnector_C",
+      "name": "Alternate: Silicon High-Speed Connector",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 40.0,
+      "inputs": {
+        "Desc_HighSpeedWire_C": 90.0,
+        "Desc_Silica_C": 37.5,
+        "Desc_CircuitBoard_C": 3.0
+      },
+      "outputs": {
+        "Desc_HighSpeedConnector_C": 3.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ModularFrameHeavy_C",
+      "name": "Alternate: Heavy Encased Frame",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 64.0,
+      "inputs": {
+        "Desc_ModularFrame_C": 7.5,
+        "Desc_SteelPlateReinforced_C": 9.375,
+        "Desc_SteelPipe_C": 33.75,
+        "Desc_Cement_C": 20.625
+      },
+      "outputs": {
+        "Desc_ModularFrameHeavy_C": 2.8125
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HeatSink_1_C",
+      "name": "Alternate: Heat Exchanger",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_AluminumCasing_C": 30.0,
+        "Desc_Rubber_C": 30.0
+      },
+      "outputs": {
+        "Desc_AluminumPlateReinforced_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Gunpowder_1_C",
+      "name": "Alternate: Fine Black Powder",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_Sulfur_C": 7.5,
+        "Desc_CompactedCoal_C": 15.0
+      },
+      "outputs": {
+        "Desc_Gunpowder_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ElectromagneticControlRod_1_C",
+      "name": "Alternate: Electromagnetic Connection Rod",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_Stator_C": 8.0,
+        "Desc_HighSpeedConnector_C": 4.0
+      },
+      "outputs": {
+        "Desc_ElectromagneticControlRod_C": 8.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CrystalOscillator_C",
+      "name": "Alternate: Insulated Crystal Oscillator",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_QuartzCrystal_C": 18.75,
+        "Desc_Rubber_C": 13.125,
+        "Desc_CircuitBoardHighSpeed_C": 1.875
+      },
+      "outputs": {
+        "Desc_CrystalOscillator_C": 1.875
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Concrete_C",
+      "name": "Alternate: Fine Concrete",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Silica_C": 15.0,
+        "Desc_Stone_C": 60.0
+      },
+      "outputs": {
+        "Desc_Cement_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Computer_2_C",
+      "name": "Alternate: Crystal Computer",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 36.0,
+      "inputs": {
+        "Desc_CircuitBoard_C": 5.0,
+        "Desc_CrystalOscillator_C": 1.6666666666666667
+      },
+      "outputs": {
+        "Desc_Computer_C": 3.3333333333333335
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Computer_1_C",
+      "name": "Alternate: Caterium Computer",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_CircuitBoard_C": 15.0,
+        "Desc_HighSpeedWire_C": 52.5,
+        "Desc_Rubber_C": 22.5
+      },
+      "outputs": {
+        "Desc_Computer_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CircuitBoard_2_C",
+      "name": "Alternate: Caterium Circuit Board",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 48.0,
+      "inputs": {
+        "Desc_Plastic_C": 12.5,
+        "Desc_HighSpeedWire_C": 37.5
+      },
+      "outputs": {
+        "Desc_CircuitBoard_C": 8.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CircuitBoard_1_C",
+      "name": "Alternate: Silicon Circuit Board",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_CopperSheet_C": 27.5,
+        "Desc_Silica_C": 27.5
+      },
+      "outputs": {
+        "Desc_CircuitBoard_C": 12.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Cable_2_C",
+      "name": "Alternate: Quickwire Cable",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_HighSpeedWire_C": 7.5,
+        "Desc_Rubber_C": 5.0
+      },
+      "outputs": {
+        "Desc_Cable_C": 27.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Cable_1_C",
+      "name": "Alternate: Insulated Cable",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Wire_C": 45.0,
+        "Desc_Rubber_C": 30.0
+      },
+      "outputs": {
+        "Desc_Cable_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Silica_Distilled_C",
+      "name": "Alternate: Distilled Silica",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_DissolvedSilica_C": 120.0,
+        "Desc_Stone_C": 50.0,
+        "Desc_Water_C": 100.0
+      },
+      "outputs": {
+        "Desc_Silica_C": 270.0,
+        "Desc_Water_C": 80.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Quartz_Purified_C",
+      "name": "Alternate: Quartz Purification",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 120.0,
+        "Desc_NitricAcid_C": 10.0
+      },
+      "outputs": {
+        "Desc_QuartzCrystal_C": 75.0,
+        "Desc_DissolvedSilica_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Quartz_Fused_C",
+      "name": "Alternate: Fused Quartz Crystal",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 20.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 75.0,
+        "Desc_Coal_C": 36.0
+      },
+      "outputs": {
+        "Desc_QuartzCrystal_C": 54.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IronIngot_Leached_C",
+      "name": "Alternate: Leached Iron Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_OreIron_C": 50.0,
+        "Desc_SulfuricAcid_C": 10.0
+      },
+      "outputs": {
+        "Desc_IronIngot_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IronIngot_Basic_C",
+      "name": "Alternate: Basic Iron Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreIron_C": 25.0,
+        "Desc_Stone_C": 40.0
+      },
+      "outputs": {
+        "Desc_IronIngot_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CopperIngot_Tempered_C",
+      "name": "Alternate: Tempered Copper Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreCopper_C": 25.0,
+        "Desc_PetroleumCoke_C": 40.0
+      },
+      "outputs": {
+        "Desc_CopperIngot_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CopperIngot_Leached_C",
+      "name": "Alternate: Leached Copper Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreCopper_C": 45.0,
+        "Desc_SulfuricAcid_C": 25.0
+      },
+      "outputs": {
+        "Desc_CopperIngot_C": 110.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CateriumIngot_Tempered_C",
+      "name": "Alternate: Tempered Caterium Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_OreGold_C": 45.0,
+        "Desc_PetroleumCoke_C": 15.0
+      },
+      "outputs": {
+        "Desc_GoldIngot_C": 22.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CateriumIngot_Leached_C",
+      "name": "Alternate: Leached Caterium Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 10.0,
+      "inputs": {
+        "Desc_OreGold_C": 54.0,
+        "Desc_SulfuricAcid_C": 30.0
+      },
+      "outputs": {
+        "Desc_GoldIngot_C": 36.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelPipe_Molded_C",
+      "name": "Alternate: Molded Steel Pipe",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 50.0,
+        "Desc_Cement_C": 30.0
+      },
+      "outputs": {
+        "Desc_SteelPipe_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelPipe_Iron_C",
+      "name": "Alternate: Iron Pipe",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_IronIngot_C": 100.0
+      },
+      "outputs": {
+        "Desc_SteelPipe_C": 25.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelCastedPlate_C",
+      "name": "Alternate: Steel Cast Plate",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_IronIngot_C": 15.0,
+        "Desc_SteelIngot_C": 15.0
+      },
+      "outputs": {
+        "Desc_IronPlate_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelBeam_Molded_C",
+      "name": "Alternate: Molded Beam",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 120.0,
+        "Desc_Cement_C": 80.0
+      },
+      "outputs": {
+        "Desc_SteelPlate_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelBeam_Aluminum_C",
+      "name": "Alternate: Aluminum Beam",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 22.5
+      },
+      "outputs": {
+        "Desc_SteelPlate_C": 22.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_AluminumRod_C",
+      "name": "Alternate: Aluminum Rod",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 7.5
+      },
+      "outputs": {
+        "Desc_IronRod_C": 52.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_AILimiter_Plastic_C",
+      "name": "Alternate: Plastic AI Limiter",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 15.0,
+      "inputs": {
+        "Desc_HighSpeedWire_C": 120.0,
+        "Desc_Plastic_C": 28.0
+      },
+      "outputs": {
+        "Desc_CircuitBoardHighSpeed_C": 8.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_TurboPressureMotor_C",
+      "name": "Alternate: Turbo Pressure Motor",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_Motor_C": 7.5,
+        "Desc_PressureConversionCube_C": 1.875,
+        "Desc_PackagedNitrogenGas_C": 45.0,
+        "Desc_Stator_C": 15.0
+      },
+      "outputs": {
+        "Desc_MotorLightweight_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_TurboBlendFuel_C",
+      "name": "Alternate: Turbo Blend Fuel",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_LiquidFuel_C": 15.0,
+        "Desc_HeavyOilResidue_C": 30.0,
+        "Desc_Sulfur_C": 22.5,
+        "Desc_PetroleumCoke_C": 22.5
+      },
+      "outputs": {
+        "Desc_LiquidTurboFuel_C": 45.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SuperStateComputer_C",
+      "name": "Alternate: Super-State Computer",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 25.0,
+      "inputs": {
+        "Desc_Computer_C": 7.2,
+        "Desc_ElectromagneticControlRod_C": 2.4,
+        "Desc_Battery_C": 24.0,
+        "Desc_Wire_C": 60.0
+      },
+      "outputs": {
+        "Desc_ComputerSuper_C": 2.4
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SloppyAlumina_C",
+      "name": "Alternate: Sloppy Alumina",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_OreBauxite_C": 200.0,
+        "Desc_Water_C": 200.0
+      },
+      "outputs": {
+        "Desc_AluminaSolution_C": 240.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_RadioControlSystem_C",
+      "name": "Alternate: Radio Control System",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 40.0,
+      "inputs": {
+        "Desc_CrystalOscillator_C": 1.5,
+        "Desc_CircuitBoard_C": 15.0,
+        "Desc_AluminumCasing_C": 90.0,
+        "Desc_Rubber_C": 45.0
+      },
+      "outputs": {
+        "Desc_ModularFrameLightweight_C": 4.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PlutoniumFuelUnit_C",
+      "name": "Alternate: Plutonium Fuel Unit",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_PlutoniumCell_C": 10.0,
+        "Desc_PressureConversionCube_C": 0.5
+      },
+      "outputs": {
+        "Desc_PlutoniumFuelRod_C": 0.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_OCSupercomputer_C",
+      "name": "Alternate: OC Supercomputer",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 20.0,
+      "inputs": {
+        "Desc_ModularFrameLightweight_C": 6.0,
+        "Desc_CoolingSystem_C": 6.0
+      },
+      "outputs": {
+        "Desc_ComputerSuper_C": 3.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_InstantScrap_C",
+      "name": "Alternate: Instant Scrap",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_OreBauxite_C": 150.0,
+        "Desc_Coal_C": 100.0,
+        "Desc_SulfuricAcid_C": 50.0,
+        "Desc_Water_C": 60.0
+      },
+      "outputs": {
+        "Desc_AluminumScrap_C": 300.0,
+        "Desc_Water_C": 50.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_InstantPlutoniumCell_C",
+      "name": "Alternate: Instant Plutonium Cell",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 120.0,
+      "inputs": {
+        "Desc_NonFissibleUranium_C": 75.0,
+        "Desc_AluminumCasing_C": 10.0
+      },
+      "outputs": {
+        "Desc_PlutoniumCell_C": 10.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HeatFusedFrame_C",
+      "name": "Alternate: Heat-Fused Frame",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 20.0,
+      "inputs": {
+        "Desc_ModularFrameHeavy_C": 3.0,
+        "Desc_AluminumIngot_C": 150.0,
+        "Desc_NitricAcid_C": 24.0,
+        "Desc_LiquidFuel_C": 30.0
+      },
+      "outputs": {
+        "Desc_ModularFrameFused_C": 3.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_FertileUranium_C",
+      "name": "Alternate: Fertile Uranium",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreUranium_C": 25.0,
+        "Desc_NuclearWaste_C": 25.0,
+        "Desc_NitricAcid_C": 15.0,
+        "Desc_SulfuricAcid_C": 25.0
+      },
+      "outputs": {
+        "Desc_NonFissibleUranium_C": 100.0,
+        "Desc_Water_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ElectricMotor_C",
+      "name": "Alternate: Electric Motor",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_ElectromagneticControlRod_C": 3.75,
+        "Desc_Rotor_C": 7.5
+      },
+      "outputs": {
+        "Desc_Motor_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_DilutedFuel_C",
+      "name": "Alternate: Diluted Fuel",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 50.0,
+        "Desc_Water_C": 100.0
+      },
+      "outputs": {
+        "Desc_LiquidFuel_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CoolingDevice_C",
+      "name": "Alternate: Cooling Device",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_AluminumPlateReinforced_C": 10.0,
+        "Desc_Motor_C": 2.5,
+        "Desc_NitrogenGas_C": 60.0
+      },
+      "outputs": {
+        "Desc_CoolingSystem_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ClassicBattery_C",
+      "name": "Alternate: Classic Battery",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_Sulfur_C": 45.0,
+        "Desc_AluminumPlate_C": 52.5,
+        "Desc_Plastic_C": 60.0,
+        "Desc_Wire_C": 90.0
+      },
+      "outputs": {
+        "Desc_Battery_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_AutomatedMiner_C",
+      "name": "Alternate: Automated Miner",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 60.0,
+      "inputs": {
+        "Desc_SteelPipe_C": 4.0,
+        "Desc_IronPlate_C": 4.0
+      },
+      "outputs": {
+        "BP_ItemDescriptorPortableMiner_C": 1.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_AlcladCasing_C",
+      "name": "Alternate: Alclad Casing",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_AluminumIngot_C": 150.0,
+        "Desc_CopperIngot_C": 75.0
+      },
+      "outputs": {
+        "Desc_AluminumCasing_C": 112.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_WetConcrete_C",
+      "name": "Alternate: Wet Concrete",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_Stone_C": 120.0,
+        "Desc_Water_C": 100.0
+      },
+      "outputs": {
+        "Desc_Cement_C": 80.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_TurboHeavyFuel_C",
+      "name": "Alternate: Turbo Heavy Fuel",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 37.5,
+        "Desc_CompactedCoal_C": 30.0
+      },
+      "outputs": {
+        "Desc_LiquidTurboFuel_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelRod_C",
+      "name": "Alternate: Steel Rod",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 5.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 12.0
+      },
+      "outputs": {
+        "Desc_IronRod_C": 48.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteelCanister_C",
+      "name": "Alternate: Steel Canister",
+      "alternate": true,
+      "machine": "Build_ConstructorMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_SteelIngot_C": 40.0
+      },
+      "outputs": {
+        "Desc_FluidCanister_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_SteamedCopperSheet_C",
+      "name": "Alternate: Steamed Copper Sheet",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_CopperIngot_C": 22.5,
+        "Desc_Water_C": 22.5
+      },
+      "outputs": {
+        "Desc_CopperSheet_C": 22.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_RubberConcrete_C",
+      "name": "Alternate: Rubber Concrete",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_Stone_C": 100.0,
+        "Desc_Rubber_C": 20.0
+      },
+      "outputs": {
+        "Desc_Cement_C": 90.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_RecycledRubber_C",
+      "name": "Alternate: Recycled Rubber",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Plastic_C": 30.0,
+        "Desc_LiquidFuel_C": 30.0
+      },
+      "outputs": {
+        "Desc_Rubber_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PureQuartzCrystal_C",
+      "name": "Alternate: Pure Quartz Crystal",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_RawQuartz_C": 67.5,
+        "Desc_Water_C": 37.5
+      },
+      "outputs": {
+        "Desc_QuartzCrystal_C": 52.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PureIronIngot_C",
+      "name": "Alternate: Pure Iron Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreIron_C": 35.0,
+        "Desc_Water_C": 20.0
+      },
+      "outputs": {
+        "Desc_IronIngot_C": 65.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PureCopperIngot_C",
+      "name": "Alternate: Pure Copper Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_OreCopper_C": 15.0,
+        "Desc_Water_C": 10.0
+      },
+      "outputs": {
+        "Desc_CopperIngot_C": 37.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PureCateriumIngot_C",
+      "name": "Alternate: Pure Caterium Ingot",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 5.0,
+      "inputs": {
+        "Desc_OreGold_C": 24.0,
+        "Desc_Water_C": 24.0
+      },
+      "outputs": {
+        "Desc_GoldIngot_C": 12.0
+      }
+    },
+    {
+      "id": "Recipe_PureAluminumIngot_C",
+      "name": "Alternate: Pure Aluminum Ingot",
+      "alternate": false,
+      "machine": "Build_SmelterMk1_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_AluminumScrap_C": 60.0
+      },
+      "outputs": {
+        "Desc_AluminumIngot_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PolymerResin_C",
+      "name": "Alternate: Polymer Resin",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 60.0
+      },
+      "outputs": {
+        "Desc_PolymerResin_C": 130.0,
+        "Desc_HeavyOilResidue_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_PlasticSmartPlating_C",
+      "name": "Alternate: Plastic Smart Plating",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_IronPlateReinforced_C": 2.5,
+        "Desc_Rotor_C": 2.5,
+        "Desc_Plastic_C": 7.5
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_1_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HighSpeedWiring_C",
+      "name": "Alternate: Automated Speed Wiring",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 32.0,
+      "inputs": {
+        "Desc_Stator_C": 3.75,
+        "Desc_Wire_C": 75.0,
+        "Desc_HighSpeedConnector_C": 1.875
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_3_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HeavyOilResidue_C",
+      "name": "Alternate: Heavy Oil Residue",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 30.0
+      },
+      "outputs": {
+        "Desc_HeavyOilResidue_C": 40.0,
+        "Desc_PolymerResin_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_HeavyFlexibleFrame_C",
+      "name": "Alternate: Heavy Flexible Frame",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_ModularFrame_C": 18.75,
+        "Desc_SteelPlateReinforced_C": 11.25,
+        "Desc_Rubber_C": 75.0,
+        "Desc_IronScrew_C": 390.0
+      },
+      "outputs": {
+        "Desc_ModularFrameHeavy_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_FusedWire_C",
+      "name": "Alternate: Fused Wire",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 20.0,
+      "inputs": {
+        "Desc_CopperIngot_C": 12.0,
+        "Desc_GoldIngot_C": 3.0
+      },
+      "outputs": {
+        "Desc_Wire_C": 90.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_FlexibleFramework_C",
+      "name": "Alternate: Flexible Framework",
+      "alternate": true,
+      "machine": "Build_ManufacturerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_ModularFrame_C": 3.75,
+        "Desc_SteelPlate_C": 22.5,
+        "Desc_Rubber_C": 30.0
+      },
+      "outputs": {
+        "Desc_SpaceElevatorPart_2_C": 7.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ElectrodeCircuitBoard_C",
+      "name": "Alternate: Electrode Circuit Board",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_Rubber_C": 20.0,
+        "Desc_PetroleumCoke_C": 40.0
+      },
+      "outputs": {
+        "Desc_CircuitBoard_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_ElectroAluminumScrap_C",
+      "name": "Alternate: Electrode Aluminum Scrap",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_AluminaSolution_C": 180.0,
+        "Desc_PetroleumCoke_C": 60.0
+      },
+      "outputs": {
+        "Desc_AluminumScrap_C": 300.0,
+        "Desc_Water_C": 105.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_DilutedPackagedFuel_C",
+      "name": "Alternate: Diluted Packaged Fuel",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_HeavyOilResidue_C": 30.0,
+        "Desc_PackagedWater_C": 60.0
+      },
+      "outputs": {
+        "Desc_Fuel_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CopperRotor_C",
+      "name": "Alternate: Copper Rotor",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_CopperSheet_C": 22.5,
+        "Desc_IronScrew_C": 195.0
+      },
+      "outputs": {
+        "Desc_Rotor_C": 11.25
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CopperAlloyIngot_C",
+      "name": "Alternate: Copper Alloy Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 6.0,
+      "inputs": {
+        "Desc_OreCopper_C": 50.0,
+        "Desc_OreIron_C": 50.0
+      },
+      "outputs": {
+        "Desc_CopperIngot_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CokeSteelIngot_C",
+      "name": "Alternate: Coke Steel Ingot",
+      "alternate": true,
+      "machine": "Build_FoundryMk1_C",
+      "duration_s": 12.0,
+      "inputs": {
+        "Desc_OreIron_C": 75.0,
+        "Desc_PetroleumCoke_C": 75.0
+      },
+      "outputs": {
+        "Desc_SteelIngot_C": 100.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CoatedIronPlate_C",
+      "name": "Alternate: Coated Iron Plate",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_IronIngot_C": 37.5,
+        "Desc_Plastic_C": 7.5
+      },
+      "outputs": {
+        "Desc_IronPlate_C": 75.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CoatedIronCanister_C",
+      "name": "Alternate: Coated Iron Canister",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_IronPlate_C": 30.0,
+        "Desc_CopperSheet_C": 15.0
+      },
+      "outputs": {
+        "Desc_FluidCanister_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_CoatedCable_C",
+      "name": "Alternate: Coated Cable",
+      "alternate": true,
+      "machine": "Build_OilRefinery_C",
+      "duration_s": 8.0,
+      "inputs": {
+        "Desc_Wire_C": 37.5,
+        "Desc_HeavyOilResidue_C": 15.0
+      },
+      "outputs": {
+        "Desc_Cable_C": 67.5
+      }
+    },
+    {
+      "id": "Recipe_Alternate_BoltedFrame_C",
+      "name": "Alternate: Bolted Frame",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_IronPlateReinforced_C": 7.5,
+        "Desc_IronScrew_C": 140.0
+      },
+      "outputs": {
+        "Desc_ModularFrame_C": 5.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_AdheredIronPlate_C",
+      "name": "Alternate: Adhered Iron Plate",
+      "alternate": true,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 16.0,
+      "inputs": {
+        "Desc_IronPlate_C": 11.25,
+        "Desc_Rubber_C": 3.75
+      },
+      "outputs": {
+        "Desc_IronPlateReinforced_C": 3.75
+      }
+    },
+    {
+      "id": "Recipe_Alternate_RocketFuel_Nitro_C",
+      "name": "Alternate: Nitro Rocket Fuel",
+      "alternate": true,
+      "machine": "Build_Blender_C",
+      "duration_s": 2.4,
+      "inputs": {
+        "Desc_LiquidFuel_C": 100.0,
+        "Desc_NitrogenGas_C": 75.0,
+        "Desc_Sulfur_C": 100.0,
+        "Desc_Coal_C": 50.0
+      },
+      "outputs": {
+        "Desc_RocketFuel_C": 150.0,
+        "Desc_CompactedCoal_C": 25.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_IonizedFuel_Dark_C",
+      "name": "Alternate: Dark-Ion Fuel",
+      "alternate": true,
+      "machine": "Build_Converter_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_PackagedRocketFuel_C": 240.0,
+        "Desc_DarkMatter_C": 80.0
+      },
+      "outputs": {
+        "Desc_IonizedFuel_C": 200.0,
+        "Desc_CompactedCoal_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Diamond_Turbo_C",
+      "name": "Alternate: Turbo Diamonds",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_Coal_C": 600.0,
+        "Desc_TurboFuel_C": 40.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Diamond_Pink_C",
+      "name": "Alternate: Pink Diamonds",
+      "alternate": true,
+      "machine": "Build_Converter_C",
+      "duration_s": 4.0,
+      "inputs": {
+        "Desc_Coal_C": 120.0,
+        "Desc_QuartzCrystal_C": 45.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 15.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Diamond_Petroleum_C",
+      "name": "Alternate: Petroleum Diamonds",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_PetroleumCoke_C": 720.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 30.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Diamond_OilBased_C",
+      "name": "Alternate: Oil-Based Diamonds",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_LiquidOil_C": 200.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 40.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_Diamond_Cloudy_C",
+      "name": "Alternate: Cloudy Diamonds",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_Coal_C": 240.0,
+        "Desc_Stone_C": 480.0
+      },
+      "outputs": {
+        "Desc_Diamond_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_DarkMatter_Trap_C",
+      "name": "Alternate: Dark Matter Trap",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 2.0,
+      "inputs": {
+        "Desc_TimeCrystal_C": 30.0,
+        "Desc_DarkEnergy_C": 150.0
+      },
+      "outputs": {
+        "Desc_DarkMatter_C": 60.0
+      }
+    },
+    {
+      "id": "Recipe_Alternate_DarkMatter_Crystallization_C",
+      "name": "Alternate: Dark Matter Crystallization",
+      "alternate": true,
+      "machine": "Build_HadronCollider_C",
+      "duration_s": 3.0,
+      "inputs": {
+        "Desc_DarkEnergy_C": 200.0
+      },
+      "outputs": {
+        "Desc_DarkMatter_C": 20.0
+      }
+    },
+    {
+      "id": "Recipe_Fireworks_01_C",
+      "name": "Sweet Fireworks",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_XmasBranch_C": 15.0,
+        "Desc_CandyCane_C": 7.5
+      },
+      "outputs": {
+        "Desc_Fireworks_Projectile_01_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_Fireworks_02_C",
+      "name": "Fancy Fireworks",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_XmasBranch_C": 10.0,
+        "Desc_XmasBow_C": 7.5
+      },
+      "outputs": {
+        "Desc_Fireworks_Projectile_02_C": 2.5
+      }
+    },
+    {
+      "id": "Recipe_Fireworks_03_C",
+      "name": "Sparkly Fireworks",
+      "alternate": false,
+      "machine": "Build_AssemblerMk1_C",
+      "duration_s": 24.0,
+      "inputs": {
+        "Desc_XmasBranch_C": 7.5,
+        "Desc_Snow_C": 5.0
+      },
+      "outputs": {
+        "Desc_Fireworks_Projectile_03_C": 2.5
+      }
+    }
+  ]
+}
