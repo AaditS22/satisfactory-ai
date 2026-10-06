@@ -43,6 +43,21 @@ class Bridge:
     def ping(self):
         return self.request("GET", "/ping")
 
+    def player(self):
+        return self.request("GET", "/player")
+
+    def ground(self, x, y):
+        return self.request("GET", f"/ground?x={x}&y={y}")["z"]
+
+    def spawn(self, class_path, pos, yaw=0, build_id="manual", built_with=None):
+        body = {"class": class_path, "pos": list(pos), "yaw": yaw, "build_id": build_id}
+        if built_with:
+            body["built_with"] = built_with
+        return self.request("POST", "/spawn", body)
+
+    def clear(self, build_id):
+        return self.request("POST", "/clear", {"build_id": build_id})["destroyed"]
+
 
 if __name__ == "__main__":
     print(Bridge().ping())

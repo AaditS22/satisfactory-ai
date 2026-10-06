@@ -17,6 +17,9 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Pawn.h"
+#include "FGLightweightBuildableSubsystem.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
 
@@ -44,6 +47,69 @@ namespace
         }
         const FString Ip = Request.PeerAddress->ToString(false);
         return Ip.StartsWith(TEXT("127.")) || Ip == TEXT("::1") || Ip.StartsWith(TEXT("::ffff:127."));
+    }
+
+    constexpr double CmPerMetre = 100.0;
+
+    TSharedPtr<FJsonObject> ParseJsonBody(const FHttpServerRequest& Request, FString& OutError)
+    {
+        if (Request.Body.Num() == 0)
+        {
+            OutError = TEXT("empty body");
+            OutError = TEXT("empty body");
+            return nullptr;
+        }
+        FUTF8ToTCHAR Converted(reinterpret_cast<const ANSICHAR*>(Request.Body.GetData()), Request.Body.Num());
+        const FString Text(Converted.Length(), Converted.Get());
+
+        TSharedPtr<FJsonObject> Json;
+        TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+        if (!FJsonSerializer::Deserialize(Reader, Json) || !Json.IsValid())
+        {
+            OutError = TEXT("body is not a JSON object");
+            return nullptr;
+        }
+        return Json;
+    }
+
+    bool ReadVec3Metres(const FJsonObject& Json, const FString& Field, FVector& OutCm, FString& OutError)
+    {
+        const TArray<TSharedPtr<FJsonValue>>* Arr = nullptr;
+        if (!Json.TryGetArrayField(Field, Arr) || Arr->Num() != 3)
+        {
+            OutError = FString::Printf(TEXT("%s must be [x, y, z]"), *Field);
+            return false;
+        }
+        OutCm = FVector((*Arr)[0]->AsNumber(), (*Arr)[1]->AsNumber(), (*Arr)[2]->AsNumber()) * CmPerMetre;
+        return true;
+    }
+
+    TArray<TSharedPtr<FJsonValue>> Vec3ToJsonMetres(const FVector& Cm)
+    {
+        const FVector M = Cm / CmPerMetre;
+        return { MakeShared<FJsonValueNumber>(M.X), MakeShared<FJsonValueNumber>(M.Y), MakeShared<FJsonValueNumber>(M.Z) };
+    }
+
+    bool TraceGroundCm(UWorld* World, double XCm, double YCm, FVector& OutHitCm, FString& OutHitName)
+    {
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(SatAIGround), /*bTraceComplex=*/ false);
+        double RefZ = 0.0;
+        if (APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0))
+        {
+            Params.AddIgnoredActor(Pawn);
+            RefZ = Pawn->GetActorLocation().Z;
+        }
+
+        FHitResult Hit;
+        const FVector Start(XCm, YCm, RefZ + 10000.0);
+        const FVector End(XCm, YCm, RefZ - 50000.0);
+        if (!World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+        {
+            return false;
+        }
+        OutHitCm = Hit.ImpactPoint;
+        OutHitName = Hit.GetActor() ? Hit.GetActor()->GetName() : TEXT("none");
+        return true;
     }
 
     void RespondJson(const FHttpResultCallback& OnComplete, const TSharedRef<FJsonObject>& Json,
@@ -165,6 +231,113 @@ void ASatAISubsystem::StartHttpServer()
             return true;
         }));
 
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/player"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            APawn* Pawn = UGameplayStatics::GetPlayerPawn(Self.GetWorld(), 0);
+            if (!Pawn)
+            {
+                OutError = TEXT("no player pawn");
+                return false;
+            }
+            Out->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(Pawn->GetActorLocation()));
+            Out->SetNumberField(TEXT("yaw"), Pawn->GetControlRotation().Yaw);  // camera direction
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/ground"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            const FString* X = Request.QueryParams.Find(TEXT("x"));
+            const FString* Y = Request.QueryParams.Find(TEXT("y"));
+            if (!X || !Y)
+            {
+                OutError = TEXT("need ?x=..&y=.. in metres");
+                return false;
+            }
+            FVector HitCm;
+            FString HitName;
+            if (!TraceGroundCm(Self.GetWorld(), FCString::Atod(**X) * CmPerMetre, FCString::Atod(**Y) * CmPerMetre,
+                HitCm, HitName))
+            {
+                OutError = TEXT("no ground found");
+                return false;
+            }
+            Out->SetNumberField(TEXT("z"), HitCm.Z / CmPerMetre);
+            Out->SetStringField(TEXT("hit"), HitName);
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/spawn"), EHttpServerRequestVerbs::VERB_POST, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            TSharedPtr<FJsonObject> Body = ParseJsonBody(Request, OutError);
+            if (!Body)
+            {
+                return false;
+            }
+            FString ClassPath, BuildId, BuiltWith;
+            if (!Body->TryGetStringField(TEXT("class"), ClassPath))
+            {
+                OutError = TEXT("missing class");
+                return false;
+            }
+            if (!Body->TryGetStringField(TEXT("build_id"), BuildId))
+            {
+                OutError = TEXT("missing build_id");
+                return false;
+            }
+            Body->TryGetStringField(TEXT("built_with"), BuiltWith);
+            FVector PosCm;
+            if (!ReadVec3Metres(*Body, TEXT("pos"), PosCm, OutError))
+            {
+                return false;
+            }
+            double Yaw = 0.0;
+            Body->TryGetNumberField(TEXT("yaw"), Yaw);
+
+            FSatAISpawnResult Result;
+            if (!Self.SpawnTracked(BuildId, ClassPath, BuiltWith,
+                FTransform(FRotator(0.0, Yaw, 0.0), PosCm), Result, OutError))
+            {
+                return false;
+            }
+
+            Out->SetStringField(TEXT("name"), Result.Name);
+            Out->SetBoolField(TEXT("lightweight"), Result.bLightweight);
+            Out->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(Result.Transform.GetLocation()));
+            Out->SetNumberField(TEXT("yaw"), Result.Transform.Rotator().Yaw);
+            if (Result.LocalBounds.IsValid)
+            {
+                Out->SetArrayField(TEXT("bounds_min"), Vec3ToJsonMetres(Result.LocalBounds.Min));
+                Out->SetArrayField(TEXT("bounds_max"), Vec3ToJsonMetres(Result.LocalBounds.Max));
+            }
+            else
+            {
+                Out->SetField(TEXT("bounds_min"), MakeShared<FJsonValueNull>());
+                Out->SetField(TEXT("bounds_max"), MakeShared<FJsonValueNull>());
+            }
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/clear"), EHttpServerRequestVerbs::VERB_POST, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            TSharedPtr<FJsonObject> Body = ParseJsonBody(Request, OutError);
+            if (!Body)
+            {
+                return false;
+            }
+            FString BuildId;
+            if (!Body->TryGetStringField(TEXT("build_id"), BuildId))
+            {
+                OutError = TEXT("missing build_id");
+                return false;
+            }
+            Out->SetNumberField(TEXT("destroyed"), Self.ClearBuild(BuildId));
+            return true;
+        }));
+
     Http.StartAllListeners();
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: HTTP server listening on 127.0.0.1:%u (%d routes)"),
         HttpPort, HttpRoutes.Num());
@@ -201,13 +374,25 @@ ASatAISubsystem* ASatAISubsystem::Get(const UObject* WorldContext)
     return nullptr;
 }
 
-AFGBuildable* ASatAISubsystem::SpawnBuildable(const FString& ClassPath, const FTransform& Transform, FString& OutError)
+AFGBuildable* ASatAISubsystem::SpawnBuildable(const FString& ClassPath, const FTransform& Transform, FString& OutError,
+    const FString& BuiltWithRecipePath)
 {
     UClass* BuildClass = LoadClass<AFGBuildable>(nullptr, *ClassPath);
     if (!BuildClass)
     {
         OutError = FString::Printf(TEXT("class not found: %s"), *ClassPath);
         return nullptr;
+    }
+
+    TSubclassOf<UFGRecipe> BuiltWith;
+    if (!BuiltWithRecipePath.IsEmpty())
+    {
+        BuiltWith = LoadClass<UFGRecipe>(nullptr, *BuiltWithRecipePath);
+        if (!BuiltWith)
+        {
+            OutError = FString::Printf(TEXT("built_with recipe not found: %s"), *BuiltWithRecipePath);
+            return nullptr;
+        }
     }
 
     AFGBuildable* Buildable = GetWorld()->SpawnActorDeferred<AFGBuildable>(
@@ -217,6 +402,11 @@ AFGBuildable* ASatAISubsystem::SpawnBuildable(const FString& ClassPath, const FT
     {
         OutError = TEXT("SpawnActorDeferred returned null");
         return nullptr;
+    }
+
+    if (BuiltWith)
+    {
+        Buildable->SetBuiltWithRecipe(BuiltWith);
     }
 
     Buildable->FinishSpawning(Transform);
@@ -325,4 +515,99 @@ FString ASatAISubsystem::HandlePing()
 {
     PingCount++;
     return FString::Printf(TEXT("SatAIBridge: pong (v0.1, ping #%d)"), PingCount);
+}
+
+bool ASatAISubsystem::SpawnTracked(const FString& BuildId, const FString& ClassPath, const FString& BuiltWithRecipePath,
+    const FTransform& Transform, FSatAISpawnResult& Out, FString& OutError)
+{
+    AFGBuildable* Built = SpawnBuildable(ClassPath, Transform, OutError, BuiltWithRecipePath);
+    if (!Built)
+    {
+        return false;
+    }
+    Out.Name = Built->GetName();
+    UClass* Class = Built->GetClass();
+
+    if (IsValid(Built))
+    {
+        Out.Transform = Built->GetActorTransform();
+        Out.LocalBounds = Built->CalculateComponentsBoundingBoxInLocalSpace(/*bNonColliding=*/ false);
+        Builds.FindOrAdd(BuildId).Add({ Built, nullptr, INDEX_NONE, Out.Transform.GetLocation() });
+        return true;
+    }
+
+    AFGLightweightBuildableSubsystem* Lightweight = AFGLightweightBuildableSubsystem::Get(GetWorld());
+    const int32 Index = FindLightweightIndex(Class, Transform.GetLocation());
+    const FRuntimeBuildableInstanceData* Data = (Lightweight && Index != INDEX_NONE)
+        ? Lightweight->GetRuntimeDataForBuildableClassAndIndex(Class, Index) : nullptr;
+    if (!Data)
+    {
+        OutError = TEXT("spawned, but it became a lightweight instance that could not be found");
+        return false;
+    }
+
+    Out.bLightweight = true;
+    Out.Transform = Data->Transform;
+    Out.LocalBounds = Data->BoundingBox;
+    Builds.FindOrAdd(BuildId).Add({ nullptr, Class, Index, Data->Transform.GetLocation() });
+    UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: %s became lightweight instance #%d"), *Out.Name, Index);
+    return true;
+}
+
+int32 ASatAISubsystem::FindLightweightIndex(UClass* Class, const FVector& LocationCm) const
+{
+    AFGLightweightBuildableSubsystem* Lightweight = AFGLightweightBuildableSubsystem::Get(GetWorld());
+    if (!Lightweight)
+    {
+        return INDEX_NONE;
+    }
+    const TArray<FRuntimeBuildableInstanceData>* Instances =
+        Lightweight->GetAllLightweightBuildableInstances().Find(Class);
+    if (!Instances)
+    {
+        return INDEX_NONE;
+    }
+    for (int32 i = Instances->Num() - 1; i >= 0; --i)
+    {
+        const FRuntimeBuildableInstanceData& Data = (*Instances)[i];
+        if (Data.Handles.Num() > 0 && Data.Transform.GetLocation().Equals(LocationCm, 1.0))
+        {
+            return i;
+        }
+    }
+    return INDEX_NONE;
+}
+
+int32 ASatAISubsystem::ClearBuild(const FString& BuildId)
+{
+    TArray<FSatAITrackedPiece> Pieces;
+    if (!Builds.RemoveAndCopyValue(BuildId, Pieces))
+    {
+        return 0;
+    }
+
+    AFGLightweightBuildableSubsystem* Lightweight = AFGLightweightBuildableSubsystem::Get(GetWorld());
+    int32 Removed = 0;
+    for (int32 i = Pieces.Num() - 1; i >= 0; --i)
+    {
+        const FSatAITrackedPiece& Piece = Pieces[i];
+        if (AActor* Actor = Piece.Actor.Get())
+        {
+            Actor->Destroy();
+            ++Removed;
+            continue;
+        }
+        if (Piece.LightweightClass && Lightweight)
+        {
+            FRuntimeBuildableInstanceData* Data =
+                Lightweight->GetRuntimeDataForBuildableClassAndIndex(Piece.LightweightClass, Piece.LightweightIndex);
+            if (Data && Data->Handles.Num() > 0 && Data->Transform.GetLocation().Equals(Piece.Location, 1.0))
+            {
+                Lightweight->RemoveByInstanceIndex(Piece.LightweightClass, Piece.LightweightIndex);
+                ++Removed;
+            }
+        }
+    }
+    UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: cleared build '%s' (%d pieces)"), *BuildId, Removed);
+    return Removed;
 }
