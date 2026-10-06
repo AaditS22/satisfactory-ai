@@ -41,8 +41,9 @@ public class SatAIBridge : ModuleRules
 			//"TemplateSequence",
 			"NetCore",
 			"GameplayTags",
-			"Json", "JsonUtilities"
-		});
+            "Json", "JsonUtilities",
+            "HTTPServer", "Sockets"
+        });
 
 		// FactoryGame plugins
 		PublicDependencyModuleNames.AddRange(new string[] {

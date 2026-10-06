@@ -2,11 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "Subsystem/ModSubsystem.h"
+#include "HttpRouteHandle.h"
 #include "SatAISubsystem.generated.h"
 
 class AFGBuildable;
 class UFGFactoryConnectionComponent;
 class AFGBuildableConveyorBelt;
+class IHttpRouter;
 
 UCLASS(Abstract, Blueprintable)
 class SATAIBRIDGE_API ASatAISubsystem : public AModSubsystem
@@ -28,6 +30,13 @@ public:
     FString HandlePing();
 
 private:
+    void StartHttpServer();
+    void StopHttpServer();
+
+    static constexpr uint32 HttpPort = 18642;
+    TSharedPtr<IHttpRouter> HttpRouter;
+    TArray<FHttpRouteHandle> HttpRoutes;
+
     int32 PingCount = 0;
     static TWeakObjectPtr<ASatAISubsystem> Instance;
 };

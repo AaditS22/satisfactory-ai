@@ -8,23 +8,179 @@
 #include "FGFactoryConnectionComponent.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
 #include "Tests/FGTestBlueprintFunctionLibrary.h"
+#include "HttpServerModule.h"
+#include "IHttpRouter.h"
+#include "HttpServerRequest.h"
+#include "HttpServerResponse.h"
+#include "Misc/ConfigCacheIni.h"
+#include "IPAddress.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
+
+namespace
+{
+    void ForceLoopbackBinding(uint32 Port)
+    {
+        const TCHAR* Section = TEXT("HTTPServer.Listeners");
+        const FString Override = FString::Printf(TEXT("(Port=%u,BindAddress=localhost)"), Port);
+
+        TArray<FString> Overrides;
+        GConfig->GetArray(Section, TEXT("ListenerOverrides"), Overrides, GEngineIni);
+        if (!Overrides.Contains(Override))
+        {
+            Overrides.Insert(Override, 0);
+            GConfig->SetArray(Section, TEXT("ListenerOverrides"), Overrides, GEngineIni);
+        }
+    }
+
+    bool IsLocalRequest(const FHttpServerRequest& Request)
+    {
+        if (!Request.PeerAddress.IsValid())
+        {
+            return false;
+        }
+        const FString Ip = Request.PeerAddress->ToString(false);
+        return Ip.StartsWith(TEXT("127.")) || Ip == TEXT("::1") || Ip.StartsWith(TEXT("::ffff:127."));
+    }
+
+    void RespondJson(const FHttpResultCallback& OnComplete, const TSharedRef<FJsonObject>& Json,
+        EHttpServerResponseCodes Code = EHttpServerResponseCodes::Ok)
+    {
+        FString Body;
+        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Body);
+        FJsonSerializer::Serialize(Json, Writer);
+
+        TUniquePtr<FHttpServerResponse> Response = FHttpServerResponse::Create(Body, TEXT("application/json"));
+        Response->Code = Code;
+        OnComplete(MoveTemp(Response));
+    }
+
+    void RespondError(const FHttpResultCallback& OnComplete, const FString& Message,
+        EHttpServerResponseCodes Code)
+    {
+        TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
+        Json->SetBoolField(TEXT("ok"), false);
+        Json->SetStringField(TEXT("error"), Message);
+        RespondJson(OnComplete, Json, Code);
+    }
+
+    using FJsonHandler = TFunction<bool(ASatAISubsystem& Self, const FHttpServerRequest& Request,
+        TSharedRef<FJsonObject>& OutJson, FString& OutError)>;
+
+    FHttpRouteHandle BindJsonRoute(IHttpRouter& Router, const FString& Path, EHttpServerRequestVerbs Verb,
+        TWeakObjectPtr<ASatAISubsystem> WeakSelf, FJsonHandler Handler)
+    {
+        FHttpRouteHandle Handle = Router.BindRoute(FHttpPath(Path), Verb,
+            FHttpRequestHandler::CreateLambda(
+                [WeakSelf, Handler, Path](const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
+                {
+                    const FString Peer = Request.PeerAddress.IsValid()
+                        ? Request.PeerAddress->ToString(true) : TEXT("unknown");
+
+                    if (!IsLocalRequest(Request))
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: rejected HTTP %s from %s"), *Path, *Peer);
+                        RespondError(OnComplete, TEXT("forbidden"), EHttpServerResponseCodes::Forbidden);
+                        return true;
+                    }
+
+                    ASatAISubsystem* Self = WeakSelf.Get();
+                    if (!Self)
+                    {
+                        RespondError(OnComplete, TEXT("subsystem gone"), EHttpServerResponseCodes::ServiceUnavail);
+                        return true;
+                    }
+
+                    UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: HTTP %s from %s"), *Path, *Peer);
+
+                    TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
+                    FString Error;
+                    if (!Handler(*Self, Request, Json, Error))
+                    {
+                        RespondError(OnComplete, Error, EHttpServerResponseCodes::BadRequest);
+                        return true;
+                    }
+
+                    Json->SetBoolField(TEXT("ok"), true);
+                    RespondJson(OnComplete, Json);
+                    return true;
+                }));
+
+        if (!Handle.IsValid())
+        {
+            UE_LOG(LogTemp, Error, TEXT("SatAIBridge: failed to bind %s (already bound?)"), *Path);
+        }
+        return Handle;
+    }
+}
 
 void ASatAISubsystem::BeginPlay()
 {
     Super::BeginPlay();
     Instance = this;
+    StartHttpServer();
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: subsystem started"));
 }
 
 void ASatAISubsystem::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    StopHttpServer();
     if (Instance.Get() == this)
     {
         Instance.Reset();
     }
     Super::EndPlay(EndPlayReason);
+}
+
+void ASatAISubsystem::StartHttpServer()
+{
+    ForceLoopbackBinding(HttpPort);
+
+    FHttpServerModule& Http = FHttpServerModule::Get();
+    HttpRouter = Http.GetHttpRouter(HttpPort, /*bFailOnBindFailure=*/ true);
+    if (!HttpRouter.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("SatAIBridge: could not get HTTP router on port %u"), HttpPort);
+        return;
+    }
+
+    TWeakObjectPtr<ASatAISubsystem> WeakThis(this);
+    auto AddRoute = [this](const FHttpRouteHandle& Handle)
+        {
+            if (Handle.IsValid())
+            {
+                HttpRoutes.Add(Handle);
+            }
+        };
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/ping"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            Out->SetStringField(TEXT("message"), Self.HandlePing());
+            Out->SetNumberField(TEXT("ping_count"), Self.PingCount);
+            Out->SetStringField(TEXT("version"), TEXT("0.1"));
+            return true;
+        }));
+
+    Http.StartAllListeners();
+    UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: HTTP server listening on 127.0.0.1:%u (%d routes)"),
+        HttpPort, HttpRoutes.Num());
+}
+
+void ASatAISubsystem::StopHttpServer()
+{
+    if (HttpRouter.IsValid())
+    {
+        for (const FHttpRouteHandle& Route : HttpRoutes)
+        {
+            HttpRouter->UnbindRoute(Route);
+        }
+    }
+    HttpRoutes.Empty();
+    HttpRouter.Reset();
 }
 
 ASatAISubsystem* ASatAISubsystem::Get(const UObject* WorldContext)
