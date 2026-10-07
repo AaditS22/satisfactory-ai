@@ -30,6 +30,12 @@ HEIGHT_ABOVE_GROUND = 30.0
 def r3(v):
     return [round(x, 3) + 0.0 for x in v] 
 
+def union_box(boxes):
+    if not boxes:
+        return None, None
+    lo = [min(b["min"][i] for b in boxes) for i in range(3)]
+    hi = [max(b["max"][i] for b in boxes) for i in range(3)]
+    return lo, hi
 
 def main():
     bridge = Bridge()
@@ -53,21 +59,30 @@ def main():
         lo, hi = r["bounds_min"], r["bounds_max"]
         ports = [{"name": p["name"], "dir": p["dir"], "pos": r3(p["pos"]), "facing": r3(p["facing"])}
                  for p in r.get("ports", [])]
+        clearance = [{"type": c["type"], "min": r3(c["min"]), "max": r3(c["max"])}
+                     for c in r.get("clearance", [])]
+        hard = [c for c in clearance if c["type"] != "soft"]
+        c_lo, c_hi = union_box(hard or clearance)
         buildings[name] = {
             "lightweight": r["lightweight"],
             "bounds_min": r3(lo) if lo else None,
             "bounds_max": r3(hi) if hi else None,
             "size": r3([hi[i] - lo[i] for i in range(3)]) if lo else None,
+            "clearance": clearance,
+            "clearance_min": c_lo,
+            "clearance_max": c_hi,
             "ports": ports,
         }
         n_in = sum(p["dir"] == "in" for p in ports)
         n_out = sum(p["dir"] == "out" for p in ports)
         n_any = len(ports) - n_in - n_out
-        print(f"ok   {name:38} size {buildings[name]['size']}  ports in={n_in} out={n_out} any={n_any}")
+        c_size = r3([c_hi[i] - c_lo[i] for i in range(3)]) if c_lo else "NONE"
+        print(f"ok   {name:38} size {buildings[name]['size']}  clearance {c_size} ({len(clearance)} box)  "
+              f"ports in={n_in} out={n_out} any={n_any}")
 
     OUT.write_text(json.dumps({
         "schema": "satai.catalog",
-        "version": 0,
+        "version": 1,
         "source": "executor.catalog: each building spawned in-game at yaw 0, building-local metres",
         "buildings": buildings,
         "failed": failed,

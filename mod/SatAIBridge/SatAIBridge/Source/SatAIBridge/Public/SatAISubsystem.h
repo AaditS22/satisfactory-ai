@@ -18,6 +18,12 @@ struct FSatAIPortGeometry
     FVector LocalFacing;  
 };
 
+struct FSatAIClearanceBox
+{
+    FString Type; 
+    FBox LocalBox;
+};
+
 struct FSatAISpawnResult
 {
     FString Name;
@@ -26,6 +32,7 @@ struct FSatAISpawnResult
     bool bLightweight = false;
     AFGBuildable* Actor = nullptr;
     TArray<FSatAIPortGeometry> Ports;
+    TArray<FSatAIClearanceBox> Clearance;
 };
 
 struct FSatAITrackedPiece

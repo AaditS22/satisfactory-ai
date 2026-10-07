@@ -23,6 +23,7 @@
 #include "AbstractInstanceInterface.h"
 #include "InstanceData.h"
 #include "Engine/StaticMesh.h"
+#include "FGClearanceInterface.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
 
@@ -59,6 +60,29 @@ namespace
         case EFactoryConnectionDirection::FCD_INPUT:  return TEXT("in");
         case EFactoryConnectionDirection::FCD_OUTPUT: return TEXT("out");
         default:                                      return TEXT("any");
+        }
+    }
+
+    const TCHAR* ClearanceTypeName(EClearanceType Type)
+    {
+        switch (Type)
+        {
+        case EClearanceType::CT_Soft:           return TEXT("soft");
+        case EClearanceType::CT_BlockEverything: return TEXT("block_everything");
+        default:                                return TEXT("default");
+        }
+    }
+
+    void CollectClearance(UObject* Source, TArray<FSatAIClearanceBox>& Out)
+    {
+        TArray<FFGClearanceData> Entries;
+        IFGClearanceInterface::Execute_GetClearanceData(Source, Entries);
+        for (const FFGClearanceData& Entry : Entries)
+        {
+            if (Entry.IsValid())
+            {
+                Out.Add({ ClearanceTypeName(Entry.Type), Entry.GetTransformedClearanceBox() });
+            }
         }
     }
 
@@ -381,6 +405,16 @@ void ASatAISubsystem::StartHttpServer()
                 PortArray.Add(MakeShared<FJsonValueObject>(J));
             }
             Out->SetArrayField(TEXT("ports"), PortArray);
+            TArray<TSharedPtr<FJsonValue>> ClearanceArray;
+            for (const FSatAIClearanceBox& Box : Result.Clearance)
+            {
+                TSharedRef<FJsonObject> J = MakeShared<FJsonObject>();
+                J->SetStringField(TEXT("type"), Box.Type);
+                J->SetArrayField(TEXT("min"), Vec3ToJsonMetres(Box.LocalBox.Min));
+                J->SetArrayField(TEXT("max"), Vec3ToJsonMetres(Box.LocalBox.Max));
+                ClearanceArray.Add(MakeShared<FJsonValueObject>(J));
+            }
+            Out->SetArrayField(TEXT("clearance"), ClearanceArray);
             return true;
         }));
 
@@ -704,6 +738,7 @@ bool ASatAISubsystem::SpawnTracked(const FString& BuildId, const FString& ClassP
                 }
             }
         }
+        CollectClearance(Built, Out.Clearance);
         TArray<UFGFactoryConnectionComponent*> Ports;
         Built->GetComponents<UFGFactoryConnectionComponent>(Ports);
         for (UFGFactoryConnectionComponent* Port : Ports)
@@ -731,6 +766,7 @@ bool ASatAISubsystem::SpawnTracked(const FString& BuildId, const FString& ClassP
     Out.bLightweight = true;
     Out.Transform = Data->Transform;
     Out.LocalBounds = Data->BoundingBox;
+    CollectClearance(Class->GetDefaultObject(), Out.Clearance);
     Builds.FindOrAdd(BuildId).Add({ nullptr, Class, Index, Data->Transform.GetLocation() });
     UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: %s became lightweight instance #%d"), *Out.Name, Index);
     return true;
