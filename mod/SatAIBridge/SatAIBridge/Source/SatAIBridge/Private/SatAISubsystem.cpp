@@ -7,6 +7,8 @@
 #include "FGRecipe.h"
 #include "FGFactoryConnectionComponent.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
+#include "Buildables/FGBuildableStorage.h"
+#include "FGInventoryComponent.h"
 #include "Tests/FGTestBlueprintFunctionLibrary.h"
 #include "HttpServerModule.h"
 #include "IHttpRouter.h"
@@ -152,7 +154,7 @@ namespace
     {
         switch (Purity)
         {
-        case RP_Inpure: return TEXT("impure"); 
+        case RP_Inpure: return TEXT("impure");
         case RP_Normal: return TEXT("normal");
         case RP_Pure:   return TEXT("pure");
         default:        return TEXT("unknown");
@@ -214,11 +216,11 @@ namespace
                 if (GroundCm.X < Box.Min.X || GroundCm.X > Box.Max.X ||
                     GroundCm.Y < Box.Min.Y || GroundCm.Y > Box.Max.Y)
                 {
-                    continue; 
+                    continue;
                 }
                 if (GroundCm.Z > Box.Max.Z)
                 {
-                    continue;  
+                    continue;
                 }
                 const FVector JustAboveGround = GroundCm + FVector(0, 0, 50);
                 const FVector JustBelowSurface(GroundCm.X, GroundCm.Y, Box.Max.Z - 50);
@@ -239,7 +241,7 @@ namespace
             OutError = TEXT("needs id, kind and class");
             return false;
         }
-        Json.TryGetStringField(TEXT("built_with"), Out.BuiltWith);  
+        Json.TryGetStringField(TEXT("built_with"), Out.BuiltWith);
 
         if (Out.Kind == TEXT("belt"))
         {
@@ -248,7 +250,20 @@ namespace
                 OutError = TEXT("belt needs from and to");
                 return false;
             }
+            Json.TryGetStringField(TEXT("from_port"), Out.FromPort);
+            Json.TryGetStringField(TEXT("to_port"), Out.ToPort);
             return true;
+        }
+
+        const TSharedPtr<FJsonObject>* Fill = nullptr;
+        if (Out.Kind == TEXT("container") && Json.TryGetObjectField(TEXT("fill"), Fill))
+        {
+            if (!(*Fill)->TryGetStringField(TEXT("item"), Out.FillItem)
+                || !(*Fill)->TryGetNumberField(TEXT("amount"), Out.FillAmount) || Out.FillAmount <= 0)
+            {
+                OutError = TEXT("fill needs item and a positive amount");
+                return false;
+            }
         }
 
         FVector PosCm;
@@ -265,6 +280,37 @@ namespace
             OutError = TEXT("machine needs recipe");
             return false;
         }
+        return true;
+    }
+
+    bool FillContainer(AFGBuildable* Buildable, const FString& ItemPath, int32 Amount, FString& OutError)
+    {
+        AFGBuildableStorage* Storage = Cast<AFGBuildableStorage>(Buildable);
+        UFGInventoryComponent* Inventory = Storage ? Storage->GetStorageInventory() : nullptr;
+        if (!Inventory)
+        {
+            OutError = TEXT("fill: not a storage container");
+            return false;
+        }
+        TSubclassOf<UFGItemDescriptor> Item = LoadClass<UFGItemDescriptor>(nullptr, *ItemPath);
+        if (!Item)
+        {
+            OutError = FString::Printf(TEXT("fill: item class not found: %s"), *ItemPath);
+            return false;
+        }
+        const int32 StackSize = FMath::Max(1, UFGItemDescriptor::GetStackSize(Item));
+        int32 Added = 0;
+        while (Added < Amount)
+        {
+            const int32 Chunk = FMath::Min(StackSize, Amount - Added);
+            const int32 Got = Inventory->AddStack(FInventoryStack(Chunk, Item), /*allowPartialAdd=*/ true);
+            if (Got <= 0)
+            {
+                break;
+            }
+            Added += Got;
+        }
+        UE_LOG(LogTemp, Warning, TEXT("SatAIBridge: filled %s with %d x %s"), *Storage->GetName(), Added, *Item->GetName());
         return true;
     }
 
@@ -747,8 +793,8 @@ void ASatAISubsystem::StartHttpServer()
                 {
                     const double XCm = OriginXCm + Ix * StepCm;
                     const double YCm = OriginYCm + Iy * StepCm;
-                    const FVector Start(XCm, YCm, TopM* CmPerMetre);
-                    const FVector End(XCm, YCm, BottomM* CmPerMetre);
+                    const FVector Start(XCm, YCm, TopM * CmPerMetre);
+                    const FVector End(XCm, YCm, BottomM * CmPerMetre);
                     FHitResult Hit;
                     bool bHit = false;
                     for (int32 Attempt = 0; Attempt < 4; ++Attempt)
@@ -927,7 +973,8 @@ void ASatAISubsystem::LogPorts(AFGBuildable* Buildable) const
     }
 }
 
-UFGFactoryConnectionComponent* ASatAISubsystem::FindFreePort(AFGBuildable* Buildable, bool bOutput) const
+UFGFactoryConnectionComponent* ASatAISubsystem::FindFreePort(AFGBuildable* Buildable, bool bOutput,
+    const FString& PortName) const
 {
     const EFactoryConnectionDirection Wanted =
         bOutput ? EFactoryConnectionDirection::FCD_OUTPUT : EFactoryConnectionDirection::FCD_INPUT;
@@ -936,7 +983,8 @@ UFGFactoryConnectionComponent* ASatAISubsystem::FindFreePort(AFGBuildable* Build
     Buildable->GetComponents<UFGFactoryConnectionComponent>(Ports);
     for (UFGFactoryConnectionComponent* Port : Ports)
     {
-        if (Port->GetDirection() == Wanted && !Port->IsConnected())
+        if (Port->GetDirection() == Wanted && !Port->IsConnected()
+            && (PortName.IsEmpty() || Port->GetName() == PortName))
         {
             return Port;
         }
@@ -945,13 +993,14 @@ UFGFactoryConnectionComponent* ASatAISubsystem::FindFreePort(AFGBuildable* Build
 }
 
 AFGBuildableConveyorBelt* ASatAISubsystem::ConnectWithBelt(AFGBuildable* From, AFGBuildable* To,
-    const FString& BeltClassPath, FString& OutError)
+    const FString& BeltClassPath, FString& OutError, const FString& FromPort, const FString& ToPort)
 {
-    UFGFactoryConnectionComponent* OutPort = FindFreePort(From, true);
-    UFGFactoryConnectionComponent* InPort = FindFreePort(To, false);
+    UFGFactoryConnectionComponent* OutPort = FindFreePort(From, true, FromPort);
+    UFGFactoryConnectionComponent* InPort = FindFreePort(To, false, ToPort);
     if (!OutPort || !InPort)
     {
-        OutError = TEXT("no free output on source or no free input on target");
+        OutError = FString::Printf(TEXT("no free output '%s' on source or no free input '%s' on target"),
+            *FromPort, *ToPort);
         return nullptr;
     }
 
@@ -1127,7 +1176,8 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
             };
 
         FString Error;
-        if (Piece.Kind == TEXT("foundation") || Piece.Kind == TEXT("machine"))
+        if (Piece.Kind == TEXT("foundation") || Piece.Kind == TEXT("machine")
+            || Piece.Kind == TEXT("attachment") || Piece.Kind == TEXT("container"))
         {
             FSatAISpawnResult Result;
             if (!SpawnTracked(BuildId, Piece.ClassPath, Piece.BuiltWith, Piece.Transform, Result, Error))
@@ -1135,13 +1185,17 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
                 return Fail(Error);
             }
             Builds[BuildId].Last().Id = Piece.Id;
-            if (Piece.Kind == TEXT("machine"))
+            if (Piece.Kind != TEXT("foundation"))
             {
                 if (!Result.Actor)
                 {
-                    return Fail(TEXT("machine unexpectedly became lightweight"));
+                    return Fail(TEXT("unexpectedly became lightweight"));
                 }
-                if (!SetMachineRecipe(Result.Actor, Piece.Recipe, Error))
+                if (Piece.Kind == TEXT("machine") && !SetMachineRecipe(Result.Actor, Piece.Recipe, Error))
+                {
+                    return Fail(Error);
+                }
+                if (!Piece.FillItem.IsEmpty() && !FillContainer(Result.Actor, Piece.FillItem, Piece.FillAmount, Error))
                 {
                     return Fail(Error);
                 }
@@ -1154,9 +1208,10 @@ bool ASatAISubsystem::BuildPieces(const FString& BuildId, const TArray<FSatAIPie
             AFGBuildable** To = Machines.Find(Piece.To);
             if (!From || !To)
             {
-                return Fail(TEXT("from/to must be machines built earlier in this request"));
+                return Fail(TEXT("from/to must be machines, attachments or containers built earlier in this request"));
             }
-            AFGBuildableConveyorBelt* Belt = ConnectWithBelt(*From, *To, Piece.ClassPath, Error);
+            AFGBuildableConveyorBelt* Belt = ConnectWithBelt(*From, *To, Piece.ClassPath, Error,
+                Piece.FromPort, Piece.ToPort);
             if (!Belt)
             {
                 return Fail(Error);

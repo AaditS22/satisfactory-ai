@@ -18,12 +18,14 @@ BUILT_WITH = {
     "Build_Foundation_8x1_01_C": "Recipe_Foundation_8x1_01_C",
 }
 
-
 _GENERATED = Path(__file__).resolve().parent.parent / "data" / "content_paths.json"
 if _GENERATED.exists():
     _gen = json.loads(_GENERATED.read_text(encoding="utf-8"))
     BUILDINGS = {**_gen.get("buildings", {}), **BUILDINGS}
     RECIPES = {**_gen.get("recipes", {}), **RECIPES}
+    ITEMS = _gen.get("items", {})
+else:
+    ITEMS = {}
 
 def class_path(name):
     try:
@@ -31,13 +33,17 @@ def class_path(name):
     except KeyError:
         raise KeyError(f"no content path for building {name!r}; add it to executor/paths.py") from None
 
-
 def recipe_path(name):
     try:
         return RECIPES[name]
     except KeyError:
         raise KeyError(f"no content path for recipe {name!r}; add it to executor/paths.py") from None
 
+def item_path(name):
+    try:
+        return ITEMS[name]
+    except KeyError:
+        raise KeyError(f"no content path for item {name!r}; re-run python data/content_paths.py") from None
 
 def built_with_path(name):
     recipe = BUILT_WITH.get(name)

@@ -3,19 +3,17 @@ import json
 from pathlib import Path
 
 SCHEMA = "satai.factoryplan"
-SUPPORTED_VERSIONS = {0}
-KINDS = {"foundation", "machine", "belt"}
-
+SUPPORTED_VERSIONS = {0, 1}
+KINDS = {"foundation", "machine", "attachment", "container", "belt"}
+CONNECTABLE = {"machine", "attachment", "container"}
 
 def load_plan(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
-
 def _is_vec3(v):
     return (isinstance(v, list) and len(v) == 3
             and all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in v))
-
 
 def validate_plan(plan):
     """Return a list of problems. An empty list means the plan is valid."""
@@ -57,7 +55,7 @@ def validate_plan(plan):
         if not isinstance(e.get("class"), str) or not e["class"].endswith("_C"):
             problems.append(f"{where}: class must be a string ending in '_C'")
 
-        if kind in ("foundation", "machine"):
+        if kind != "belt":
             if not _is_vec3(e.get("pos")):
                 problems.append(f"{where}: pos must be [x, y, z] numbers")
             yaw = e.get("yaw")
@@ -65,6 +63,15 @@ def validate_plan(plan):
                 problems.append(f"{where}: yaw must be a multiple of 90, got {yaw!r}")
         if kind == "machine" and not isinstance(e.get("recipe"), str):
             problems.append(f"{where}: machine needs a recipe")
+        fill = e.get("fill")
+        if kind == "container" and fill is not None:
+            if (not isinstance(fill, dict) or not isinstance(fill.get("item"), str)
+                    or not isinstance(fill.get("amount"), int) or fill["amount"] <= 0):
+                problems.append(f"{where}: fill must be {{\"item\": name, \"amount\": positive int}}")
+        if kind == "belt":
+            for key in ("from_port", "to_port"):
+                if key in e and not isinstance(e[key], str):
+                    problems.append(f"{where}: {key} must be a port name")
 
     for e in entities:
         if not isinstance(e, dict) or e.get("kind") != "belt":
@@ -73,8 +80,8 @@ def validate_plan(plan):
             ref = e.get(end)
             if ref not in kinds_by_id:
                 problems.append(f"{e.get('id')!r}: {end} refers to unknown id {ref!r}")
-            elif kinds_by_id[ref] != "machine":
-                problems.append(f"{e.get('id')!r}: {end} must be a machine, {ref!r} is a {kinds_by_id[ref]}")
+            elif kinds_by_id[ref] not in CONNECTABLE:
+                problems.append(f"{e.get('id')!r}: {end} must be one of {sorted(CONNECTABLE)}, {ref!r} is a {kinds_by_id[ref]}")
         if e.get("from") is not None and e.get("from") == e.get("to"):
             problems.append(f"{e.get('id')!r}: from and to are the same entity")
 

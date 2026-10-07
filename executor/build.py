@@ -6,10 +6,10 @@ import time
 from pathlib import Path
 
 from executor.bridge import Bridge
-from executor.paths import built_with_path, class_path, recipe_path
+from executor.paths import built_with_path, class_path, item_path, recipe_path
 from executor.plan import load_plan, validate_plan
 
-KIND_ORDER = {"foundation": 0, "machine": 1, "belt": 2} 
+KIND_ORDER = {"foundation": 0, "machine": 1, "attachment": 1, "container": 1, "belt": 2}
 FOUNDATION_HALF = 4.0 
 FLOOR_CLEARANCE = 0.2 
 
@@ -66,11 +66,16 @@ def resolve(plan, origin, site_yaw):
             p["built_with"] = built_with
         if e["kind"] == "belt":
             p["from"], p["to"] = e["from"], e["to"]
+            for key in ("from_port", "to_port"):
+                if key in e:
+                    p[key] = e[key]
         else:
             p["pos"] = to_world(e["pos"], origin, site_yaw)
             p["yaw"] = (e["yaw"] + site_yaw) % 360
             if e["kind"] == "machine":
                 p["recipe"] = recipe_path(e["recipe"])
+            if e.get("fill"):
+                p["fill"] = {"item": item_path(e["fill"]["item"]), "amount": e["fill"]["amount"]}
         pieces.append(p)
     return pieces
 

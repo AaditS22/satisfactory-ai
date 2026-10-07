@@ -13,14 +13,14 @@ class IHttpRouter;
 struct FSatAIPortGeometry
 {
     FString Name;
-    FString Direction; 
+    FString Direction;
     FVector LocalPosCm;
-    FVector LocalFacing;  
+    FVector LocalFacing;
 };
 
 struct FSatAIClearanceBox
 {
-    FString Type; 
+    FString Type;
     FBox LocalBox;
 };
 
@@ -47,18 +47,21 @@ struct FSatAITrackedPiece
 struct FSatAIPiece
 {
     FString Id;
-    FString Kind;    
+    FString Kind;
     FString ClassPath;
-    FString BuiltWith; 
-    FString Recipe;  
-    FString From, To;  
+    FString BuiltWith;
+    FString Recipe;
+    FString From, To;
+    FString FromPort, ToPort;
+    FString FillItem;   
+    int32 FillAmount = 0;
     FTransform Transform;
 };
 
 struct FSatAIPortReport
 {
     FString Name;
-    FString Direction; 
+    FString Direction;
     bool bConnected = false;
     FString ConnectedTo;
 };
@@ -87,9 +90,11 @@ public:
         const FString& BuiltWithRecipePath = FString());
     bool SetMachineRecipe(AFGBuildable* Buildable, const FString& RecipePath, FString& OutError);
     void LogPorts(AFGBuildable* Buildable) const;
-    UFGFactoryConnectionComponent* FindFreePort(AFGBuildable* Buildable, bool bOutput) const;
+    UFGFactoryConnectionComponent* FindFreePort(AFGBuildable* Buildable, bool bOutput,
+        const FString& PortName = FString()) const;
     AFGBuildableConveyorBelt* ConnectWithBelt(AFGBuildable* From, AFGBuildable* To,
-        const FString& BeltClassPath, FString& OutError);
+        const FString& BeltClassPath, FString& OutError,
+        const FString& FromPort = FString(), const FString& ToPort = FString());
 
     FString HandlePing();
 

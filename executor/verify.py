@@ -1,6 +1,7 @@
 import sys
 
 from executor.bridge import Bridge
+from executor.plan import CONNECTABLE
 from executor.build import load_record, to_world
 
 POS_TOL = 0.01  
@@ -52,17 +53,20 @@ def check(plan, origin, site_yaw, report):
         ends = sorted(p["to"] for p in a["ports"] if p["connected"])
         if ends != sorted([e["from"], e["to"]]):
             problems.append(f"{e['id']}: connected to {ends or 'nothing'}, plan says {[e['from'], e['to']]}")
-        for machine, want_dir in ((e["from"], "out"), (e["to"], "in")):
+        for machine, want_dir, want_name in ((e["from"], "out", e.get("from_port")),
+                                             (e["to"], "in", e.get("to_port"))):
             m = actual.get(machine)
             if not m or not m["exists"]:
                 continue
             ports = [p for p in m["ports"] if p["to"] == e["id"]]
             if not ports or ports[0]["dir"] != want_dir:
                 problems.append(f"{e['id']}: should join {machine}'s {want_dir}put port")
+            elif want_name and ports[0]["name"] != want_name:
+                problems.append(f"{e['id']}: joins {machine}.{ports[0]['name']}, plan says {want_name}")
 
     for eid, e in entities.items():
         a = actual.get(eid)
-        if e["kind"] != "machine" or not a or not a["exists"]:
+        if e["kind"] not in CONNECTABLE or not a or not a["exists"]:
             continue
         got = sum(1 for p in a["ports"] if p["connected"])
         want = links_per_machine.get(eid, 0)
