@@ -65,5 +65,19 @@ class Bridge:
     def verify(self, build_id):
         return self.request("GET", "/verify?build_id=" + urllib.parse.quote(build_id))
 
+    def resource_nodes(self):
+        return self.request("GET", "/resource_nodes")["nodes"]
+
+    def teleport(self, pos, freeze=False):
+        r = self.request("POST", "/teleport", {"pos": list(pos), "freeze": freeze})
+        return r["pos"]
+
+    def streaming_complete(self):
+        return self.request("GET", "/streaming_status")["complete"]
+
+    def sample_terrain(self, origin, nx, ny, step=8.0, z_top=1500.0, z_bottom=-500.0):
+        body = {"origin": list(origin), "nx": nx, "ny": ny, "step": step, "z_top": z_top, "z_bottom": z_bottom}
+        return self.request("POST", "/sample_terrain", body)
+
 if __name__ == "__main__":
     print(Bridge().ping())

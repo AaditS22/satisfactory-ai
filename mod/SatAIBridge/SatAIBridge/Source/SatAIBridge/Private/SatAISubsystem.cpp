@@ -24,6 +24,14 @@
 #include "InstanceData.h"
 #include "Engine/StaticMesh.h"
 #include "FGClearanceInterface.h"
+#include "Resources/FGResourceNode.h"
+#include "Resources/FGResourceDescriptor.h"
+#include "Resources/FGItemDescriptor.h"
+#include "FGWaterVolume.h"
+#include "InstancedFoliageActor.h"
+#include "WorldPartition/WorldPartitionSubsystem.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
 
@@ -126,6 +134,90 @@ namespace
         const FVector M = Cm / CmPerMetre;
         return { MakeShared<FJsonValueNumber>(M.X), MakeShared<FJsonValueNumber>(M.Y), MakeShared<FJsonValueNumber>(M.Z) };
     }
+
+    const TCHAR* NodeTypeName(EResourceNodeType NodeType)
+    {
+        switch (NodeType)
+        {
+        case EResourceNodeType::Node:              return TEXT("node");
+        case EResourceNodeType::FrackingSatellite: return TEXT("fracking_satellite");
+        case EResourceNodeType::FrackingCore:      return TEXT("fracking_core");
+        case EResourceNodeType::Geyser:            return TEXT("geyser");
+        case EResourceNodeType::Deposit:           return TEXT("deposit");
+        default:                                   return TEXT("invalid");
+        }
+    }
+
+    const TCHAR* PurityName(EResourcePurity Purity)
+    {
+        switch (Purity)
+        {
+        case RP_Inpure: return TEXT("impure"); 
+        case RP_Normal: return TEXT("normal");
+        case RP_Pure:   return TEXT("pure");
+        default:        return TEXT("unknown");
+        }
+    }
+
+    const TCHAR* FormName(EResourceForm Form)
+    {
+        switch (Form)
+        {
+        case EResourceForm::RF_SOLID:  return TEXT("solid");
+        case EResourceForm::RF_LIQUID: return TEXT("liquid");
+        case EResourceForm::RF_GAS:    return TEXT("gas");
+        default:                       return TEXT("invalid");
+        }
+    }
+
+    TSharedRef<FJsonObject> ResourceNodeToJson(const AFGResourceNodeBase& Node)
+    {
+        TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
+        Json->SetStringField(TEXT("id"), Node.GetName());
+
+        const TSubclassOf<UFGResourceDescriptor> Resource = Node.GetResourceClass();
+        Json->SetStringField(TEXT("resource"), Resource ? Resource->GetName() : TEXT("none"));
+        Json->SetStringField(TEXT("type"), NodeTypeName(Node.GetResourceNodeType()));
+        Json->SetStringField(TEXT("form"), FormName(Node.GetResourceForm()));
+        Json->SetBoolField(TEXT("occupied"), Node.IsOccupied());
+
+        if (const AFGResourceNode* WithPurity = Cast<AFGResourceNode>(&Node))
+        {
+            Json->SetStringField(TEXT("purity"), PurityName(WithPurity->GetResourcePurity()));
+        }
+        else
+        {
+            Json->SetField(TEXT("purity"), MakeShared<FJsonValueNull>());
+        }
+
+        Json->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(Node.GetActorLocation()));
+        return Json;
+    }
+
+    struct FSatAIWaterTester
+    {
+        TArray<TPair<FBox, AFGWaterVolume*>> Volumes;
+
+        explicit FSatAIWaterTester(UWorld* World)
+        {
+            for (TActorIterator<AFGWaterVolume> It(World); It; ++It)
+            {
+                Volumes.Add({ It->GetComponentsBoundingBox(/*bNonColliding=*/ true), *It });
+            }
+        }
+
+        bool IsWater(const FVector& PointCm) const
+        {
+            for (const TPair<FBox, AFGWaterVolume*>& Entry : Volumes)
+            {
+                if (Entry.Key.IsInsideOrOn(PointCm) && Entry.Value->EncompassesPoint(PointCm))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
 
     bool ParsePiece(const FJsonObject& Json, FSatAIPiece& Out, FString& OutError)
     {
@@ -528,6 +620,176 @@ void ASatAISubsystem::StartHttpServer()
             }
             Out->SetStringField(TEXT("build_id"), *BuildId);
             Out->SetArrayField(TEXT("pieces"), PieceArray);
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/resource_nodes"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            TArray<TSharedPtr<FJsonValue>> NodeList;
+            for (TActorIterator<AFGResourceNodeBase> It(Self.GetWorld()); It; ++It)
+            {
+                NodeList.Add(MakeShared<FJsonValueObject>(ResourceNodeToJson(**It)));
+            }
+            Out->SetArrayField(TEXT("nodes"), NodeList);
+            Out->SetNumberField(TEXT("count"), NodeList.Num());
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/teleport"), EHttpServerRequestVerbs::VERB_POST, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            const TSharedPtr<FJsonObject> Body = ParseJsonBody(Request, OutError);
+            FVector DestCm;
+            if (!Body || !ReadVec3Metres(*Body, TEXT("pos"), DestCm, OutError))
+            {
+                return false;
+            }
+            bool bFreeze = false;
+            Body->TryGetBoolField(TEXT("freeze"), bFreeze);
+
+            APawn* Pawn = UGameplayStatics::GetPlayerPawn(Self.GetWorld(), 0);
+            if (!Pawn)
+            {
+                OutError = TEXT("no player pawn");
+                return false;
+            }
+
+            bool bFrozen = false;
+            if (ACharacter* Character = Cast<ACharacter>(Pawn))
+            {
+                UCharacterMovementComponent* Movement = Character->GetCharacterMovement();
+                Movement->StopMovementImmediately();
+                if (bFreeze)
+                {
+                    Movement->DisableMovement();
+                }
+                else if (Movement->MovementMode == MOVE_None)
+                {
+                    Movement->SetMovementMode(MOVE_Falling);
+                }
+                bFrozen = Movement->MovementMode == MOVE_None;
+            }
+
+            if (!Pawn->TeleportTo(DestCm, Pawn->GetActorRotation()))
+            {
+                OutError = TEXT("teleport blocked");
+                return false;
+            }
+            Out->SetArrayField(TEXT("pos"), Vec3ToJsonMetres(Pawn->GetActorLocation()));
+            Out->SetBoolField(TEXT("frozen"), bFrozen);
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/sample_terrain"), EHttpServerRequestVerbs::VERB_POST, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            const TSharedPtr<FJsonObject> Body = ParseJsonBody(Request, OutError);
+            if (!Body)
+            {
+                return false;
+            }
+            const TArray<TSharedPtr<FJsonValue>>* OriginArr = nullptr;
+            int32 Nx = 0;
+            int32 Ny = 0;
+            if (!Body->TryGetArrayField(TEXT("origin"), OriginArr) || OriginArr->Num() != 2
+                || !Body->TryGetNumberField(TEXT("nx"), Nx) || !Body->TryGetNumberField(TEXT("ny"), Ny))
+            {
+                OutError = TEXT("needs origin [x, y], nx, ny (optional: step, z_top, z_bottom; metres)");
+                return false;
+            }
+            double StepM = 8.0;
+            double TopM = 1500.0;
+            double BottomM = -500.0;
+            Body->TryGetNumberField(TEXT("step"), StepM);
+            Body->TryGetNumberField(TEXT("z_top"), TopM);
+            Body->TryGetNumberField(TEXT("z_bottom"), BottomM);
+
+            constexpr int32 MaxSamples = 65536;
+            if (Nx < 1 || Ny < 1 || static_cast<int64>(Nx) * Ny > MaxSamples || StepM == 0.0 || TopM <= BottomM)
+            {
+                OutError = FString::Printf(TEXT("need nx, ny >= 1, nx*ny <= %d, step != 0, z_top > z_bottom"), MaxSamples);
+                return false;
+            }
+
+            UWorld* World = Self.GetWorld();
+            FCollisionQueryParams Params(SCENE_QUERY_STAT(SatAITerrain), /*bTraceComplex=*/ false);
+            if (APawn* Pawn = UGameplayStatics::GetPlayerPawn(World, 0))
+            {
+                Params.AddIgnoredActor(Pawn);
+            }
+            const FSatAIWaterTester Water(World);
+
+            const double OriginXCm = (*OriginArr)[0]->AsNumber() * CmPerMetre;
+            const double OriginYCm = (*OriginArr)[1]->AsNumber() * CmPerMetre;
+            const double StepCm = StepM * CmPerMetre;
+
+            TArray<TSharedPtr<FJsonValue>> Heights, HitIds, WaterFlags;
+            TArray<FString> ClassNames;
+            TMap<FString, int32> ClassIndex;
+            int32 Missed = 0;
+
+            for (int32 Iy = 0; Iy < Ny; ++Iy)
+            {
+                for (int32 Ix = 0; Ix < Nx; ++Ix)
+                {
+                    const double XCm = OriginXCm + Ix * StepCm;
+                    const double YCm = OriginYCm + Iy * StepCm;
+                    const FVector Start(XCm, YCm, TopM* CmPerMetre);
+                    const FVector End(XCm, YCm, BottomM* CmPerMetre);
+                    FHitResult Hit;
+                    bool bHit = false;
+                    for (int32 Attempt = 0; Attempt < 4; ++Attempt)
+                    {
+                        bHit = World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
+                        AInstancedFoliageActor* Foliage = bHit ? Cast<AInstancedFoliageActor>(Hit.GetActor()) : nullptr;
+                        if (!Foliage)
+                        {
+                            break;
+                        }
+                        Params.AddIgnoredActor(Foliage);
+                        bHit = false;
+                    }
+                    if (!bHit)
+                    {
+                        Heights.Add(MakeShared<FJsonValueNull>());
+                        HitIds.Add(MakeShared<FJsonValueNumber>(-1));
+                        WaterFlags.Add(MakeShared<FJsonValueBoolean>(false));
+                        ++Missed;
+                        continue;
+                    }
+
+                    const AActor* HitActor = Hit.GetActor();
+                    const FString ClassName = HitActor ? HitActor->GetClass()->GetName() : TEXT("none");
+                    const int32* Known = ClassIndex.Find(ClassName);
+                    const int32 HitId = Known ? *Known : ClassIndex.Add(ClassName, ClassNames.Add(ClassName));
+
+                    Heights.Add(MakeShared<FJsonValueNumber>(Hit.ImpactPoint.Z / CmPerMetre));
+                    HitIds.Add(MakeShared<FJsonValueNumber>(HitId));
+                    WaterFlags.Add(MakeShared<FJsonValueBoolean>(Water.IsWater(Hit.ImpactPoint + FVector(0, 0, 50))));
+                }
+            }
+
+            TArray<TSharedPtr<FJsonValue>> ClassList;
+            for (const FString& Name : ClassNames)
+            {
+                ClassList.Add(MakeShared<FJsonValueString>(Name));
+            }
+            Out->SetArrayField(TEXT("z"), Heights);
+            Out->SetArrayField(TEXT("hit"), HitIds);
+            Out->SetArrayField(TEXT("water"), WaterFlags);
+            Out->SetArrayField(TEXT("classes"), ClassList);
+            Out->SetNumberField(TEXT("missed"), Missed);
+            return true;
+        }));
+
+    AddRoute(BindJsonRoute(*HttpRouter, TEXT("/streaming_status"), EHttpServerRequestVerbs::VERB_GET, WeakThis,
+        [](ASatAISubsystem& Self, const FHttpServerRequest& Request, TSharedRef<FJsonObject>& Out, FString& OutError)
+        {
+            UWorld* World = Self.GetWorld();
+            const UWorldPartitionSubsystem* Partition = World->GetSubsystem<UWorldPartitionSubsystem>();
+            Out->SetBoolField(TEXT("world_partition"), World->GetWorldPartition() != nullptr);
+            Out->SetBoolField(TEXT("complete"), Partition ? Partition->IsStreamingCompleted() : true);
             return true;
         }));
 
