@@ -206,11 +206,23 @@ namespace
             }
         }
 
-        bool IsWater(const FVector& PointCm) const
+        bool IsUnderWater(const FVector& GroundCm) const
         {
             for (const TPair<FBox, AFGWaterVolume*>& Entry : Volumes)
             {
-                if (Entry.Key.IsInsideOrOn(PointCm) && Entry.Value->EncompassesPoint(PointCm))
+                const FBox& Box = Entry.Key;
+                if (GroundCm.X < Box.Min.X || GroundCm.X > Box.Max.X ||
+                    GroundCm.Y < Box.Min.Y || GroundCm.Y > Box.Max.Y)
+                {
+                    continue; 
+                }
+                if (GroundCm.Z > Box.Max.Z)
+                {
+                    continue;  
+                }
+                const FVector JustAboveGround = GroundCm + FVector(0, 0, 50);
+                const FVector JustBelowSurface(GroundCm.X, GroundCm.Y, Box.Max.Z - 50);
+                if (Entry.Value->EncompassesPoint(JustAboveGround) || Entry.Value->EncompassesPoint(JustBelowSurface))
                 {
                     return true;
                 }
@@ -766,7 +778,7 @@ void ASatAISubsystem::StartHttpServer()
 
                     Heights.Add(MakeShared<FJsonValueNumber>(Hit.ImpactPoint.Z / CmPerMetre));
                     HitIds.Add(MakeShared<FJsonValueNumber>(HitId));
-                    WaterFlags.Add(MakeShared<FJsonValueBoolean>(Water.IsWater(Hit.ImpactPoint + FVector(0, 0, 50))));
+                    WaterFlags.Add(MakeShared<FJsonValueBoolean>(Water.IsUnderWater(Hit.ImpactPoint)));
                 }
             }
 

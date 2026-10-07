@@ -14,7 +14,7 @@ CHUNK = STEP * CELLS
 HOVER = 50.0   
 SETTLE = 0.5     
 STREAM_TIMEOUT = 20.0
-
+PAUSE_AFTER = 1.0 
 
 @dataclass
 class Terrain:
@@ -45,15 +45,14 @@ class TerrainCache:
     def has(self, i, j):
         return self.path(i, j).exists()
 
-    def ensure(self, bridge, x_min, y_min, x_max, y_max, z_guess=0.0, log=print):
-        """Sample every chunk touching the box that isn't cached yet."""
+    def ensure(self, bridge, x_min, y_min, x_max, y_max, z_guess=0.0, log=print, return_home=True):
         todo = [c for c in self.chunks_for(x_min, y_min, x_max, y_max) if not self.has(*c)]
         if not todo:
             return 0
         todo.sort(key=lambda c: (c[0], c[1] if c[0] % 2 == 0 else -c[1]))
 
-        home = bridge.player()["pos"]
-        log(f"sampling {len(todo)} chunk(s); you'll be teleported and frozen, then brought home")
+        home = bridge.player()["pos"] if return_home else None
+        log(f"sampling {len(todo)} chunk(s); you'll be teleported and frozen" + (", then brought home" if return_home else ""))
         try:
             for n, (i, j) in enumerate(todo, 1):
                 t = time.monotonic()
@@ -61,10 +60,12 @@ class TerrainCache:
                 bridge.teleport((cx, cy, z_guess + HOVER), freeze=True)
                 loaded = self._wait_for_streaming(bridge)
                 self._sample_chunk(bridge, i, j)
+                time.sleep(PAUSE_AFTER) 
                 log(f"  chunk ({i}, {j}) {n}/{len(todo)}: {time.monotonic() - t:.1f} s"
                     + ("" if loaded else "  (WARNING: streaming did not report complete)"))
         finally:
-            bridge.teleport((home[0], home[1], home[2] + 1), freeze=False)
+            if return_home:
+                bridge.teleport((home[0], home[1], home[2] + 1), freeze=False)
         return len(todo)
 
     @staticmethod

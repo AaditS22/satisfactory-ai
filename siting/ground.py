@@ -23,8 +23,10 @@ def class_kind(name):
         return CLIFF
     if name.startswith("BP_") and any(w in name for w in PLANT_WORDS):
         return LAND
-    if name == "StaticMeshActor" or name.startswith("BP_Destructible"):
-        return ROCK
+    if name.startswith(("BP_Crystal", "BP_WAT")):
+        return LAND
+    if name == "StaticMeshActor" or name.startswith(("BP_Destructible", "BP_ResourceDeposit", "BP_DebrisActor")):
+        return ROCK 
     return BLOCKED
 
 @dataclass
