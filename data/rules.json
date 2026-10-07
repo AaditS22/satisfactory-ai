@@ -1,0 +1,41 @@
+{
+  "schema": "satai.rules",
+  "version": 0,
+  "grid": {
+    "cell_m": 1.0,
+    "foundation_m": 8.0,
+    "yaw_step_deg": 90
+  },
+  "belt_height_m": 1.0,
+  "foundations": {
+    "Build_Foundation_8x1_01_C": {"thickness_m": 1.0},
+    "Build_Foundation_8x2_01_C": {"thickness_m": 2.0},
+    "Build_Foundation_8x4_01_C": {"thickness_m": 4.0}
+  },
+  "snap": {
+    "Build_SmelterMk1_C": [0.5, 0.0],
+    "Build_ConstructorMk1_C": [0.5, 0.0],
+    "Build_AssemblerMk1_C": [0.5, 0.5],
+    "Build_ManufacturerMk1_C": [0.5, 0.0],
+    "Build_FoundryMk1_C": [0.5, 0.5],
+    "Build_StorageContainerMk1_C": [0.5, 0.5],
+    "Build_ConveyorAttachmentSplitter_C": [0.5, 0.5],
+    "Build_ConveyorAttachmentMerger_C": [0.5, 0.5],
+    "Build_ConveyorLiftMk1_C": [0.5, 0.5]
+  },
+  "on_belt": [
+    "Build_ConveyorAttachmentSplitter_C",
+    "Build_ConveyorAttachmentMerger_C",
+    "Build_ConveyorLiftMk1_C"
+  ],
+  "lift": {
+    "min_height_m": 4.0,
+    "max_height_m": 48.0,
+    "step_m": 1.0
+  },
+  "node_placed": [
+    "Build_MinerMk1_C",
+    "Build_MinerMk2_C",
+    "Build_MinerMk3_C"
+  ]
+}
