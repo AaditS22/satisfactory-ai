@@ -55,7 +55,7 @@ def make_block(recipe_id, n, clock):
             "item": item,
             "rate": recipe["inputs"][item] * n * clock,
             "row": row,
-            "ends": ((-1, row), (width, row)),
+            "end": (-1, row),
         })
 
     # mergers to put at each output port
@@ -71,7 +71,7 @@ def make_block(recipe_id, n, clock):
         "item": out_item,
         "rate": recipe["outputs"][out_item] * n * clock,
         "row": out_row,
-        "ends": ((-1, out_row), (width, out_row)),
+        "end": (width, out_row),
     }
 
     return {"recipe": recipe_id, "machine": machine, "n": n, "clock": clock,

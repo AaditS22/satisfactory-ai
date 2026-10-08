@@ -34,6 +34,7 @@
 #include "WorldPartition/WorldPartitionSubsystem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "FGDismantleInterface.h"
 
 TWeakObjectPtr<ASatAISubsystem> ASatAISubsystem::Instance;
 
@@ -1134,7 +1135,15 @@ int32 ASatAISubsystem::ClearBuild(const FString& BuildId)
         const FSatAITrackedPiece& Piece = Pieces[i];
         if (AActor* Actor = Piece.Actor.Get())
         {
-            Actor->Destroy();
+            if (Actor->Implements<UFGDismantleInterface>())
+            {  
+                IFGDismantleInterface::Execute_PreUpgrade(Actor);
+                IFGDismantleInterface::Execute_Dismantle(Actor); 
+            }  
+            else
+            {
+                Actor->Destroy();
+            } 
             ++Removed;
             continue;
         }
