@@ -8,6 +8,7 @@ CATALOG = json.loads((DATA / "catalog.json").read_text(encoding="utf-8"))["build
 SNAP = json.loads((DATA / "rules.json").read_text(encoding="utf-8"))["snap"]
 
 def footprint(machine):
+    """Calculates the footprint of a machine based on decided snapping rules"""
     sx, sy = SNAP[machine]
     (x0, y0, _), (x1, y1, _) = CATALOG[machine]["clearance_min"], CATALOG[machine]["clearance_max"]
 
@@ -24,6 +25,7 @@ def footprint(machine):
     return (width_x, width_y, center_x, center_y)
 
 def make_block(recipe_id, n, clock):
+    """Creates a module for a single recipe outlining placements"""
     recipe = recipe_by_id[recipe_id]
     machine = recipe["machine"]
     mw, md, cx, cy = footprint(machine)
@@ -43,10 +45,12 @@ def make_block(recipe_id, n, clock):
     splitters = []
     inputs = [] 
     for j, item in enumerate(recipe["inputs"]):
-        port_x = in_ports[j]["pos"][0]
+        port = in_ports[j]
         row = (num_inputs - 1 - j) * 4 + 2
-        for x, y in centers:
-            splitters.append(((math.floor(x + port_x), row), item, in_ports[j]["name"]))
+        for m, (x, y) in enumerate(centers):
+            splitters.append({"cell": (math.floor(x + port["pos"][0]), row),
+                            "item": item, "port": port["name"],
+                            "input": j, "machine": m})
         inputs.append({
             "item": item,
             "rate": recipe["inputs"][item] * n * clock,
@@ -58,8 +62,8 @@ def make_block(recipe_id, n, clock):
     out_port = [p for p in ports if p["dir"] == "out"][0]
     out_row = depth - 3
     mergers = []
-    for x, y in centers:
-        mergers.append(((math.floor(x + out_port["pos"][0]), out_row), out_port["name"]))
+    for m, (x, y) in enumerate(centers):
+        mergers.append({"cell": (math.floor(x + out_port["pos"][0]), out_row), "port": out_port["name"], "machine": m})
 
     # output belt rate and position
     out_item = list(recipe["outputs"])[0]
