@@ -6,22 +6,24 @@ MERGER = "Build_ConveyorAttachmentMerger_C"
 
 def block_entities(block, prefix, x0, y0):
     """Defines entities following the set schema for building"""
+    yaw = block["rot"] * 90
+
     entities = []
     for m, (x, y) in enumerate(block["machines"]):
         entities.append({"id": f"{prefix}_m{m}", "kind": "machine", "class": block["machine"],
-                         "pos": [x0 + x, y0 + y, 0.0], "yaw": 0,
+                         "pos": [x0 + x, y0 + y, 0.0], "yaw": yaw,
                          "recipe": block["recipe"], "clock": block["clock"]})
 
     for s in block["splitters"]:
         c, r = s["cell"]
         entities.append({"id": f"{prefix}_s{s['input']}_{s['machine']}", 
-                         "kind": "attachment", "class": SPLITTER, "yaw": 0,
+                         "kind": "attachment", "class": SPLITTER, "yaw": yaw,
                          "pos" : [x0 + c + 0.5, y0 + r + 0.5, 1.0]})
 
     for m in block["mergers"]:
         c, r = m["cell"]
         entities.append({"id": f"{prefix}_g{m['machine']}", 
-                        "kind": "attachment", "class": MERGER, "yaw": 0,
+                        "kind": "attachment", "class": MERGER, "yaw": yaw,
                         "pos" : [x0 + c + 0.5, y0 + r + 0.5, 1.0]})    
     return entities
 

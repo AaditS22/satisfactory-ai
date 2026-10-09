@@ -2,6 +2,7 @@ import json
 import math
 from pathlib import Path
 from solver.gamedata import recipe_by_id
+import copy
 
 DATA = Path(__file__).parent.parent / "data"
 CATALOG = json.loads((DATA / "catalog.json").read_text(encoding="utf-8"))["buildings"]
@@ -77,4 +78,52 @@ def make_block(recipe_id, n, clock):
     return {"recipe": recipe_id, "machine": machine, "n": n, "clock": clock,
         "w": width, "d": depth, "machines": centers,
         "splitters": splitters, "mergers": mergers,
-        "inputs": inputs, "output": output} 
+        "inputs": inputs, "output": output, "rot": 0} 
+
+def rot_point(px, py, w, d):
+    """A point in a w x d block after turning the block 90 degrees"""
+
+    return (d - py, px)
+
+
+def rot_cell(c, r, d):
+    """A cell in a w x d block after turning the block 90 degrees"""
+
+    return (d - 1 - r, c)
+
+
+def rotate_block(block, k):
+    """A copy of the block turned k times by 90 degrees"""
+
+    b = copy.deepcopy(block)
+
+    for i in range(k % 4):
+        w = b["w"]
+        d = b["d"]
+        
+        machines = []
+        for x, y in b["machines"]:
+            machines.append(rot_point(x, y, w, d))
+        b["machines"] = machines
+
+        for splitter in b["splitters"]:
+            c, r = rot_cell(*splitter["cell"], d)
+            splitter["cell"] = (c, r)
+
+        for merger in b["mergers"]:
+            c, r = rot_cell(*merger["cell"], d)
+            merger["cell"] = (c, r)
+
+        for input in b["inputs"]:
+            c, r = rot_cell(*input["end"], d)
+            input["end"] = (c, r)
+
+        output = b["output"]
+        c, r = rot_cell(*output["end"], d)
+        output["end"] = (c, r)
+        
+        b["rot"] = (b["rot"] + 1) % 4
+        b["d"] = w
+        b["w"] = d
+    
+    return b
