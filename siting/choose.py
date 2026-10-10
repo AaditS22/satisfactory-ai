@@ -85,8 +85,8 @@ def best_by_path(candidates, nodes, demand, cache, k=1):
         found = sorted(found + [_path_score(s, nodes, demand, cache)])
     return found[:k]
 
-def search(target, rate, log=print):
-    machines, demand, _ = solve_lp(target, rate, alternates=set())
+def search(target, rate, alternates=frozenset(), log=print):
+    machines, demand, _ = solve_lp(target, rate, alternates=alternates)
     min_area = min_floor_area(machines)
     max_bonus = room_bonus(MAX_SIDE * MAX_SIDE * STEP * STEP, min_area)
     nodes = load_nodes()
