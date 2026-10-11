@@ -76,7 +76,7 @@ def rebuild(prev, end):
 
     return path[::-1]
 
-def route(kind, start, goal):
+def route(kind, start, goal, extra=None):
     """Cheapest belt from cell start to cell goal: (path, cost), or None if there is no way.
 
     A*: states (f, x, y, d), heuristic distance(cell, goal). path includes start and goal.
@@ -99,6 +99,9 @@ def route(kind, start, goal):
 
         for n, c in neighbours(kind, s, goal):
             ng = g[s] + c
+            if extra is not None:
+                ng += extra[n[:3]]
+                
             if ng < g.get(n, float("inf")):
                 g[n] = ng
                 prev[n] = s

@@ -15,6 +15,8 @@ PALETTE = ["#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#b07aa1", "#76b7b2", "#e
            "#8c564b", "#17becf", "#bcbd22", "#d45087", "#665191", "#bab0ac"]
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 BELT = "#1b1b1b"
+RAW_PALETTE = ["#5b3a1a", "#2f4f4f", "#6a6a6a", "#8b4513", "#36454f", "#4b0082"]
+FAIL = "#e00000"
 FOUNDATION = 8
 
 def recipe_colours(blocks):
@@ -81,13 +83,124 @@ def block_shapes(blk):
     arrows = [tuple(turn(a, k, w, d)) for a in arrows]
     return {"machines": machines, "belts": belts, "arrows": arrows}
 
+
+def item_name(item):
+    return items[item]["name"]
+
+def item_colours(env, colours):
+    """{item: colour}. A belt takes the colour of the block that makes its item; raw items get dark earthy colours."""
+    out = {}
+    for b in env.world.blocks:
+        out.setdefault(b["block"]["output"]["item"], colours[b["block"]["recipe"]][0])
+    for i, item in enumerate(sorted(env.entries)):
+        out.setdefault(item, RAW_PALETTE[i % len(RAW_PALETTE)])
+    return out
+
+def route_info(env, res):
+    """Everything the picture needs from a route_all result: segments per floor, lifts, crossings, junctions, totals."""
+    from layout.connect import chains
+    segs, lifts, used = [], [], {}
+    length = 0
+    for L, path in res["paths"].items():
+        item = L[0]
+        run = [path[0]]
+        for a, b in zip(path, path[1:]):
+            if a[0] != b[0]:
+                lifts.append((item, a, b))
+                if len(run) > 1:
+                    segs.append((item, run))
+                run = [b]
+            else:
+                run.append(b)
+                length += 1
+        if len(run) > 1:
+            segs.append((item, run))
+        for i in range(1, len(path) - 1):
+            p, c, n = path[i - 1], path[i], path[i + 1]
+            if p[0] == c[0] == n[0] and (p[1] == n[1] or p[2] == n[2]):
+                used.setdefault(c, set()).add(L)
+    crossings = [c for c, ls in used.items() if len(ls) > 1]
+    junctions = []
+    for item, ch in chains(env).items():
+        cells, k = ch["cells"], ch["n_prod"]
+        for i, c in enumerate(cells):
+            if 1 <= i < k:
+                junctions.append((item, c, "M"))
+            elif k <= i < len(cells) - 1:
+                junctions.append((item, c, "S"))
+    return {"segs": segs, "lifts": lifts, "crossings": crossings, "junctions": junctions,
+            "length": length, "n_lifts": len(lifts)}
+
+def route_summary(res, info):
+    """One line of routing numbers for the title and the console."""
+    n_ok, n_bad = len(res["paths"]), len(res["failed"])
+    rounds = f"{res['rounds']} round{'s' if res['rounds'] != 1 else ''}"
+    line = (f"belts: {n_ok}/{n_ok + n_bad} links routed in {rounds}  ·  {info['length']} m of belt  ·  "
+            f"{info['n_lifts']} lift{'s' if info['n_lifts'] != 1 else ''}  ·  "
+            f"{len(info['crossings'])} crossing{'s' if len(info['crossings']) != 1 else ''}  ·  cost {res['cost']}")
+    if n_bad:
+        names = ", ".join(sorted({item_name(L[0]) for L in res["failed"]}))
+        line += f"\nFAILED: {n_bad} link{'s' if n_bad != 1 else ''} could not be routed ({names})"
+    return line
+
+def _draw_routes(ax, f, res, info, icol):
+    for item, run in info["segs"]:
+        if run[0][0] != f:
+            continue
+        col = icol[item]
+        xs = [c[1] + 0.5 for c in run]
+        ys = [c[2] + 0.5 for c in run]
+        ax.plot(xs, ys, color="white", lw=4.2, solid_capstyle="round", solid_joinstyle="round", zorder=10)
+        ax.plot(xs, ys, color=col, lw=2.4, solid_capstyle="round", solid_joinstyle="round", zorder=11)
+        n = len(run)
+        marks = sorted(set(list(range(min(4, n - 1), n - 1, 10)) + [n - 2]))
+        for i in marks:
+            a, b = run[i], run[i + 1]
+            ax.add_patch(FancyArrowPatch((a[1] + 0.5, a[2] + 0.5), (b[1] + 0.5, b[2] + 0.5), arrowstyle="-|>",
+                                         mutation_scale=11, color=col, lw=0, zorder=12))
+    for f0, x, y in info["crossings"]:
+        if f0 == f:
+            ax.plot(x + 0.5, y + 0.5, "o", ms=7, mfc="white", mec="black", mew=1.2, zorder=13)
+            ax.plot(x + 0.5, y + 0.5, "o", ms=2.2, color="black", zorder=14)
+    for item, a, b in info["lifts"]:
+        col = icol[item]
+        for here, other in ((a, b), (b, a)):
+            if here[0] != f:
+                continue
+            up = other[0] > here[0]
+            ax.plot(here[1] + 0.5, here[2] + 0.5, "^" if up else "v", ms=10, color=col, mec="black", mew=1.0, zorder=15)
+            word = "to" if here is a else "from"
+            ax.annotate(f"{word} F{other[0]}", (here[1] + 0.5, here[2] + 0.5), xytext=(6, 4), textcoords="offset points",
+                        fontsize=6.5, fontweight="bold", color=col, zorder=15,
+                        bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.85))
+        lo, hi = min(a[0], b[0]), max(a[0], b[0])
+        if lo < f < hi:
+            ax.plot(a[1] + 0.5, a[2] + 0.5, "D", ms=7, mfc="white", mec=col, mew=1.8, zorder=15)
+            ax.annotate(f"lift F{a[0]}→F{b[0]} passes", (a[1] + 0.5, a[2] + 0.5), xytext=(6, 4), textcoords="offset points",
+                        fontsize=6, color=col, zorder=15, bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.85))
+    for item, (f0, x, y), kind in info["junctions"]:
+        if f0 == f:
+            ax.text(x + 0.5, y + 0.5, kind, ha="center", va="center", fontsize=6, fontweight="bold", color="white",
+                    zorder=16, bbox=dict(boxstyle="square,pad=0.18", fc=icol[item], ec="black", lw=0.8))
+    for item, s, g, rate in res["failed"]:
+        for c, other in ((s, g), (g, s)):
+            if c[0] != f:
+                continue
+            ax.plot(c[1] + 0.5, c[2] + 0.5, "X", ms=13, color=FAIL, mec="black", mew=0.8, zorder=17)
+            msg = f"FAILED {item_name(item)}" + ("" if other[0] == f else f" (other end on F{other[0]})")
+            ax.annotate(msg, (c[1] + 0.5, c[2] + 0.5), xytext=(7, -10), textcoords="offset points", fontsize=7,
+                        fontweight="bold", color=FAIL, zorder=17,
+                        bbox=dict(boxstyle="round,pad=0.2", fc="white", ec=FAIL, lw=1.0))
+        if s[0] == f and g[0] == f:
+            ax.plot([s[1] + 0.5, g[1] + 0.5], [s[2] + 0.5, g[2] + 0.5], ls=(0, (4, 3)), color=FAIL, lw=1.6, zorder=17)
+
 def _inward(x, y, X, Y):
     """Text offset (points) that points from an edge cell into the site, so labels stay inside."""
     dx = -7 if x == X - 1 else 7
     dy = -6 if y == Y - 1 else 5
     return dx, dy
 
-def _draw_floor(ax, env, f, colours):
+def _draw_floor(ax, env, f, colours, res=None, info=None, icol=None):
     F, X, Y = env.world.owner.shape
     ax.set_xticks(range(0, X + 1, FOUNDATION))
     ax.set_yticks(range(0, Y + 1, FOUNDATION))
@@ -132,16 +245,26 @@ def _draw_floor(ax, env, f, colours):
         ax.annotate("OUT", (ox + 0.5, oy + 0.5), xytext=_inward(ox, oy, X, Y), textcoords="offset points",
                     ha="right" if ox == X - 1 else "left", va="top" if oy == Y - 1 else "bottom", fontsize=7.5, color="#a01c1c", fontweight="bold", zorder=9)
 
+    if res is not None:
+        _draw_routes(ax, f, res, info, icol)
+
     ax.set_xlim(-2, X + 2)
     ax.set_ylim(-2, Y + 2)
     ax.set_aspect("equal")
     ax.set_title(f"floor {f}", fontsize=11)
     ax.tick_params(labelsize=7)
 
-def draw(env, path, title=None):
-    """Save a PNG of env's current layout (any time: mid-episode, finished or failed)."""
+def draw(env, path, title=None, routes=None):
+    """Save a PNG of env's current layout (any time: mid-episode, finished or failed).
+
+    routes: a route_all(env) result to draw the belts between blocks, or None for blocks only.
+    """
     F, X, Y = env.world.owner.shape
     colours = recipe_colours(env.world.blocks)
+    info = icol = None
+    if routes is not None:
+        info = route_info(env, routes)
+        icol = item_colours(env, colours)
 
     aspect = X / Y
     if aspect >= 1.3:
@@ -152,19 +275,28 @@ def draw(env, path, title=None):
         pw, ph = 6.5 * aspect, 6.5
     width = max(pw * ncols + 0.6, 10.0)
     legend_cols = max(1, int(width // 3.4))
-    n_items = len(colours) + 1
+    n_items = len(colours) + 1 + (len(icol) + 5 if routes is not None else 0)
     legend_rows = (n_items + legend_cols - 1) // legend_cols
     height = ph * nrows + 1.0 + 0.28 * legend_rows
     fig, axes = plt.subplots(nrows, ncols, figsize=(width, height), squeeze=False)
     for f in range(F):
-        _draw_floor(axes.flat[f], env, f, colours)
+        _draw_floor(axes.flat[f], env, f, colours, routes, info, icol)
 
     totals = {}
     for b in env.world.blocks:
         totals[b["block"]["recipe"]] = totals.get(b["block"]["recipe"], 0) + b["block"]["n"]
     handles = [Patch(fc=col, ec=col, label=f"{letter}: {recipe_label(r)} ({totals[r]})")
                for r, (col, letter) in colours.items()]
-    handles.append(Line2D([], [], color=BELT, lw=2.0, label="belt (arrow = flow direction)"))
+    handles.append(Line2D([], [], color=BELT, lw=2.0, label="belt inside a block (arrow = flow)"))
+    if routes is not None:
+        for item, col in sorted(icol.items(), key=lambda kv: item_name(kv[0])):
+            handles.append(Line2D([], [], color=col, lw=2.6, label=f"belt carrying {item_name(item)}"))
+        handles.append(Line2D([], [], ls="none", marker="o", ms=7, mfc="white", mec="black", label="crossing (belt bridges over)"))
+        handles.append(Line2D([], [], ls="none", marker="^", ms=9, mfc="#999999", mec="black", label="lift (label = other floor)"))
+        handles.append(Line2D([], [], ls="none", marker="D", ms=7, mfc="white", mec="#999999", mew=1.8, label="lift passing through this floor"))
+        handles.append(Line2D([], [], ls="none", marker="s", ms=8, mfc="#999999", mec="black", label="S = splitter, M = merger"))
+        handles.append(Line2D([], [], ls="none", marker="o", ms=5, mfc="white", mec=BELT, label="block end cell"))
+        handles.append(Line2D([], [], ls="none", marker="X", ms=10, mfc=FAIL, mec="black", label="failed link (both ends)"))
     fig.legend(handles=handles, loc="lower center", ncol=min(legend_cols, len(handles)), fontsize=8, frameon=False)
 
     if title is None:
@@ -174,9 +306,11 @@ def draw(env, path, title=None):
         unplaced = f", {left} machine{'s' if left != 1 else ''} unplaced" if left else ""
         title = (f"{items[graph['target']]['name']} at {graph['rate']}/min\n"
                  f"site {X}×{Y} m, {F} floors  ·  {len(env.world.blocks)} blocks, {state}{unplaced}")
+        if routes is not None:
+            title += "\n" + route_summary(routes, info)
     fig.suptitle(title, fontsize=11)
     bottom = (0.15 + 0.28 * legend_rows) / height
-    top = 1 - 0.75 / height
+    top = 1 - (0.75 + (0.45 if routes is not None else 0)) / height
     fig.tight_layout(rect=(0, bottom, 1, top))
     fig.savefig(path, dpi=130)
     plt.close(fig)
@@ -201,9 +335,17 @@ def main():
     parser = argparse.ArgumentParser(description="Play one random-agent episode and save a picture of it.")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", default="layout.png")
+    parser.add_argument("--no-routes", action="store_true", help="draw blocks only, skip belt routing")
     args = parser.parse_args()
     env = random_episode(args.seed)
-    draw(env, args.out)
+    routes = None
+    if env.done and not env.failed and not args.no_routes:
+        from layout.wire import route_all
+        routes = route_all(env)
+        print(route_summary(routes, route_info(env, routes)))
+    elif env.failed:
+        print("episode failed (no room for every machine), so there is nothing to route")
+    draw(env, args.out, routes=routes)
     print(f"saved {args.out}")
 
 
