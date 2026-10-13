@@ -1,0 +1,26 @@
+{
+ "task": {
+  "target": "Desc_IronPlate_C",
+  "rate": 30,
+  "width": 34,
+  "depth": 48,
+  "floors": 1,
+  "side": 0
+ },
+ "plan": [
+  [
+   2,
+   0,
+   0,
+   2,
+   2
+  ],
+  [
+   2,
+   0,
+   0,
+   14,
+   17
+  ]
+ ]
+}

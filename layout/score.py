@@ -115,7 +115,7 @@ def placed_fraction(env):
 
     return placed / needed
  
-def score_episode(env):
+def score_episode(env, routes=None):
     """Gets the final score for a finished episode"""
     if not env.done:
         raise ValueError("Not finished yet")
@@ -124,7 +124,9 @@ def score_episode(env):
         p = placed_fraction(env)
         return (-2 + p, {"placed": p})
 
-    routes = route_all(env)
+    if routes is None:
+        routes = route_all(env)
+        
     terms = measure(env, routes, flow(env, routes)) 
     terms["placed"] = 1.0
     terms.update(parts(terms))
