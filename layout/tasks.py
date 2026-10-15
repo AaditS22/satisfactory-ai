@@ -116,9 +116,11 @@ def min_sides(recipes):
 
     return (round_up(long_side), round_up(short_side))
 
-def random_task(rng):
+def random_task(rng, target=None):
     """Generates a random task for training process"""
-    options = targets()
+    options = [target]
+    if target is None:
+        options = targets()
 
     while True:
         target = options[rng.integers(len(options))]
