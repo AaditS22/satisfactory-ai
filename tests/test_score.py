@@ -72,7 +72,7 @@ def test_measure_plate():
     env = plate_env(3)
     routes = route_all(env)
     out = measure(env, routes, flow(env, routes))
-    assert out == {"links": 5, "routed": 1.0, "fraction": 1.0, "passed": True, "length": 64,
+    assert out == {"links": 5, "edges": 3, "routed": 1.0, "fraction": 1.0, "passed": True, "length": 64,
         "lifts": 4, "crossings": 0, "bbox": 560, "used": 560, "floors": 3}
 
 
@@ -84,7 +84,7 @@ def test_measure_failed_link():
     del paths[ore]
     broken = {"paths": paths, "failed": [ore]}
     out = measure(env, broken, flow(env, broken))
-    assert out["links"] == 5
+    assert out["links"] == 5 and out["edges"] == 3
     assert abs(out["routed"] - 0.8) < 1e-9
     assert out["fraction"] == 0 and out["passed"] is False
     assert out["length"] == 55 and out["lifts"] == 4
@@ -125,7 +125,7 @@ def test_random_vs_view():
     assert checked >= 4
 
 
-PLATE_TERMS = {"links": 5, "routed": 1.0, "fraction": 1.0, "passed": True, "length": 64,
+PLATE_TERMS = {"links": 5, "edges": 3, "routed": 1.0, "fraction": 1.0, "passed": True, "length": 64,
     "lifts": 4, "crossings": 0, "bbox": 560, "used": 560, "floors": 3}
 
 
@@ -142,26 +142,53 @@ def test_constants():
 def test_parts_plate():
     p = S.parts(dict(PLATE_TERMS))
     assert set(p) == set(S.WEIGHTS)
-    want = {"p_belt": 0.4, "p_lifts": 0.8, "p_crossings": 0.0, "p_sprawl": 0.0, "p_floors": 1.0}
+    want = {"p_belt": 2 / 3, "p_lifts": 4 / 3, "p_crossings": 0.0, "p_sprawl": 0.0, "p_floors": 1.0}
     assert all(close(p[k], want[k]) for k in want)
 
 
 def test_parts_other():
-    t = {"links": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2}
+    t = {"links": 8, "edges": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2}
     p = S.parts(t)
     want = {"p_belt": 2.0, "p_lifts": 0.25, "p_crossings": 3.0, "p_sprawl": 1.0, "p_floors": 0.5}
     assert all(close(p[k], want[k]) for k in want)
-    assert t == {"links": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2}
+    assert t == {"links": 8, "edges": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2}
+
+
+def test_parts_use_edges_not_links():
+    t = {"links": 8, "edges": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2}
+    split = dict(t, links=16)
+    assert S.parts(split) == S.parts(t)
+    half = dict(t, edges=4)
+    p = S.parts(half)
+    assert close(p["p_belt"], 4.0) and close(p["p_lifts"], 0.5) and close(p["p_crossings"], 6.0)
+    assert close(p["p_sprawl"], 1.0) and close(p["p_floors"], 0.5)
+
+
+def test_measure_edges_random():
+    from layout.view import random_episode
+    checked = 0
+    for seed in [0, 2, 3, 5]:
+        env = random_episode(seed)
+        if env.failed:
+            continue
+        routes = route_all(env)
+        out = measure(env, routes, flow(env, routes))
+        assert out["edges"] == len(env.graph["edges"])
+        assert out["edges"] <= out["links"]
+        if len(env.world.blocks) == len(env.graph["nodes"]):
+            assert out["edges"] == out["links"]
+        checked += 1
+    assert checked >= 3
 
 
 def test_penalty_and_score():
-    assert close(S.penalty(dict(PLATE_TERMS)), 0.41)
-    assert close(S.score(dict(PLATE_TERMS)), 1 / 1.41)
-    t = {"links": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2,
+    assert close(S.penalty(dict(PLATE_TERMS)), 7 / 12)
+    assert close(S.score(dict(PLATE_TERMS)), 12 / 19)
+    t = {"links": 8, "edges": 8, "length": 512, "lifts": 2, "crossings": 6, "bbox": 900, "used": 600, "floors": 2,
         "passed": True, "fraction": 1.0, "routed": 1.0}
     assert close(S.penalty(t), 0.7 + 0.0375 + 0.45 + 0.2 + 0.075)
     assert close(S.score(t), 1 / (1 + 1.4625))
-    perfect = {"links": 3, "length": 0, "lifts": 0, "crossings": 0, "bbox": 100, "used": 100, "floors": 1,
+    perfect = {"links": 3, "edges": 3, "length": 0, "lifts": 0, "crossings": 0, "bbox": 100, "used": 100, "floors": 1,
         "passed": True, "fraction": 1.0, "routed": 1.0}
     assert close(S.score(perfect), 1.0)
 
@@ -183,11 +210,11 @@ def test_placed_fraction():
 
 def test_score_episode_plate():
     s, t = S.score_episode(plate_env(3))
-    assert close(s, 1 / 1.41)
+    assert close(s, 12 / 19)
     for k, v in PLATE_TERMS.items():
         assert t[k] == v, k
-    assert close(t["p_belt"], 0.4) and close(t["p_floors"], 1.0)
-    assert close(t["penalty"], 0.41) and t["placed"] == 1.0
+    assert close(t["p_belt"], 2 / 3) and close(t["p_floors"], 1.0)
+    assert close(t["penalty"], 7 / 12) and t["placed"] == 1.0
     try:
         S.score_episode(plate_env(2))
         assert False
@@ -229,7 +256,8 @@ def test_score_episode_tiers_random():
 
 TESTS = [test_footprint_plate, test_footprint_l_shape, test_belt_stats_tiny, test_belt_stats_turn_is_not_crossing,
     test_belt_stats_plate, test_measure_plate, test_measure_failed_link, test_random_vs_view,
-    test_constants, test_parts_plate, test_parts_other, test_penalty_and_score, test_score_broken,
+    test_constants, test_parts_plate, test_parts_other, test_parts_use_edges_not_links, test_measure_edges_random,
+    test_penalty_and_score, test_score_broken,
     test_placed_fraction, test_score_episode_plate, test_score_episode_unfinished, test_score_episode_tiers_random]
 
 if __name__ == "__main__":

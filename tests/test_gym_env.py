@@ -180,8 +180,8 @@ def test_full_plate_episode():
     g, obs, info = plate_gym()
     for a in [2, 9410 - 9216, 1, 9410, 1, 9410 + 9216]:
         obs, r, term, trunc, info = g.step(a)
-    assert term and abs(r - 1 / 1.41) < 1e-9 and not info["failed"]
-    assert info["terms"]["length"] == 64 and abs(info["terms"]["penalty"] - 0.41) < 1e-9
+    assert term and abs(r - 12 / 19) < 1e-9 and not info["failed"]
+    assert info["terms"]["length"] == 64 and abs(info["terms"]["penalty"] - 7 / 12) < 1e-9
     assert info["blocks"] == 3
     assert g.action_masks().sum() == 0
     assert obs["grid"][1].sum() == 200 + 180 + 180

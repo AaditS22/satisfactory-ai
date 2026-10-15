@@ -74,7 +74,7 @@ def measure(env, routes, fl):
     routed = len(routes["paths"]) / links
     fraction, passed = fl["fraction"], fl["passed"]
 
-    res = {"links": links, "routed": routed, "fraction": fraction, "passed": passed}
+    res = {"links": links, "routed": routed, "fraction": fraction, "passed": passed, "edges": len(env.graph["edges"])}
     res.update(belt_stats(routes))
     res.update(footprint(env))
 
@@ -82,9 +82,9 @@ def measure(env, routes, fl):
 
 def parts(terms):
     """Calculates the 5 normalized pernalty parts"""
-    p_belt = terms["length"] / terms["links"] / BELT_REF
-    p_lifts = terms["lifts"] / terms["links"] / LIFT_REF
-    p_crossings = terms["crossings"] / terms["links"] / CROSS_REF
+    p_belt = terms["length"] / terms["edges"] / BELT_REF
+    p_lifts = terms["lifts"] / terms["edges"] / LIFT_REF
+    p_crossings = terms["crossings"] / terms["edges"] / CROSS_REF
     p_sprawl = (terms["bbox"] / terms["used"] - 1) / SPRAWL_REF
     p_floors = (terms["floors"] - 1) / FLOOR_REF
 
