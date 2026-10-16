@@ -4,7 +4,7 @@ import copy
 import argparse
 
 import time
-from layout.tasks import random_task
+from layout.tasks import item_name, random_task
 from layout.api import evaluate
 from layout.baseline import baseline_a
 
@@ -174,14 +174,15 @@ def main():
     parser.add_argument("--iters", type=int, default=ITERS, help="annealing tries per task")
     parser.add_argument("--workers", type=int, default=1, help="processes to run in parallel")
     parser.add_argument("--seed", type=int, default=0, help="task seed for the picture")
+    parser.add_argument("--target", default=None, help="item for the picture")
     parser.add_argument("--out", default="anneal.png")
     args = parser.parse_args()
 
     if args.tasks <= 0:
-        task = random_task(np.random.default_rng(args.seed))
+        task = random_task(np.random.default_rng(args.seed), item_name(args.target))
         a = baseline_a(task)
         b = anneal(task, a["plan"], args.iters, np.random.default_rng(args.seed))
-        print(f"seed {args.seed}: A {a['score']:.3f} -> B {b['score']:.3f}")
+        print(f"seed {args.seed}, {task['target']} at {task['rate']}/min: A {a['score']:.3f} -> B {b['score']:.3f}")
         print(f"A plan {a['plan']}")
         print(f"B plan {b['plan']}")
         draw(b["env"], args.out, title=f"Baseline B, seed {args.seed}, score {b['score']:.2f} (A {a['score']:.2f})",

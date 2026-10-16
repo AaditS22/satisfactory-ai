@@ -116,6 +116,12 @@ def min_sides(recipes):
 
     return (round_up(long_side), round_up(short_side))
 
+def item_name(name):
+    """Turns item names into correct in-game names"""
+    if name is None or name.startswith("Desc_"):
+        return name
+    return f"Desc_{name}_C"
+
 def random_task(rng, target=None):
     """Generates a random task for training process"""
     options = [target]

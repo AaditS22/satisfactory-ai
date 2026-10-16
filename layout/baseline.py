@@ -6,7 +6,7 @@ from layout.connect import ends_for, FLOOR_COST
 from layout.api import plan_of, evaluate
 import argparse
 import time
-from layout.tasks import random_task
+from layout.tasks import item_name, random_task
 
 CHAIN = [(3, True), (3, False), (1, False)]
 TIER_COST = 8.0
@@ -126,6 +126,7 @@ def main():
     parser.add_argument("--seed", type=int, default=0, help="task seed for the picture")
     parser.add_argument("--out", default="baseline.png")
     parser.add_argument("--tasks", type=int, default=0, help="if > 0: run this many tasks (seeds 0..N-1) and print a summary")
+    parser.add_argument("--target", default=None, help="item for the picture")
     args = parser.parse_args()
 
     if args.tasks > 0:
@@ -142,7 +143,8 @@ def main():
         return
 
     from layout.view import draw
-    res = baseline_a(random_task(np.random.default_rng(args.seed)))
+    task = random_task(np.random.default_rng(args.seed), item_name(args.target))
+    res = baseline_a(task) 
     print(f"seed {args.seed}: score {res['score']:.3f}, plan {res['plan']}")
     draw(res["env"], args.out, title=f"Baseline A, seed {args.seed}, score {res['score']:.2f}", routes=res["routes"])
     print(f"saved {args.out}")
