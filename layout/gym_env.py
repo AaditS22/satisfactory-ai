@@ -2,13 +2,41 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
+import argparse
+import time
+
 from layout.env import LayoutEnv, N_MAX
 from layout.tasks import random_task, GRID_MAX, FLOORS
 from layout import obs as O
 from layout.score import score_episode
 
-POS_SHAPE = (4, FLOORS, GRID_MAX, GRID_MAX)
-N_POS = 4 * FLOORS * GRID_MAX * GRID_MAX
+S = 2
+COARSE = GRID_MAX // S
+POS_SHAPE = (4, FLOORS, COARSE, COARSE)
+N_POS = 4 * FLOORS * COARSE * COARSE
+
+def offsets(s=S):
+    """Cells inside one s x s square"""
+    cells = [(dx, dy) for dx in range(s) for dy in range(s)]
+    return sorted(cells, key=lambda c: (c[0] + c[1], c[0]))
+
+def snap_mask(m, s=S):
+    """Checks if any 1m cell inside is legal"""
+    R, F, W, D = m.shape
+    cw, cd = -(-W // s), -(-D // s)
+    big = np.zeros((R, F, cw * s, cd * s), dtype=bool)
+    big[:, :, :W, :D] = m 
+    big = big.reshape(R, F, cw, s, cd, s)
+    return big.any(axis=(3, 5))
+
+def fine_cell(m, rot, f, cx, cy, s=S):
+    """Finds the 1m cell where the coarse action puts the block"""
+    W, D = m.shape[2], m.shape[3]
+    for dx, dy in offsets(s):
+        x, y = cx * s + dx, cy * s + dy
+        if x < W and y < D and m[rot, f, x, y]:
+            return (x, y)
+    raise ValueError("no legal cell")
 
 def pad_mask(m):
     out = np.zeros(POS_SHAPE, dtype=bool)
@@ -47,6 +75,7 @@ class LayoutGym(gym.Env):
         self.stage = 0
         self.n = 0
         self.mask = np.zeros(N_POS, dtype=bool)
+        self.fine = None
 
     def _make_mask(self):
         """Creates a mask of legal actions"""
@@ -57,7 +86,8 @@ class LayoutGym(gym.Env):
             nm = self.env.n_mask()
             mask[:len(nm)] = nm
         else:
-            mask[:] = pad_mask(self.env.pos_mask(self.n)).reshape(-1)
+            self.fine = self.env.pos_mask(self.n)
+            mask[:] = pad_mask(snap_mask(self.fine)).reshape(-1)
         return mask
 
     def _info(self):
@@ -95,7 +125,8 @@ class LayoutGym(gym.Env):
             self.n = action
             self.stage = 1
         else:
-            rot, f, x, y = (int(v) for v in np.unravel_index(action, POS_SHAPE))
+            rot, f, cx, cy = (int(v) for v in np.unravel_index(action, POS_SHAPE))
+            x, y = fine_cell(self.fine, rot, f, cx, cy)
             self.env.step(self.n, rot, f, x, y)
             self.stage = 0
             self.n = 0
@@ -133,8 +164,6 @@ def play_random(episodes, seed=0, check=False):
         "mean_score": float(np.mean(scores)), "median_score": float(np.median(scores))}
 
 def main():
-    import argparse
-    import time
     parser = argparse.ArgumentParser(description="Random agent through the Gymnasium wrapper.")
     parser.add_argument("--episodes", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=0)

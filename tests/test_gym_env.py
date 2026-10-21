@@ -3,7 +3,8 @@ import numpy as np
 from layout.env import LayoutEnv
 from layout.tasks import random_task
 from layout import obs as O
-from layout.gym_env import POS_SHAPE, N_POS, pad_mask, observe, obs_space, LayoutGym, play_random
+from layout.gym_env import (S, POS_SHAPE, N_POS, offsets, snap_mask, fine_cell, pad_mask, observe, obs_space,
+    LayoutGym, play_random)
 
 
 PLATE = {"target": "Desc_IronPlate_C", "rate": 30, "width": 24, "depth": 24, "floors": 3, "side": 0}
@@ -19,10 +20,122 @@ def plate_env(steps):
     return env
 
 
+def act(rot, f, x, y):
+    return int(np.ravel_multi_index((rot, f, x // S, y // S), POS_SHAPE))
+
+
+def slow_snap(m, s):
+    R, F, W, D = m.shape
+    out = np.zeros((R, F, -(-W // s), -(-D // s)), dtype=bool)
+    for r in range(R):
+        for f in range(F):
+            for cx in range(out.shape[2]):
+                for cy in range(out.shape[3]):
+                    out[r, f, cx, cy] = m[r, f, cx * s:cx * s + s, cy * s:cy * s + s].any()
+    return out
+
+
 def test_constants():
-    assert POS_SHAPE == (4, 3, 96, 96)
-    assert N_POS == 110592
+    assert S == 2
+    assert POS_SHAPE == (4, 3, 48, 48)
+    assert N_POS == 27648
     assert N_POS == int(np.prod(POS_SHAPE))
+
+
+def test_offsets():
+    assert offsets(2) == [(0, 0), (0, 1), (1, 0), (1, 1)]
+    assert offsets(1) == [(0, 0)]
+    o = offsets(3)
+    assert len(o) == 9 and len(set(o)) == 9
+    assert o[0] == (0, 0) and o[-1] == (2, 2) and o[1:3] == [(0, 1), (1, 0)]
+    assert offsets() == offsets(2)
+
+
+def test_snap_mask_small():
+    m = np.zeros((4, 1, 5, 4), dtype=bool)
+    m[0, 0, 1, 1] = True
+    m[0, 0, 2, 3] = True
+    m[2, 0, 4, 0] = True
+    keep = m.copy()
+    c = snap_mask(m)
+    assert c.shape == (4, 1, 3, 2) and c.dtype == bool
+    assert c.sum() == 3
+    assert c[0, 0, 0, 0] and c[0, 0, 1, 1] and c[2, 0, 2, 0]
+    assert (m == keep).all()
+    assert snap_mask(np.ones((4, 3, 24, 24), dtype=bool)).shape == (4, 3, 12, 12)
+    assert snap_mask(np.ones((4, 3, 96, 96), dtype=bool)).shape == (4, 3, 48, 48)
+    assert snap_mask(m, 1).shape == m.shape and (snap_mask(m, 1) == m).all()
+    assert snap_mask(m, 4).shape == (4, 1, 2, 1) and snap_mask(m, 4).sum() == 2
+
+
+def test_snap_mask_random():
+    rng = np.random.default_rng(3)
+    for k in range(30):
+        F, W, D = int(rng.integers(1, 4)), int(rng.integers(1, 20)), int(rng.integers(1, 20))
+        m = rng.random((4, F, W, D)) < rng.uniform(0, 0.3)
+        for s in (1, 2, 3, 4):
+            assert (snap_mask(m, s) == slow_snap(m, s)).all()
+
+
+def test_fine_cell_order():
+    m = np.zeros((4, 2, 5, 5), dtype=bool)
+    m[1, 1, 2, 3] = True
+    m[1, 1, 3, 2] = True
+    assert fine_cell(m, 1, 1, 1, 1) == (2, 3)
+    m[1, 1, 2, 2] = True
+    assert fine_cell(m, 1, 1, 1, 1) == (2, 2)
+    m[1, 1, 2, 2] = m[1, 1, 2, 3] = False
+    assert fine_cell(m, 1, 1, 1, 1) == (3, 2)
+    m[1, 1, 3, 3] = True
+    m[1, 1, 3, 2] = False
+    assert fine_cell(m, 1, 1, 1, 1) == (3, 3)
+    x, y = fine_cell(m, 1, 1, 1, 1)
+    assert type(x) is int and type(y) is int
+
+
+def test_fine_cell_edges():
+    m = np.zeros((4, 1, 5, 5), dtype=bool)
+    m[0, 0, 4, 4] = True
+    assert fine_cell(m, 0, 0, 2, 2) == (4, 4)
+    m[0, 0, 0, 0] = True
+    assert fine_cell(m, 0, 0, 0, 0) == (0, 0)
+    for args in [(0, 0, 1, 1), (0, 0, 2, 1), (1, 0, 2, 2), (0, 0, 0, 2)]:
+        try:
+            fine_cell(m, *args)
+            assert False, args
+        except ValueError:
+            pass
+    assert fine_cell(m, 0, 0, 1, 1, s=4) == (4, 4)
+    assert fine_cell(m, 0, 0, 4, 4, s=1) == (4, 4)
+
+
+def test_fine_cell_plate():
+    m = plate_env(0).pos_mask(2)
+    assert not m[0, 0, 0, 0] and not m[0, 0, 0, 1] and m[0, 0, 1, 0]
+    assert fine_cell(m, 0, 0, 0, 0) == (1, 0)
+    assert fine_cell(m, 0, 0, 1, 1) == (2, 2)
+    assert fine_cell(m, 0, 0, 2, 2) == (4, 4)
+
+
+def test_fine_cell_random():
+    rng = np.random.default_rng(4)
+    for k in range(40):
+        F, W, D = int(rng.integers(1, 4)), int(rng.integers(1, 12)), int(rng.integers(1, 12))
+        m = rng.random((4, F, W, D)) < 0.3
+        c = snap_mask(m)
+        for r, f, cx, cy in np.ndindex(*c.shape):
+            if c[r, f, cx, cy]:
+                x, y = fine_cell(m, r, f, cx, cy)
+                assert m[r, f, x, y] and x // 2 == cx and y // 2 == cy
+                first = [(cx * 2 + dx, cy * 2 + dy) for dx, dy in offsets(2)
+                    if cx * 2 + dx < W and cy * 2 + dy < D and m[r, f, cx * 2 + dx, cy * 2 + dy]][0]
+                assert (x, y) == first
+            else:
+                try:
+                    fine_cell(m, r, f, cx, cy)
+                    assert False
+                except ValueError:
+                    pass
 
 
 def test_pad_mask_small():
@@ -32,13 +145,13 @@ def test_pad_mask_small():
     m[1, 0, 5, 7] = True
     keep = m.copy()
     out = pad_mask(m)
-    assert out.shape == (4, 3, 96, 96)
+    assert out.shape == (4, 3, 48, 48)
     assert out.dtype == bool
     assert out.sum() == 3
     assert out[0, 0, 0, 0] and out[3, 1, 23, 15] and out[1, 0, 5, 7]
     assert not out[1, 0, 7, 5]
     assert (m == keep).all()
-    assert pad_mask(np.zeros((4, 3, 96, 96), dtype=bool)).sum() == 0
+    assert pad_mask(np.zeros((4, 3, 48, 48), dtype=bool)).sum() == 0
     full = pad_mask(np.ones((4, 3, 8, 40), dtype=bool))
     assert full.sum() == 4 * 3 * 8 * 40
     assert full[:, :, :8, :40].all()
@@ -46,14 +159,15 @@ def test_pad_mask_small():
 
 def test_pad_mask_flat_index():
     env = plate_env(1)
-    m = env.pos_mask(1)
+    m = snap_mask(env.pos_mask(1))
     out = pad_mask(m)
     assert out.sum() == m.sum()
     flat = out.reshape(-1)
-    assert flat.shape == (110592,)
-    assert flat[9410]
-    assert np.ravel_multi_index((0, 1, 2, 2), POS_SHAPE) == 9410
-    assert tuple(int(v) for v in np.unravel_index(9410, POS_SHAPE)) == (0, 1, 2, 2)
+    assert flat.shape == (27648,)
+    assert np.ravel_multi_index((0, 1, 1, 1), POS_SHAPE) == 2353
+    assert act(0, 1, 2, 2) == 2353
+    assert flat[2353]
+    assert tuple(int(v) for v in np.unravel_index(2353, POS_SHAPE)) == (0, 1, 1, 1)
 
 
 def test_observe_shapes():
@@ -132,12 +246,13 @@ def test_obs_space_random():
             ns = np.flatnonzero(env.n_mask())
             n = int(ns[rng.integers(len(ns))])
             assert sp.contains(observe(env, 1, n))
-            m = pad_mask(env.pos_mask(n))
-            assert m.sum() == env.pos_mask(n).sum()
+            fine = env.pos_mask(n)
+            m = pad_mask(snap_mask(fine))
+            assert m.sum() == snap_mask(fine).sum() <= fine.sum()
             spots = np.argwhere(m)
-            rot, f, x, y = (int(v) for v in spots[rng.integers(len(spots))])
-            a = int(np.ravel_multi_index((rot, f, x, y), POS_SHAPE))
-            assert m.reshape(-1)[a]
+            rot, f, cx, cy = (int(v) for v in spots[rng.integers(len(spots))])
+            x, y = fine_cell(fine, rot, f, cx, cy)
+            assert m.reshape(-1)[act(rot, f, x, y)]
             env.step(n, rot, f, x, y)
             checked += 1
     assert checked >= 20
@@ -154,9 +269,22 @@ def test_reset_plate():
     assert set(obs) == KEYS
     assert info == {"stage": 0, "failed": False, "blocks": 0}
     m = g.action_masks()
-    assert m.shape == (110592,) and m.dtype == bool
+    assert m.shape == (27648,) and m.dtype == bool
     assert list(np.flatnonzero(m)) == [1, 2]
     assert list(obs["stage"]) == [0, 0]
+
+
+def test_odd_corner_step():
+    task = dict(PLATE)
+    task["width"] = 25
+    g = LayoutGym()
+    g.reset(options={"task": task})
+    g.step(2)
+    assert g.action_masks().reshape(POS_SHAPE)[0, 0, :13].any()
+    assert not g.action_masks().reshape(POS_SHAPE)[0, 0, 13:].any()
+    g.step(act(0, 0, 0, 0))
+    b = g.env.world.blocks[0]
+    assert (b["floor"], b["x"], b["y"]) == (0, 1, 0)
 
 
 def test_two_stage_step():
@@ -166,9 +294,10 @@ def test_two_stage_step():
     assert info["stage"] == 1 and info["blocks"] == 0
     assert abs(float(obs["stage"][1]) - 2 / 16) < 1e-6
     m = g.action_masks()
-    assert m.sum() == g.env.pos_mask(2).sum()
-    assert m[np.ravel_multi_index((0, 0, 2, 2), POS_SHAPE)]
-    obs, r, term, trunc, info = g.step(np.ravel_multi_index((0, 0, 2, 2), POS_SHAPE))
+    assert m.sum() == snap_mask(g.env.pos_mask(2)).sum() == 244
+    assert (g.fine == g.env.pos_mask(2)).all()
+    assert m[act(0, 0, 2, 2)]
+    obs, r, term, trunc, info = g.step(act(0, 0, 2, 2))
     assert (r, term) == (0.0, False)
     assert info == {"stage": 0, "failed": False, "blocks": 1}
     assert list(obs["stage"]) == [0, 0]
@@ -178,8 +307,10 @@ def test_two_stage_step():
 
 def test_full_plate_episode():
     g, obs, info = plate_gym()
-    for a in [2, 9410 - 9216, 1, 9410, 1, 9410 + 9216]:
+    for a in [2, act(0, 0, 2, 2), 1, act(0, 1, 2, 2), 1, act(0, 2, 2, 2)]:
         obs, r, term, trunc, info = g.step(a)
+    plan = [[b["block"]["n"], b["block"]["rot"], b["floor"], b["x"], b["y"]] for b in g.env.world.blocks]
+    assert plan == [[2, 0, 0, 2, 2], [1, 0, 1, 2, 2], [1, 0, 2, 2, 2]]
     assert term and abs(r - 12 / 19) < 1e-9 and not info["failed"]
     assert info["terms"]["length"] == 64 and abs(info["terms"]["penalty"] - 7 / 12) < 1e-9
     assert info["blocks"] == 3
@@ -194,7 +325,7 @@ def test_full_plate_episode():
 
 def test_illegal_actions():
     g, obs, info = plate_gym()
-    for a in [0, 3, 16, -1, 110592, 9410]:
+    for a in [0, 3, 16, -1, 27648, 2353]:
         try:
             g.step(a)
             assert False, a
@@ -202,7 +333,7 @@ def test_illegal_actions():
             pass
     assert g.stage == 0 and g.action_masks().sum() == 2
     g.step(1)
-    for a in [1, 2, np.ravel_multi_index((0, 0, 30, 2), POS_SHAPE)]:
+    for a in [act(0, 0, 30, 2), act(0, 0, 46, 46), act(3, 2, 94, 94), 27648]:
         try:
             g.step(a)
             assert False, a
@@ -266,9 +397,10 @@ def test_play_random():
     assert -2 <= res["mean_score"] <= 1
 
 
-TESTS = [test_constants, test_pad_mask_small, test_pad_mask_flat_index, test_observe_shapes,
-    test_observe_values, test_obs_space_shape, test_obs_space_rejects, test_obs_space_random,
-    test_reset_plate, test_two_stage_step, test_full_plate_episode, test_illegal_actions, test_reset_seed,
+TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_random, test_fine_cell_order,
+    test_fine_cell_edges, test_fine_cell_plate, test_fine_cell_random, test_pad_mask_small, test_pad_mask_flat_index,
+    test_observe_shapes, test_observe_values, test_obs_space_shape, test_obs_space_rejects, test_obs_space_random,
+    test_reset_plate, test_odd_corner_step, test_two_stage_step, test_full_plate_episode, test_illegal_actions, test_reset_seed,
     test_random_play_invariants, test_play_random]
 
 if __name__ == "__main__":
