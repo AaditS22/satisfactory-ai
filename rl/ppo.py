@@ -74,3 +74,7 @@ def update(policy, optimizer, buffer, obs_to_torch, epochs=4, minibatch=512, cli
             log["clip_frac"].append(frac)
  
     return {k: float(np.mean(v)) for k, v in log.items()}
+
+def linear_lr(r, rounds, lr_max):
+    """Learning rate for round r of a run that has played 'r' rounds"""
+    return lr_max * (1.0 - (r / rounds))

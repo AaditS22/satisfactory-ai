@@ -65,13 +65,14 @@ def test_train_short_run_on_cpu():
     log = read_log("runs/_test/log.csv")
     assert np.array_equal(log["round"], [0, 1])
     for k in ["score", "failed", "invalid", "valid_score", "p_belt", "p_floors", "entropy", "approx_kl", "collect_s",
-              "update_s", "gpu_gb"]:
+              "update_s", "gpu_gb", "lr"]:
         assert k in log, k
+    assert np.allclose(log["lr"], [2.5e-4, 1.25e-4])
     assert np.allclose(log["score"], history, atol=1e-4, equal_nan=True)
     assert len(list(Path("runs/_test").glob("events.out.tfevents*"))) == 1
     assert Path("runs/_test/last.pt").exists() and Path("runs/_test/best.pt").exists()
     last = torch.load("runs/_test/last.pt")
-    assert last["round"] == 1 and last["extra"]["stage"] == 1
+    assert last["round"] == 1 and last["extra"]["stage"] == 1 and last["extra"]["rounds"] == 2
     assert abs(last["extra"]["best_eval"] - np.max(ev["score"])) < 1e-4
     shutil.rmtree("runs/_test")
 
@@ -80,12 +81,16 @@ def test_train_resume_continues():
     shutil.rmtree("runs/_test_resume", ignore_errors=True)
     p1, _ = train(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
                   run="_test_resume", verbose=False)
+    ck = torch.load("runs/_test_resume/last.pt")
+    ck["extra"]["rounds"] = 3
+    torch.save(ck, "runs/_test_resume/last.pt")
     p2, h2 = train(stage=1, rounds=3, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
                    run="_test_resume", resume=True, verbose=False)
     assert len(h2) == 1
     assert np.array_equal(read_log("runs/_test_resume/log.csv")["round"], [0, 1, 2])
     assert np.array_equal(read_log("runs/_test_resume/eval.csv")["round"], [0, 1, 2])
     assert torch.load("runs/_test_resume/last.pt")["round"] == 2
+    assert abs(read_log("runs/_test_resume/log.csv")["lr"][2] - 2.5e-4 / 3) < 1e-9
     shutil.rmtree("runs/_test_resume")
 
 
@@ -95,6 +100,46 @@ def test_resume_needs_run_name():
         assert False
     except ValueError:
         pass
+
+
+def test_resume_rejects_other_rounds():
+    shutil.rmtree("runs/_test_rounds", ignore_errors=True)
+    train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_rounds",
+          verbose=False)
+    try:
+        train(stage=1, rounds=3, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_rounds",
+              resume=True, verbose=False)
+        assert False
+    except ValueError:
+        pass
+    shutil.rmtree("runs/_test_rounds")
+
+
+def test_init_and_resume_together_rejected():
+    try:
+        train(rounds=1, run="_test_both", resume=True, init="runs/_test_both/last.pt", verbose=False)
+        assert False
+    except ValueError:
+        pass
+
+
+def test_train_init_starts_new_run():
+    shutil.rmtree("runs/_test_init_a", ignore_errors=True)
+    shutil.rmtree("runs/_test_init_b", ignore_errors=True)
+    train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_init_a",
+          verbose=False)
+    saved = torch.load("runs/_test_init_a/last.pt")["policy"]
+    policy, history = train(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, lr=0.0, device="cpu",
+                            run="_test_init_b", init="runs/_test_init_a/last.pt", verbose=False)
+    assert len(history) == 2
+    log = read_log("runs/_test_init_b/log.csv")
+    assert np.array_equal(log["round"], [0, 1]) and np.array_equal(log["lr"], [0.0, 0.0])
+    for k, v in policy.state_dict().items():
+        assert torch.equal(v, saved[k]), k
+    last = torch.load("runs/_test_init_b/last.pt")
+    assert last["round"] == 1 and last["extra"]["rounds"] == 2
+    shutil.rmtree("runs/_test_init_a")
+    shutil.rmtree("runs/_test_init_b")
 
 
 def test_train_uses_cuda_when_available():
@@ -110,7 +155,8 @@ def test_train_uses_cuda_when_available():
 
 TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
     test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
-    test_resume_needs_run_name, test_train_uses_cuda_when_available]
+    test_resume_needs_run_name, test_resume_rejects_other_rounds, test_init_and_resume_together_rejected,
+    test_train_init_starts_new_run, test_train_uses_cuda_when_available]
 
 if __name__ == "__main__":
     for t in TESTS:

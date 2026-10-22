@@ -6,7 +6,7 @@ from torch import nn
 
 from rl.buffer import RolloutBuffer
 from rl.dist import masked_log_probs, pick
-from rl.ppo import ppo_losses, normalise, to_tensors, update
+from rl.ppo import ppo_losses, normalise, to_tensors, update, linear_lr
 
 
 def one(ratio, adv, clip=0.2):
@@ -195,11 +195,28 @@ def test_update_pushes_good_action_up():
     assert p_after[0] > p_before[0] and p_after[1] < p_before[1]
 
 
+def test_linear_lr_hand():
+    assert math.isclose(linear_lr(0, 1000, 2.5e-4), 2.5e-4)
+    assert math.isclose(linear_lr(500, 1000, 2.5e-4), 1.25e-4)
+    assert math.isclose(linear_lr(750, 1000, 2.5e-4), 6.25e-5)
+    assert math.isclose(linear_lr(999, 1000, 2.5e-4), 2.5e-7)
+    assert math.isclose(linear_lr(2, 4, 1.0), 0.5)
+
+
+def test_linear_lr_follows_rounds():
+    for rounds in (1, 7, 300, 5000):
+        lrs = [linear_lr(r, rounds, 1e-3) for r in range(rounds)]
+        assert math.isclose(lrs[0], 1e-3)
+        assert all(x > 0 for x in lrs)
+        assert all(a > b for a, b in zip(lrs, lrs[1:]))
+        assert math.isclose(lrs[-1], 1e-3 / rounds)
+
+
 TESTS = [test_returns_scalars, test_ratio_one_is_minus_mean_adv, test_lesson_table, test_ratio_uses_old_logp,
     test_clip_parameter, test_gradient_free_zone, test_gradient_zero_when_braked, test_gradient_wrong_way_pushes_back,
     test_value_loss_hand, test_normalise_hand, test_to_tensors_types, test_update_returns_stats, test_update_step_count,
     test_update_first_group_has_ratio_one, test_update_changes_every_weight, test_update_vf_coef_zero_leaves_value_head,
-    test_update_pushes_good_action_up]
+    test_update_pushes_good_action_up, test_linear_lr_hand, test_linear_lr_follows_rounds]
 
 if __name__ == "__main__":
     for t in TESTS:

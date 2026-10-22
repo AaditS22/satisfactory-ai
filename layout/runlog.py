@@ -70,7 +70,7 @@ class RunLog:
             w = csv.DictWriter(f, fieldnames=self.fields)
             if new:
                 w.writeheader()
-            w.writerow({k: round(v, 5) if isinstance(v, float) else v for k, v in row.items()})
+            w.writerow({k: float(f"{v:.5g}") if isinstance(v, float) else v for k, v in row.items()})
         if self.tb is not None:
             for k, v in row.items():
                 if k != "round":

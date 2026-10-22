@@ -76,6 +76,15 @@ def test_runlog_roundtrip(tmp="tests/_tmp_runlog/log.csv"):
     shutil.rmtree("tests/_tmp_runlog")
 
 
+def test_runlog_keeps_small_numbers(tmp="tests/_tmp_runlog3/log.csv"):
+    import shutil
+    shutil.rmtree("tests/_tmp_runlog3", ignore_errors=True)
+    RunLog(tmp, tensorboard=False).write({"round": 0, "lr": 1.25e-4, "kl": 2.5e-7, "big": 1234.5678})
+    back = read_log(tmp)
+    assert back["lr"][0] == 1.25e-4 and back["kl"][0] == 2.5e-7 and back["big"][0] == 1234.6
+    shutil.rmtree("tests/_tmp_runlog3")
+
+
 def test_runlog_append_keeps_old_rows(tmp="tests/_tmp_runlog2/log.csv"):
     import shutil
     shutil.rmtree("tests/_tmp_runlog2", ignore_errors=True)
@@ -136,7 +145,7 @@ def test_line():
 
 
 TESTS = [test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
-    test_round_stats_empty, test_runlog_roundtrip, test_runlog_append_keeps_old_rows,
+    test_round_stats_empty, test_runlog_roundtrip, test_runlog_keeps_small_numbers, test_runlog_append_keeps_old_rows,
     test_runlog_share_one_writer, test_tag_groups,
     test_line]
 
