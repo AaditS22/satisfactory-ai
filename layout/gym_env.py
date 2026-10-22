@@ -9,6 +9,7 @@ from layout.env import LayoutEnv, N_MAX
 from layout.tasks import random_task, GRID_MAX, FLOORS
 from layout import obs as O
 from layout.score import score_episode
+from layout.testset import STAGES
 
 S = 2
 COARSE = GRID_MAX // S
@@ -162,6 +163,21 @@ def play_random(episodes, seed=0, check=False):
     return {"episodes": episodes, "finished": finished, "failed": failed, "valid": valid, "steps": steps,
         "mean_blocks": float(np.mean(blocks)), "max_blocks": int(max(blocks)),
         "mean_score": float(np.mean(scores)), "median_score": float(np.median(scores))}
+
+class StageEnv:
+    """Performs make env for one stage from the curriculum/test set"""
+ 
+    def __init__(self, stage):
+        self.stage = stage
+        self.targets = STAGES[stage - 1]
+ 
+    def __call__(self):
+        return LayoutGym(task_fn=self.task)
+ 
+    def task(self, rng):
+        """Random task for one of this stage's targets"""
+        target = self.targets[rng.integers(len(self.targets))]
+        return random_task(rng, target)
 
 def main():
     parser = argparse.ArgumentParser(description="Random agent through the Gymnasium wrapper.")

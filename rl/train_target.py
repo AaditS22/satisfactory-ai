@@ -9,6 +9,7 @@ from rl.buffer import RolloutBuffer
 from rl.collect import collect
 from rl.ppo import update
 from rl.target_env import PickTarget
+from rl.games import LocalGames 
 
 import matplotlib.pyplot as plt
 
@@ -46,8 +47,8 @@ def train(rounds=100, n_games=16, T=32, lr=1e-3, epochs=4, minibatch=128, seed=0
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     gen = torch.Generator().manual_seed(seed)
-    envs = [PickTarget() for _ in range(n_games)]
-    obs = [env.reset(seed=seed * 1000 + i)[0] for i, env in enumerate(envs)]
+    games = LocalGames(PickTarget, n_games) 
+    obs, masks = games.reset(seed * 1000)
  
     policy = TargetNet()
     optimizer = torch.optim.Adam(policy.parameters(), lr=lr)
@@ -55,7 +56,8 @@ def train(rounds=100, n_games=16, T=32, lr=1e-3, epochs=4, minibatch=128, seed=0
  
     history = []
     for r in range(rounds):
-        obs, scores = collect(envs, obs, policy, buffer, obs_to_torch, gen)
+        obs, masks, finished = collect(games, obs, masks, policy, buffer, obs_to_torch, gen)
+        scores = [f["score"] for f in finished]
         stats = update(policy, optimizer, buffer, obs_to_torch, epochs, minibatch, rng=rng)
  
         history.append(float(np.mean(scores)))

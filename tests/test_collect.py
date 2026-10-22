@@ -4,6 +4,7 @@ from torch import nn
 
 from rl.buffer import RolloutBuffer
 from rl.collect import stack, act, collect
+from rl.games import LocalGames, ProcGames
 from rl.target_env import PickTarget
 
 
@@ -24,7 +25,7 @@ def to_torch(obs, device):
     return {k: torch.as_tensor(v, dtype=torch.float32, device=device) for k, v in obs.items()}
 
 
-def games(n, seed=0):
+def boards(n, seed=0):
     envs = [PickTarget() for _ in range(n)]
     obs = [e.reset(seed=seed + i)[0] for i, e in enumerate(envs)]
     masks = np.stack([e.action_masks() for e in envs])
@@ -40,7 +41,7 @@ def test_stack_shapes_and_order():
 
 def test_act_shapes_dtypes():
     torch.manual_seed(0)
-    _, obs, masks = games(5)
+    _, obs, masks = boards(5)
     actions, logp, values = act(Tiny(), obs, masks, to_torch)
     for a in (actions, logp, values):
         assert isinstance(a, np.ndarray) and a.shape == (5,)
@@ -50,7 +51,7 @@ def test_act_shapes_dtypes():
 def test_act_no_grad():
     torch.manual_seed(0)
     policy = Tiny()
-    _, obs, masks = games(2)
+    _, obs, masks = boards(2)
     act(policy, obs, masks, to_torch)
     assert policy.grad_on is False
 
@@ -58,7 +59,7 @@ def test_act_no_grad():
 def test_act_only_legal():
     torch.manual_seed(0)
     policy = Tiny()
-    _, obs, masks = games(6)
+    _, obs, masks = boards(6)
     gen = torch.Generator().manual_seed(0)
     for _ in range(30):
         actions, _, _ = act(policy, obs, masks, to_torch, gen)
@@ -68,7 +69,7 @@ def test_act_only_legal():
 def test_act_logp_and_values_match_network():
     torch.manual_seed(0)
     policy = Tiny()
-    _, obs, masks = games(4)
+    _, obs, masks = boards(4)
     actions, logp, values = act(policy, obs, masks, to_torch, torch.Generator().manual_seed(1))
     with torch.no_grad():
         logits, v = policy(to_torch(stack(obs), "cpu"))
@@ -81,7 +82,7 @@ def test_act_logp_and_values_match_network():
 def test_act_gen_repeats():
     torch.manual_seed(0)
     policy = Tiny()
-    _, obs, masks = games(6)
+    _, obs, masks = boards(6)
     a1, _, _ = act(policy, obs, masks, to_torch, torch.Generator().manual_seed(3))
     a2, _, _ = act(policy, obs, masks, to_torch, torch.Generator().manual_seed(3))
     assert np.array_equal(a1, a2)
@@ -89,7 +90,7 @@ def test_act_gen_repeats():
 
 def test_act_one_legal():
     torch.manual_seed(0)
-    _, obs, _ = games(3)
+    _, obs, _ = boards(3)
     masks = np.zeros((3, 8), dtype=bool)
     masks[0, 6] = True
     masks[1, 0] = True
@@ -102,17 +103,19 @@ def test_act_one_legal():
 def page(T, N, seed=0, policy=None):
     torch.manual_seed(seed)
     policy = policy or Tiny()
-    envs, obs, _ = games(N, seed)
+    games = LocalGames(PickTarget, N)
+    obs, masks = games.reset(seed)
     buf = RolloutBuffer(T, N, 8)
-    obs, scores = collect(envs, obs, policy, buf, to_torch, torch.Generator().manual_seed(seed))
-    return policy, envs, obs, scores, buf
+    obs, masks, finished = collect(games, obs, masks, policy, buf, to_torch, torch.Generator().manual_seed(seed))
+    return policy, obs, masks, finished, buf
 
 
 def test_collect_fills_and_finishes():
-    _, _, obs, scores, buf = page(5, 3)
+    _, obs, masks, finished, buf = page(5, 3)
     assert buf.t == 5 and buf.adv.shape == (5, 3) and buf.ret.shape == (5, 3)
     assert isinstance(obs, list) and len(obs) == 3 and set(obs[0]) == {"target", "progress"}
-    assert isinstance(scores, list)
+    assert masks.shape == (3, 8) and masks.dtype == bool
+    assert isinstance(finished, list)
 
 
 def test_collect_dones_every_third_tick():
@@ -128,6 +131,13 @@ def test_collect_stores_obs_before_move():
         assert np.allclose(buf.obs["target"][:, i].sum(1), 1.0)
 
 
+def test_collect_stored_masks_match_stored_obs():
+    _, _, _, _, buf = page(6, 3)
+    targets = buf.obs["target"].argmax(2)
+    t, n = np.meshgrid(np.arange(6), np.arange(3), indexing="ij")
+    assert buf.masks[t, n, targets].all() and (buf.masks.sum(2) == 4).all()
+
+
 def test_collect_rewards_only_at_game_end():
     _, _, _, _, buf = page(6, 5)
     assert (buf.rewards[~buf.dones] == 0).all()
@@ -135,10 +145,12 @@ def test_collect_rewards_only_at_game_end():
         assert min(abs(r - k / 3) for k in range(4)) < 1e-6
 
 
-def test_collect_scores_are_end_rewards():
-    _, _, _, scores, buf = page(6, 5)
-    assert len(scores) == 10
-    assert np.allclose(sorted(scores), sorted(buf.rewards[buf.dones].tolist()))
+def test_collect_finished_infos():
+    _, _, _, finished, buf = page(6, 5)
+    assert len(finished) == 10
+    assert all("score" in f and "hits" in f for f in finished)
+    assert np.allclose(sorted(f["score"] for f in finished), sorted(buf.rewards[buf.dones].tolist()))
+    assert all(abs(f["score"] - f["hits"] / 3) < 1e-6 for f in finished)
 
 
 def test_collect_actions_legal_and_logp_finite():
@@ -151,29 +163,42 @@ def test_collect_actions_legal_and_logp_finite():
 def test_collect_continues_games_across_pages():
     torch.manual_seed(0)
     policy = Tiny()
-    envs, obs, _ = games(3)
+    games = LocalGames(PickTarget, 3)
+    obs, masks = games.reset(0)
     buf = RolloutBuffer(2, 3, 8)
     gen = torch.Generator().manual_seed(0)
-    obs, _ = collect(envs, obs, policy, buf, to_torch, gen)
+    obs, masks, _ = collect(games, obs, masks, policy, buf, to_torch, gen)
     assert np.allclose([o["progress"][0] for o in obs], 2 / 3)
-    obs, scores = collect(envs, obs, policy, buf, to_torch, gen)
+    obs, masks, finished = collect(games, obs, masks, policy, buf, to_torch, gen)
     assert np.allclose(buf.obs["progress"][0, :, 0], 2 / 3, atol=1e-6)
-    assert buf.dones[0].all() and not buf.dones[1].any() and len(scores) == 3
+    assert buf.dones[0].all() and not buf.dones[1].any() and len(finished) == 3
 
 
 def test_collect_last_value_used_for_unfinished_games():
-    policy, _, obs, _, buf = page(4, 3)
+    policy, obs, _, _, buf = page(4, 3)
     with torch.no_grad():
         v_last = policy(to_torch(stack(obs), "cpu"))[1].numpy()
     assert not buf.dones[3].any()
     assert np.allclose(buf.adv[3], v_last - buf.values[3], atol=1e-5)
 
 
+def test_collect_with_worker_processes_matches_local():
+    _, _, _, f1, b1 = page(6, 4, seed=3)
+    torch.manual_seed(3)
+    policy = Tiny()
+    with ProcGames(PickTarget, 4, 2) as games:
+        obs, masks = games.reset(3)
+        buf = RolloutBuffer(6, 4, 8)
+        obs, masks, f2 = collect(games, obs, masks, policy, buf, to_torch, torch.Generator().manual_seed(3))
+    assert np.array_equal(b1.actions, buf.actions) and np.array_equal(b1.rewards, buf.rewards)
+    assert f1 == f2
+
 TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, test_act_only_legal,
     test_act_logp_and_values_match_network, test_act_gen_repeats, test_act_one_legal, test_collect_fills_and_finishes,
-    test_collect_dones_every_third_tick, test_collect_stores_obs_before_move, test_collect_rewards_only_at_game_end,
-    test_collect_scores_are_end_rewards, test_collect_actions_legal_and_logp_finite,
-    test_collect_continues_games_across_pages, test_collect_last_value_used_for_unfinished_games]
+    test_collect_dones_every_third_tick, test_collect_stores_obs_before_move, test_collect_stored_masks_match_stored_obs,
+    test_collect_rewards_only_at_game_end, test_collect_finished_infos, test_collect_actions_legal_and_logp_finite,
+    test_collect_continues_games_across_pages, test_collect_last_value_used_for_unfinished_games,
+    test_collect_with_worker_processes_matches_local]
 
 if __name__ == "__main__":
     for t in TESTS:

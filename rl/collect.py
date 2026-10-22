@@ -20,31 +20,22 @@ def act(policy, obs_list, masks, obs_to_torch, gen=None):
         logp = pick(log_p, actions)
         return actions.cpu().numpy(), logp.cpu().numpy(), value.cpu().numpy()
 
-def collect(envs, obs, policy, buffer, obs_to_torch, gen=None):
+def collect(games, obs, masks, policy, buffer, obs_to_torch, gen=None):
     """Plays buffer.T ticks in N games at once, writes every tick into the buffer, then finishes it"""
     buffer.reset()
-    scores = []
+    finished = []
     for t in range(buffer.T):
-        masks = np.stack([env.action_masks() for env in envs])
         actions, logp, values = act(policy, obs, masks, obs_to_torch, gen)
-        rewards = np.zeros(buffer.N, dtype=np.float32)
-        dones = np.zeros(buffer.N, dtype=bool)
-        next_obs = []
-
-        for i in range(len(envs)):
-            o, r, term, trunc, info = envs[i].step(actions[i])
-            rewards[i] = r
-            dones[i] = term or trunc
-            if dones[i]:
-                scores.append(r)
-                o, _ = envs[i].reset()
-
-            next_obs.append(o)
+        next_obs, next_masks, rewards, dones, infos = games.step(actions)
 
         buffer.add(stack(obs), masks, actions, logp, values, rewards, dones)
-        obs = next_obs
 
-    masks = np.stack([env.action_masks() for env in envs])
+        for i in range(len(infos)):
+            if dones[i]:
+                finished.append(infos[i])
+
+        obs, masks = next_obs, next_masks
+
     _, _, last_value = act(policy, obs, masks, obs_to_torch, gen)
     buffer.finish(last_value)
-    return obs, scores
+    return obs, masks, finished
