@@ -47,7 +47,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
 
     log = RunLog(f"runs/{run}/log.csv", append=resume)
     eval_rows = load_eval(stage)
-    eval_log = RunLog(f"runs/{run}/eval.csv", group="eval", append=resume)
+    eval_log = RunLog(f"runs/{run}/eval.csv", group="eval", append=resume, share=log)
 
     history = []
     with ProcGames(StageEnv(stage), n_games, workers) as games:

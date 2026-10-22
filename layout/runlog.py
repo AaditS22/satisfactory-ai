@@ -45,7 +45,7 @@ def round_stats(finished):
 class RunLog:
     """Writes one row per round to a CSV file"""
 
-    def __init__(self, path, tensorboard=True, group=None, append=False):
+    def __init__(self, path, tensorboard=True, group=None, append=False, share=None):
         self.path = Path(path)
         self.group = group
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -54,9 +54,13 @@ class RunLog:
             with open(self.path, newline="") as f:
                 self.fields = next(csv.reader(f))
         self.tb = None
-        if tensorboard:
+        self.owns_tb = False
+        if share is not None:
+            self.tb = share.tb
+        elif tensorboard:
             from torch.utils.tensorboard import SummaryWriter
             self.tb = SummaryWriter(str(self.path.parent))
+            self.owns_tb = True
 
     def write(self, row):
         new = self.fields is None
@@ -83,7 +87,8 @@ class RunLog:
             self.tb.flush()
 
     def close(self):
-        if self.tb is not None:
+        """Close the TensorBoard writer if this RunLog made it"""
+        if self.owns_tb:
             self.tb.close()
 
 def read_log(path):

@@ -68,7 +68,7 @@ def test_train_short_run_on_cpu():
               "update_s", "gpu_gb"]:
         assert k in log, k
     assert np.allclose(log["score"], history, atol=1e-4, equal_nan=True)
-    assert any(Path("runs/_test").glob("events.out.tfevents*"))
+    assert len(list(Path("runs/_test").glob("events.out.tfevents*"))) == 1
     assert Path("runs/_test/last.pt").exists() and Path("runs/_test/best.pt").exists()
     last = torch.load("runs/_test/last.pt")
     assert last["round"] == 1 and last["extra"]["stage"] == 1

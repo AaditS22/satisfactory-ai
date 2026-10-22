@@ -88,6 +88,39 @@ def test_runlog_append_keeps_old_rows(tmp="tests/_tmp_runlog2/log.csv"):
     shutil.rmtree("tests/_tmp_runlog2")
 
 
+class FakeWriter:
+    def __init__(self):
+        self.seen = []
+        self.closed = False
+
+    def add_scalar(self, name, v, step):
+        self.seen.append((name, v, step))
+
+    def flush(self):
+        pass
+
+    def close(self):
+        self.closed = True
+
+
+def test_runlog_share_one_writer(folder="tests/_tmp_runlog3"):
+    import shutil
+    shutil.rmtree(folder, ignore_errors=True)
+    main = RunLog(folder + "/log.csv", tensorboard=False)
+    main.tb, main.owns_tb = FakeWriter(), True
+    ev = RunLog(folder + "/eval.csv", group="eval", share=main)
+    assert ev.tb is main.tb
+    main.write({"round": 0, "score": 0.5})
+    ev.write({"round": 0, "score": 0.4, "A": 0.6})
+    assert main.tb.seen == [("score/score", 0.5, 0), ("eval/score", 0.4, 0), ("eval/A", 0.6, 0)]
+    ev.close()
+    assert not main.tb.closed
+    main.close()
+    assert main.tb.closed
+    assert np.array_equal(read_log(folder + "/eval.csv")["A"], [0.6])
+    shutil.rmtree(folder)
+
+
 def test_tag_groups():
     assert tag("score") == "score/score" and tag("valid_score") == "score/valid_score"
     assert tag("invalid") == "rates/invalid" and tag("p_floors") == "penalty/p_floors"
@@ -104,7 +137,7 @@ def test_line():
 
 TESTS = [test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
     test_round_stats_empty, test_runlog_roundtrip, test_runlog_append_keeps_old_rows,
-    test_tag_groups,
+    test_runlog_share_one_writer, test_tag_groups,
     test_line]
 
 if __name__ == "__main__":
