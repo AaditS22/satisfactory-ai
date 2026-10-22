@@ -44,10 +44,15 @@ def round_stats(finished):
 
 class RunLog:
     """Writes one row per round to a CSV file"""
-    def __init__(self, path, tensorboard=True):
+
+    def __init__(self, path, tensorboard=True, group=None, append=False):
         self.path = Path(path)
+        self.group = group
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.fields = None
+        if append and self.path.exists():
+            with open(self.path, newline="") as f:
+                self.fields = next(csv.reader(f))
         self.tb = None
         if tensorboard:
             from torch.utils.tensorboard import SummaryWriter
@@ -65,7 +70,16 @@ class RunLog:
         if self.tb is not None:
             for k, v in row.items():
                 if k != "round":
-                    self.tb.add_scalar(tag(k), v, row["round"])
+                    name = f"{self.group}/{k}" if self.group else tag(k)
+                    self.tb.add_scalar(name, v, row["round"])
+            self.tb.flush()
+
+    def image(self, name, png, step):
+        """Show a saved PNG in TensorBoard's Images tab"""
+        if self.tb is not None:
+            import matplotlib.image
+            pixels = matplotlib.image.imread(str(png))[:, :, :3]
+            self.tb.add_image(name, pixels, step, dataformats="HWC")
             self.tb.flush()
 
     def close(self):

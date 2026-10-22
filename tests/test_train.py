@@ -9,7 +9,7 @@ from layout.gym_env import LayoutGym, StageEnv, N_POS
 from layout.policy import Policy
 from layout.testset import STAGES
 from layout.runlog import read_log
-from layout.train import train
+from layout.train import train, choose_greedy
 
 
 def test_stage_env_builds_layout_gym():
@@ -34,6 +34,17 @@ def test_stage_env_picklable():
     assert back.stage == 2 and back.targets == STAGES[1]
 
 
+def test_choose_greedy_legal_and_repeatable():
+    torch.manual_seed(0)
+    policy = Policy()
+    envs = [StageEnv(1)() for _ in range(3)]
+    obs = [e.reset(seed=i)[0] for i, e in enumerate(envs)]
+    masks = np.stack([e.action_masks() for e in envs])
+    a1 = choose_greedy(policy, obs, masks)
+    a2 = choose_greedy(policy, obs, masks)
+    assert a1.shape == (3,) and np.array_equal(a1, a2) and masks[np.arange(3), a1].all()
+
+
 def test_train_short_run_on_cpu():
     torch.manual_seed(0)
     fresh = [p.detach().clone() for p in Policy().parameters()]
@@ -45,6 +56,12 @@ def test_train_short_run_on_cpu():
     assert isinstance(history, list) and len(history) == 2 and all(isinstance(h, float) for h in history)
     assert all(np.isnan(h) or -3.0 <= h <= 1.0 for h in history)
     assert any(not torch.equal(p.detach(), f) for p, f in zip(policy.parameters(), fresh))
+    ev = read_log("runs/_test/eval.csv")
+    assert np.array_equal(ev["round"], [0, 1])
+    for k in ["score", "A", "B", "beats_A", "failed", "invalid", "eval_s"]:
+        assert k in ev, k
+    assert abs(ev["A"][0] - 0.585) < 0.01
+    assert len(list(Path("runs/_test/eval/round_0001").glob("best_*.png"))) == 10
     log = read_log("runs/_test/log.csv")
     assert np.array_equal(log["round"], [0, 1])
     for k in ["score", "failed", "invalid", "valid_score", "p_belt", "p_floors", "entropy", "approx_kl", "collect_s",
@@ -52,7 +69,32 @@ def test_train_short_run_on_cpu():
         assert k in log, k
     assert np.allclose(log["score"], history, atol=1e-4, equal_nan=True)
     assert any(Path("runs/_test").glob("events.out.tfevents*"))
+    assert Path("runs/_test/last.pt").exists() and Path("runs/_test/best.pt").exists()
+    last = torch.load("runs/_test/last.pt")
+    assert last["round"] == 1 and last["extra"]["stage"] == 1
+    assert abs(last["extra"]["best_eval"] - np.max(ev["score"])) < 1e-4
     shutil.rmtree("runs/_test")
+
+
+def test_train_resume_continues():
+    shutil.rmtree("runs/_test_resume", ignore_errors=True)
+    p1, _ = train(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
+                  run="_test_resume", verbose=False)
+    p2, h2 = train(stage=1, rounds=3, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
+                   run="_test_resume", resume=True, verbose=False)
+    assert len(h2) == 1
+    assert np.array_equal(read_log("runs/_test_resume/log.csv")["round"], [0, 1, 2])
+    assert np.array_equal(read_log("runs/_test_resume/eval.csv")["round"], [0, 1, 2])
+    assert torch.load("runs/_test_resume/last.pt")["round"] == 2
+    shutil.rmtree("runs/_test_resume")
+
+
+def test_resume_needs_run_name():
+    try:
+        train(rounds=1, resume=True, verbose=False)
+        assert False
+    except ValueError:
+        pass
 
 
 def test_train_uses_cuda_when_available():
@@ -66,8 +108,9 @@ def test_train_uses_cuda_when_available():
     shutil.rmtree("runs/_test_cuda")
 
 
-TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets,
-    test_stage_env_picklable, test_train_short_run_on_cpu, test_train_uses_cuda_when_available]
+TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
+    test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
+    test_resume_needs_run_name, test_train_uses_cuda_when_available]
 
 if __name__ == "__main__":
     for t in TESTS:

@@ -7,7 +7,7 @@ def stack(obs_list):
     """Turns a list of observation dicts into one dict of arrays"""
     return {k: np.stack([o[k] for o in obs_list]) for k in obs_list[0]}
 
-def act(policy, obs_list, masks, obs_to_torch, gen=None):
+def act(policy, obs_list, masks, obs_to_torch, gen=None, greedy=False):
     """Uses the network to sample actions to play for each game, with their probabilities and predicted scores"""
     device = next(policy.parameters()).device
     x = obs_to_torch(stack(obs_list), device)
@@ -16,7 +16,7 @@ def act(policy, obs_list, masks, obs_to_torch, gen=None):
     with torch.no_grad():
         logits, value = policy(x)
         log_p = masked_log_probs(logits, m)
-        actions = sample(log_p, gen)
+        actions = log_p.argmax(1) if greedy else sample(log_p, gen)
         logp = pick(log_p, actions)
         return actions.cpu().numpy(), logp.cpu().numpy(), value.cpu().numpy()
 

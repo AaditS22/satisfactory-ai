@@ -100,6 +100,39 @@ def test_act_one_legal():
     assert np.abs(logp).max() < 1e-6
 
 
+def test_act_greedy_picks_most_likely_legal():
+    torch.manual_seed(0)
+    policy = Tiny()
+    _, obs, masks = boards(6)
+    actions, logp, _ = act(policy, obs, masks, to_torch, greedy=True)
+    with torch.no_grad():
+        logits, _ = policy(to_torch(stack(obs), "cpu"))
+        log_p = torch.log_softmax(torch.where(torch.as_tensor(masks), logits, -1e9), 1)
+    assert np.array_equal(actions, log_p.argmax(1).numpy())
+    assert masks[np.arange(6), actions].all()
+    assert np.allclose(logp, log_p.max(1).values.numpy(), atol=1e-6)
+    assert actions.dtype == np.int64
+
+
+def test_act_greedy_ignores_randomness():
+    torch.manual_seed(0)
+    policy = Tiny()
+    _, obs, masks = boards(6)
+    a1, _, _ = act(policy, obs, masks, to_torch, torch.Generator().manual_seed(1), greedy=True)
+    a2, _, _ = act(policy, obs, masks, to_torch, torch.Generator().manual_seed(2), greedy=True)
+    assert np.array_equal(a1, a2)
+
+
+def test_act_default_still_samples():
+    torch.manual_seed(0)
+    policy = Tiny()
+    with torch.no_grad():
+        policy.pi.weight.zero_()
+        policy.pi.bias.zero_()
+    _, obs, masks = boards(1)
+    picks = {int(act(policy, obs, masks, to_torch, torch.Generator().manual_seed(s))[0][0]) for s in range(40)}
+    assert len(picks) == 4
+
 def page(T, N, seed=0, policy=None):
     torch.manual_seed(seed)
     policy = policy or Tiny()
@@ -194,7 +227,9 @@ def test_collect_with_worker_processes_matches_local():
     assert f1 == f2
 
 TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, test_act_only_legal,
-    test_act_logp_and_values_match_network, test_act_gen_repeats, test_act_one_legal, test_collect_fills_and_finishes,
+    test_act_logp_and_values_match_network, test_act_gen_repeats, test_act_one_legal,
+    test_act_greedy_picks_most_likely_legal, test_act_greedy_ignores_randomness, test_act_default_still_samples,
+    test_collect_fills_and_finishes,
     test_collect_dones_every_third_tick, test_collect_stores_obs_before_move, test_collect_stored_masks_match_stored_obs,
     test_collect_rewards_only_at_game_end, test_collect_finished_infos, test_collect_actions_legal_and_logp_finite,
     test_collect_continues_games_across_pages, test_collect_last_value_used_for_unfinished_games,

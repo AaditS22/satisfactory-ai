@@ -76,6 +76,18 @@ def test_runlog_roundtrip(tmp="tests/_tmp_runlog/log.csv"):
     shutil.rmtree("tests/_tmp_runlog")
 
 
+def test_runlog_append_keeps_old_rows(tmp="tests/_tmp_runlog2/log.csv"):
+    import shutil
+    shutil.rmtree("tests/_tmp_runlog2", ignore_errors=True)
+    RunLog(tmp, tensorboard=False).write({"round": 0, "score": 0.5})
+    RunLog(tmp, tensorboard=False, append=True).write({"round": 1, "score": 0.6})
+    back = read_log(tmp)
+    assert np.array_equal(back["round"], [0, 1]) and np.allclose(back["score"], [0.5, 0.6])
+    RunLog("tests/_tmp_runlog2/new.csv", tensorboard=False, append=True).write({"round": 0, "score": 0.1})
+    assert np.array_equal(read_log("tests/_tmp_runlog2/new.csv")["round"], [0])
+    shutil.rmtree("tests/_tmp_runlog2")
+
+
 def test_tag_groups():
     assert tag("score") == "score/score" and tag("valid_score") == "score/valid_score"
     assert tag("invalid") == "rates/invalid" and tag("p_floors") == "penalty/p_floors"
@@ -91,7 +103,8 @@ def test_line():
 
 
 TESTS = [test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
-    test_round_stats_empty, test_runlog_roundtrip, test_tag_groups,
+    test_round_stats_empty, test_runlog_roundtrip, test_runlog_append_keeps_old_rows,
+    test_tag_groups,
     test_line]
 
 if __name__ == "__main__":
