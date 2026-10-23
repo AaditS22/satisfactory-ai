@@ -44,14 +44,16 @@ def update(policy, optimizer, buffer, obs_to_torch, epochs=4, minibatch=512, cli
     device = next(policy.parameters()).device
     total = buffer.T * buffer.N
     log = {"policy_loss": [], "value_loss": [], "entropy": [], "approx_kl": [], "clip_frac": []}
+    obs_all, data_all = buffer.get(np.arange(total))
+    obs_all = obs_to_torch(obs_all, device)
+    data_all = to_tensors(data_all, device)
  
     for epoch in range(epochs):
         order = rng.permutation(total)
         for start in range(0, total, minibatch):
-            idx = order[start:start + minibatch]
-            obs, data = buffer.get(idx)
-            obs = obs_to_torch(obs, device)
-            d = to_tensors(data, device)
+            idx = torch.as_tensor(order[start:start + minibatch], device=device)
+            obs = {k: v[idx] for k, v in obs_all.items()}
+            d = {k: v[idx] for k, v in data_all.items()}  
  
             logits, new_value = policy(obs)
             log_p = masked_log_probs(logits, d["masks"])

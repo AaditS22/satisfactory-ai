@@ -153,10 +153,51 @@ def test_train_uses_cuda_when_available():
     shutil.rmtree("runs/_test_cuda")
 
 
+def test_train_passes_solvable():
+    import layout.train as LT
+    real, seen = LT.StageEnv, []
+
+    def spy(stage, solvable=False):
+        seen.append((stage, solvable))
+        return real(stage, solvable)
+
+    shutil.rmtree("runs/_test_solvable", ignore_errors=True)
+    LT.StageEnv = spy
+    try:
+        train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_solvable",
+              solvable=True, verbose=False)
+    finally:
+        LT.StageEnv = real
+    assert seen == [(1, True)]
+    extra = torch.load("runs/_test_solvable/last.pt")["extra"]
+    assert extra["solvable"] is True and extra["ent_coef"] == 0.01 and extra["stage"] == 1 and extra["rounds"] == 1
+    shutil.rmtree("runs/_test_solvable")
+
+
+def test_resume_rejects_other_settings():
+    shutil.rmtree("runs/_test_settings", ignore_errors=True)
+    base = dict(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_settings",
+                verbose=False)
+    train(**{**base, "rounds": 1}, ent_coef=0.0)
+    ck = torch.load("runs/_test_settings/last.pt")
+    ck["extra"]["rounds"] = 2
+    torch.save(ck, "runs/_test_settings/last.pt")
+    for bad in [{"stage": 2, "ent_coef": 0.0}, {"ent_coef": 0.01}, {"ent_coef": 0.0, "solvable": True}]:
+        try:
+            train(**{**base, **bad}, resume=True)
+            assert False, bad
+        except ValueError:
+            pass
+    _, h = train(**base, ent_coef=0.0, resume=True)
+    assert len(h) == 1
+    shutil.rmtree("runs/_test_settings")
+
+
 TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
     test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
     test_resume_needs_run_name, test_resume_rejects_other_rounds, test_init_and_resume_together_rejected,
-    test_train_init_starts_new_run, test_train_uses_cuda_when_available]
+    test_train_init_starts_new_run, test_train_uses_cuda_when_available, test_train_passes_solvable,
+    test_resume_rejects_other_settings]
 
 if __name__ == "__main__":
     for t in TESTS:

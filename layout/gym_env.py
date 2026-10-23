@@ -10,6 +10,8 @@ from layout.tasks import random_task, GRID_MAX, FLOORS
 from layout import obs as O
 from layout.score import score_episode
 from layout.testset import STAGES
+from layout.baseline import greedy
+from layout.api import play  
 
 S = 2
 COARSE = GRID_MAX // S
@@ -164,20 +166,32 @@ def play_random(episodes, seed=0, check=False):
         "mean_blocks": float(np.mean(blocks)), "max_blocks": int(max(blocks)),
         "mean_score": float(np.mean(scores)), "median_score": float(np.median(scores))}
 
+def a_fits(task):
+    """True if Baseline A's placement fits every block on the site (fixed rotation, then free rotation)"""
+    for free_rot in (False, True):
+        env = play(task, greedy(task, free_rot))
+        if not env.failed:
+            return True
+    return False
+
 class StageEnv:
     """Performs make env for one stage from the curriculum/test set"""
- 
-    def __init__(self, stage):
+
+    def __init__(self, stage, solvable=False):
         self.stage = stage
         self.targets = STAGES[stage - 1]
- 
+        self.solvable = solvable
+
     def __call__(self):
         return LayoutGym(task_fn=self.task)
- 
+
     def task(self, rng):
-        """Random task for one of this stage's targets"""
-        target = self.targets[rng.integers(len(self.targets))]
-        return random_task(rng, target)
+        """Random task for one of this stage's targets (with solvable=True redraw until Baseline A fits it)"""
+        while True:
+            target = self.targets[rng.integers(len(self.targets))]
+            task = random_task(rng, target)
+            if not self.solvable or a_fits(task):
+                return task
 
 def main():
     parser = argparse.ArgumentParser(description="Random agent through the Gymnasium wrapper.")

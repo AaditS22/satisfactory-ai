@@ -24,7 +24,7 @@ def choose_greedy(policy, obs_list, masks):
     return actions
 
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
-          device=None, run=None, eval_every=10, images_every=50, resume=False, init=None, verbose=True): 
+          device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, verbose=True): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -41,14 +41,15 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError("use --resume (same run) or --init (new run), not both")
     
     run = run or time.strftime("%Y%m%d-%H%M%S")
+    settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable}
 
     start, best = 0, float("-inf") 
     if resume:
         last_round, extra = load_checkpoint(f"runs/{run}/last.pt", policy, optimizer, device)
-        planned = extra.get("rounds", rounds)
-        if planned != rounds:
-            raise ValueError(f"run {run} was planned for {planned} rounds; "
-                             f"to train longer, start a new run with --init runs/{run}/last.pt")
+        for k, v in settings.items():
+            if k in extra and extra[k] != v:
+                raise ValueError(f"run {run} was started with {k}={extra[k]}, not {v}; --resume needs the same "
+                                f"settings (a new run from these weights: --init runs/{run}/last.pt)")
         start, best = last_round + 1, extra["best_eval"]
         print(f"resuming {run} at round {start} (best eval so far {best:.3f})")
     elif init:
@@ -60,7 +61,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     eval_log = RunLog(f"runs/{run}/eval.csv", group="eval", append=resume, share=log)
 
     history = []
-    with ProcGames(StageEnv(stage), n_games, workers) as games:
+    with ProcGames(StageEnv(stage, solvable), n_games, workers) as games:
         obs, masks = games.reset(seed * 1000 + start * n_games)
         for r in range(start, rounds): 
             lr_now = linear_lr(r, rounds, lr)
@@ -91,8 +92,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 new_best = e["score"] > best
                 if new_best:
                     best = e["score"]
-                    save_checkpoint(f"runs/{run}/best.pt", policy, optimizer, r, {"best_eval": best, "stage": stage, "rounds": rounds})
-                save_checkpoint(f"runs/{run}/last.pt", policy, optimizer, r, {"best_eval": best, "stage": stage, "rounds": rounds})
+                    save_checkpoint(f"runs/{run}/best.pt", policy, optimizer, r, {"best_eval": best, **settings})
+                save_checkpoint(f"runs/{run}/last.pt", policy, optimizer, r, {"best_eval": best, **settings})
  
                 if verbose:
                     print(f"      eval  score {e['score']:.3f}  (A {e['A']:.3f}, B {e['B']:.3f})  "
@@ -121,12 +122,13 @@ def main():
     p.add_argument("--lr", type=float, default=2.5e-4)
     p.add_argument("--init", default=None, help="start a new run from this checkpoint's weights")
     p.add_argument("--ent-coef", type=float, default=0.01)
+    p.add_argument("--solvable", action="store_true", help="train only on tasks Baseline A can fit on the site")
     args = p.parse_args()
     t0 = time.time()
     _, history = train(stage=args.stage, rounds=args.rounds, n_games=args.games, workers=args.workers, T=args.T,
                 minibatch=args.minibatch, seed=args.seed, device=args.device, run=args.run,
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
-                lr=args.lr, init=args.init, ent_coef=args.ent_coef)
+                lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":

@@ -4,10 +4,17 @@ from layout.env import LayoutEnv
 from layout.tasks import random_task
 from layout import obs as O
 from layout.gym_env import (S, POS_SHAPE, N_POS, offsets, snap_mask, fine_cell, pad_mask, observe, obs_space,
-    LayoutGym, play_random)
+    LayoutGym, play_random, a_fits, StageEnv)
+from layout.testset import STAGES
+from layout.baseline import greedy
+from layout.api import play
 
 
 PLATE = {"target": "Desc_IronPlate_C", "rate": 30, "width": 24, "depth": 24, "floors": 3, "side": 0}
+TIGHT = {"target": "Desc_IronRod_C", "rate": 90, "width": 40, "depth": 16, "floors": 3, "side": 3,
+    "alternates": frozenset()}
+ROOMY = {"target": "Desc_IronRod_C", "rate": 30, "width": 40, "depth": 24, "floors": 3, "side": 3,
+    "alternates": frozenset()}
 KEYS = {"grid", "vec", "stage", "nodes", "node_mask", "edges", "edge_rate", "edge_mask"}
 
 
@@ -397,11 +404,50 @@ def test_play_random():
     assert -2 <= res["mean_score"] <= 1
 
 
+def test_a_fits_hand():
+    assert a_fits(dict(TIGHT)) is False
+    assert a_fits(dict(ROOMY)) is True
+
+
+def test_a_fits_needs_both_rotations():
+    fixed_only = StageEnv(1).task(np.random.default_rng(4))
+    free_only = StageEnv(2).task(np.random.default_rng(58))
+    assert play(fixed_only, greedy(fixed_only, True)).failed
+    assert play(free_only, greedy(free_only, False)).failed
+    assert a_fits(fixed_only) and a_fits(free_only)
+
+
+def test_stage_env_default_unchanged():
+    env = StageEnv(2)
+    assert env.solvable is False
+    for seed in range(8):
+        rng = np.random.default_rng(seed)
+        target = STAGES[1][rng.integers(len(STAGES[1]))]
+        assert env.task(np.random.default_rng(seed)) == random_task(rng, target)
+
+
+def test_stage_env_solvable_redraws():
+    plain, solv = StageEnv(2), StageEnv(2, solvable=True)
+    assert not a_fits(plain.task(np.random.default_rng(3)))
+    t = solv.task(np.random.default_rng(3))
+    assert a_fits(t) and t["target"] in STAGES[1]
+    assert solv.task(np.random.default_rng(3)) == t
+    assert solv.task(np.random.default_rng(0)) == plain.task(np.random.default_rng(0))
+
+
+def test_stage_env_solvable_all_fit():
+    env = StageEnv(2, solvable=True)
+    for seed in range(12):
+        assert a_fits(env.task(np.random.default_rng(seed)))
+
+
 TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_random, test_fine_cell_order,
     test_fine_cell_edges, test_fine_cell_plate, test_fine_cell_random, test_pad_mask_small, test_pad_mask_flat_index,
     test_observe_shapes, test_observe_values, test_obs_space_shape, test_obs_space_rejects, test_obs_space_random,
     test_reset_plate, test_odd_corner_step, test_two_stage_step, test_full_plate_episode, test_illegal_actions, test_reset_seed,
-    test_random_play_invariants, test_play_random]
+    test_random_play_invariants, test_play_random, test_a_fits_hand, test_a_fits_needs_both_rotations,
+    test_stage_env_default_unchanged,
+    test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit]
 
 if __name__ == "__main__":
     for t in TESTS:
