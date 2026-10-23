@@ -32,7 +32,7 @@ def test_compare_hand():
     assert s["solvable"] == 3
     assert abs(s["beats_A"] - 1 / 3) < 1e-9 and abs(s["ties_A"] - 1 / 3) < 1e-9
     assert abs(s["beats_B"] - 1 / 3) < 1e-9 and s["invalid"] == 0
-    assert abs(s["score"] - (0.6 + 0.5 + 0.4 - 1.2) / 4) < 1e-9
+    assert abs(s["score"] - (0.6 + 0.5 + 0.4) / 3) < 1e-9
 
 
 def test_compare_counts_invalid_on_solvable_only():
