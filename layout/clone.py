@@ -9,7 +9,7 @@ import numpy as np
 
 from layout.policy import Policy, obs_to_torch
 from layout.teacher import load_teacher, split_rows, build, batch
-from rl.checkpoint import save_checkpoint   
+from rl.checkpoint import save_checkpoint, load_checkpoint
 
 def clone_loss(policy, obs, masks, actions, scores, vf_coef=0.5):
     """Finds the loss for one minibatch on behaviour-cloning learning"""
@@ -63,6 +63,7 @@ def main():
     p.add_argument("--minibatch", type=int, default=256)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None)
+    p.add_argument("--init", default=None, help="start from this checkpoint's weights")
     args = p.parse_args()
 
     device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -78,6 +79,8 @@ def main():
           f"{len(val_rows)} val tasks ({len(val['action'])} steps), built in {time.time() - t0:.0f} s")
 
     policy = Policy().to(device)
+    if args.init:
+        load_checkpoint(args.init, policy, device=device)
     optimizer = torch.optim.Adam(policy.parameters(), lr=args.lr)
     best = math.inf
     for epoch in range(args.epochs):
