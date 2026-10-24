@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 from rl.buffer import RolloutBuffer
-from rl.collect import collect, act
+from rl.collect import collect, act, Background
 from rl.games import ProcGames
 from rl.ppo import update, linear_lr
 from layout.gym_env import StageEnv, N_POS
@@ -24,7 +24,7 @@ def choose_greedy(policy, obs_list, masks):
     return actions
 
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
-          device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, verbose=True): 
+          device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -41,7 +41,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError("use --resume (same run) or --init (new run), not both")
     
     run = run or time.strftime("%Y%m%d-%H%M%S")
-    settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable}
+    settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap}
 
     start, best = 0, float("-inf") 
     if resume:
@@ -63,17 +63,30 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     history = []
     with ProcGames(StageEnv(stage, solvable), n_games, workers) as games:
         obs, masks = games.reset(seed * 1000 + start * n_games)
+        if overlap:
+            bg = Background(policy, games, [buffer, RolloutBuffer(T, n_games, N_POS)], obs_to_torch, gen)
+            bg.sync(policy)
+            bg.start(obs, masks)
         for r in range(start, rounds): 
             lr_now = linear_lr(r, rounds, lr)
             for g in optimizer.param_groups:
                 g["lr"] = lr_now
             t0 = time.time()
-            obs, masks, finished = collect(games, obs, masks, policy, buffer, obs_to_torch, gen)
+
+            if overlap:
+                page, obs, masks, finished, play_s = bg.wait()
+                bg.sync(policy)
+                if r + 1 < rounds:
+                    bg.start(obs, masks)
+            else:
+                obs, masks, finished = collect(games, obs, masks, policy, buffer, obs_to_torch, gen)
+                page, play_s = buffer, time.time() - t0
+
             t1 = time.time()
-            stats = update(policy, optimizer, buffer, obs_to_torch, epochs, minibatch, ent_coef=ent_coef, rng=rng)
+            stats = update(policy, optimizer, page, obs_to_torch, epochs, minibatch, ent_coef=ent_coef, rng=rng)
             t2 = time.time()
             row = {"round": r, **round_stats(finished), **stats, "lr": lr_now,
-                   "collect_s": t1 - t0, "update_s": t2 - t1, "gpu_gb": gpu_gb(device)}
+                   "collect_s": t1 - t0, "play_s": play_s, "update_s": t2 - t1, "gpu_gb": gpu_gb(device)}
             log.write(row)
 
             history.append(row["score"])
@@ -123,12 +136,13 @@ def main():
     p.add_argument("--init", default=None, help="start a new run from this checkpoint's weights")
     p.add_argument("--ent-coef", type=float, default=0.01)
     p.add_argument("--solvable", action="store_true", help="train only on tasks Baseline A can fit on the site")
+    p.add_argument("--overlap", action="store_true", help="overlap CPU and GPU processes")
     args = p.parse_args()
     t0 = time.time()
     _, history = train(stage=args.stage, rounds=args.rounds, n_games=args.games, workers=args.workers, T=args.T,
                 minibatch=args.minibatch, seed=args.seed, device=args.device, run=args.run,
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
-                lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable)
+                lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":

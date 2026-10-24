@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 from rl.buffer import RolloutBuffer
-from rl.collect import stack, act, collect
+from rl.collect import stack, act, collect, Background
 from rl.games import LocalGames, ProcGames
 from rl.target_env import PickTarget
 
@@ -226,6 +226,103 @@ def test_collect_with_worker_processes_matches_local():
     assert np.array_equal(b1.actions, buf.actions) and np.array_equal(b1.rewards, buf.rewards)
     assert f1 == f2
 
+
+def bg_for(policy, n, seed, T=6):
+    games = LocalGames(PickTarget, n)
+    obs, masks = games.reset(seed)
+    bufs = [RolloutBuffer(T, n, 8), RolloutBuffer(T, n, 8)]
+    return Background(policy, games, bufs, to_torch, torch.Generator().manual_seed(seed)), bufs, obs, masks
+
+
+def test_background_page_matches_collect():
+    _, _, masks1, f1, b1 = page(6, 4, seed=2)
+    torch.manual_seed(2)
+    policy = Tiny()
+    bg, bufs, obs, masks = bg_for(policy, 4, 2)
+    bg.sync(policy)
+    bg.start(obs, masks)
+    buf, obs, masks, f2, secs = bg.wait()
+    assert buf is bufs[0]
+    assert np.array_equal(b1.actions, buf.actions) and np.array_equal(b1.rewards, buf.rewards)
+    assert np.allclose(b1.logp, buf.logp) and np.allclose(b1.adv, buf.adv)
+    assert f1 == f2 and np.array_equal(masks, masks1) and secs > 0
+
+
+def test_background_actor_is_a_copy():
+    _, _, _, _, b1 = page(6, 4, seed=2)
+    torch.manual_seed(2)
+    policy = Tiny()
+    bg, _, obs, masks = bg_for(policy, 4, 2)
+    bg.sync(policy)
+    with torch.no_grad():
+        for p in policy.parameters():
+            p.add_(5.0)
+    bg.start(obs, masks)
+    buf = bg.wait()[0]
+    assert np.array_equal(buf.actions, b1.actions)
+    assert not any(p is q for p, q in zip(policy.parameters(), bg.actor.parameters()))
+
+
+def test_background_sync_copies_weights():
+    torch.manual_seed(0)
+    policy = Tiny()
+    bg, _, _, _ = bg_for(policy, 2, 0)
+    with torch.no_grad():
+        policy.pi.bias.fill_(3.0)
+    assert not torch.equal(bg.actor.pi.bias, policy.pi.bias)
+    bg.sync(policy)
+    assert torch.equal(bg.actor.pi.bias, policy.pi.bias) and bg.actor.pi.bias is not policy.pi.bias
+
+
+def test_background_buffers_take_turns():
+    torch.manual_seed(0)
+    policy = Tiny()
+    bg, bufs, obs, masks = bg_for(policy, 3, 0, T=2)
+    bg.start(obs, masks)
+    first, obs, masks, _, _ = bg.wait()
+    kept = first.actions.copy()
+    bg.start(obs, masks)
+    second, obs, masks, _, _ = bg.wait()
+    assert first is bufs[0] and second is bufs[1]
+    assert np.array_equal(bufs[0].actions, kept)
+    assert np.allclose(bufs[1].obs["progress"][0, :, 0], 2 / 3, atol=1e-6)
+    bg.start(obs, masks)
+    assert bg.wait()[0] is bufs[0]
+
+
+class Broken:
+    def step(self, actions):
+        raise KeyError("boom")
+
+
+def test_background_reraises_errors():
+    torch.manual_seed(0)
+    policy = Tiny()
+    _, obs, masks = boards(2)
+    bg = Background(policy, Broken(), [RolloutBuffer(2, 2, 8), RolloutBuffer(2, 2, 8)], to_torch)
+    bg.start(obs, masks)
+    try:
+        bg.wait()
+        assert False
+    except KeyError:
+        pass
+    assert bg.thread is None
+
+
+def test_background_one_page_at_a_time():
+    torch.manual_seed(0)
+    policy = Tiny()
+    bg, _, obs, masks = bg_for(policy, 2, 0)
+    bg.start(obs, masks)
+    for f in (lambda: bg.sync(policy), lambda: bg.start(obs, masks)):
+        try:
+            f()
+            assert False
+        except RuntimeError:
+            pass
+    bg.wait()
+    bg.sync(policy)
+
 TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, test_act_only_legal,
     test_act_logp_and_values_match_network, test_act_gen_repeats, test_act_one_legal,
     test_act_greedy_picks_most_likely_legal, test_act_greedy_ignores_randomness, test_act_default_still_samples,
@@ -233,7 +330,9 @@ TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, 
     test_collect_dones_every_third_tick, test_collect_stores_obs_before_move, test_collect_stored_masks_match_stored_obs,
     test_collect_rewards_only_at_game_end, test_collect_finished_infos, test_collect_actions_legal_and_logp_finite,
     test_collect_continues_games_across_pages, test_collect_last_value_used_for_unfinished_games,
-    test_collect_with_worker_processes_matches_local]
+    test_collect_with_worker_processes_matches_local, test_background_page_matches_collect,
+    test_background_actor_is_a_copy, test_background_sync_copies_weights, test_background_buffers_take_turns,
+    test_background_reraises_errors, test_background_one_page_at_a_time]
 
 if __name__ == "__main__":
     for t in TESTS:

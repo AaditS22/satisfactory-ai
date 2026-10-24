@@ -1,3 +1,8 @@
+import contextlib
+import copy
+import threading
+import time
+
 import numpy as np
 import torch
 
@@ -39,3 +44,56 @@ def collect(games, obs, masks, policy, buffer, obs_to_torch, gen=None):
     _, _, last_value = act(policy, obs, masks, obs_to_torch, gen)
     buffer.finish(last_value)
     return obs, masks, finished
+
+class Background:
+    """Plays the next page in a second thread while the main thread learns from the current one"""
+
+    def __init__(self, policy, games, buffers, obs_to_torch, gen=None):
+        self.actor = copy.deepcopy(policy)
+        self.games = games
+        self.buffers = buffers
+        self.obs_to_torch = obs_to_torch
+        self.gen = gen
+        device = next(policy.parameters()).device
+        self.stream = torch.cuda.Stream(device) if device.type == "cuda" else None
+        self.k = 0
+        self.thread = None
+        self.result = None
+        self.error = None
+
+    def sync(self, policy):
+        """Copies the learner's weights into the actor. Only allowed while no page is being played."""
+        if self.thread is not None:
+            raise RuntimeError("a page is still being played")
+        self.actor.load_state_dict(policy.state_dict())
+        if self.stream is not None:
+            torch.cuda.synchronize()
+
+    def start(self, obs, masks):
+        """Start playing the next page in the background"""
+        if self.thread is not None:
+            raise RuntimeError("a page is still being played")
+        buffer = self.buffers[self.k]
+        self.k = (self.k + 1) % len(self.buffers)
+        self.result, self.error = None, None
+
+        def job():
+            try:
+                t = time.perf_counter()
+                where = torch.cuda.stream(self.stream) if self.stream is not None else contextlib.nullcontext()
+                with where:
+                    out = collect(self.games, obs, masks, self.actor, buffer, self.obs_to_torch, self.gen)
+                self.result = (buffer, *out, time.perf_counter() - t)
+            except BaseException as e:
+                self.error = e
+
+        self.thread = threading.Thread(target=job, daemon=True)
+        self.thread.start()
+
+    def wait(self):
+        """Wait until the page is played, then return its results"""
+        self.thread.join()
+        self.thread = None
+        if self.error is not None:
+            raise self.error
+        return self.result

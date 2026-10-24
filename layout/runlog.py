@@ -103,4 +103,5 @@ def line(row):
             f"valid {row['valid_score']:.3f}  failed {row['failed']:.2f}  invalid {row['invalid']:.2f}  "
             f"blocks {row['blocks']:.1f}  entropy {row['entropy']:.2f}  kl {row['approx_kl']:.4f}  "
             f"clip {row['clip_frac']:.3f}  vloss {row['value_loss']:.3f}  "
-            f"play {row['collect_s']:.1f} s  learn {row['update_s']:.1f} s")
+            f"wait {row['collect_s']:.1f} s  learn {row['update_s']:.1f} s"
+            + (f"  (page took {row['play_s']:.1f} s)" if "play_s" in row else ""))
