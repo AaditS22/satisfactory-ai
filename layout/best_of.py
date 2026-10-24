@@ -1,7 +1,7 @@
 import argparse
 import time
 
-from layout.evaluate import load_eval, play_eval
+from layout.evaluate import load_eval, play_eval, TIE
 from layout.runlog import mean
 
 import torch
@@ -12,8 +12,6 @@ from rl.collect import act
 import json
 from pathlib import Path
 from layout.api import plan_of 
-
-TIE = 0.005
 
 def keep_best(tries):
     """Finds, per task, the result with the highest score"""

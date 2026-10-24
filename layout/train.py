@@ -11,7 +11,7 @@ from rl.ppo import update, linear_lr
 from layout.gym_env import StageEnv, N_POS
 from layout.policy import Policy, obs_to_torch
 from layout.runlog import RunLog, round_stats, line
-from layout.evaluate import load_eval, evaluate
+from layout.evaluate import load_eval, evaluate, TIE
 from rl.checkpoint import save_checkpoint, load_checkpoint 
 
 def gpu_gb(device):
@@ -89,15 +89,15 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 for i, png in enumerate(pngs):
                     eval_log.image(f"best/{i}", png, r)
  
-                new_best = e["score"] > best
+                new_best = e["solv_score"] > best
                 if new_best:
-                    best = e["score"]
+                    best = e["solv_score"]
                     save_checkpoint(f"runs/{run}/best.pt", policy, optimizer, r, {"best_eval": best, **settings})
                 save_checkpoint(f"runs/{run}/last.pt", policy, optimizer, r, {"best_eval": best, **settings})
  
                 if verbose:
                     print(f"      eval  score {e['score']:.3f}  (A {e['A']:.3f}, B {e['B']:.3f})  "
-                          f"beats A on {e['beats_A']:.0%}  failed {e['failed']:.2f}  invalid {e['invalid']:.2f}  "
+                          f"solvable {e['solv_score']:.3f} (A {e['solv_A']:.3f})  >= A-{TIE} on {e['gate_A']:.0%}  failed {e['failed']:.2f}  invalid {e['invalid']:.2f}  "
                           f"{e['eval_s']:.1f} s" + ("  NEW BEST, saved" if new_best else ""), flush=True)  
 
     log.close()

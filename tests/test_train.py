@@ -58,9 +58,9 @@ def test_train_short_run_on_cpu():
     assert any(not torch.equal(p.detach(), f) for p, f in zip(policy.parameters(), fresh))
     ev = read_log("runs/_test/eval.csv")
     assert np.array_equal(ev["round"], [0, 1])
-    for k in ["score", "A", "B", "beats_A", "failed", "invalid", "eval_s"]:
+    for k in ["score", "A", "B", "solv_score", "solv_A", "gate_A", "failed", "invalid", "eval_s"]:
         assert k in ev, k
-    assert abs(ev["A"][0] - 0.585) < 0.01
+    assert abs(ev["A"][0] - 0.653) < 0.001 and abs(ev["solv_A"][0] - 0.726) < 0.001
     assert len(list(Path("runs/_test/eval/round_0001").glob("best_*.png"))) == 10
     log = read_log("runs/_test/log.csv")
     assert np.array_equal(log["round"], [0, 1])
@@ -73,7 +73,7 @@ def test_train_short_run_on_cpu():
     assert Path("runs/_test/last.pt").exists() and Path("runs/_test/best.pt").exists()
     last = torch.load("runs/_test/last.pt")
     assert last["round"] == 1 and last["extra"]["stage"] == 1 and last["extra"]["rounds"] == 2
-    assert abs(last["extra"]["best_eval"] - np.max(ev["score"])) < 1e-4
+    assert abs(last["extra"]["best_eval"] - np.max(ev["solv_score"])) < 1e-4
     shutil.rmtree("runs/_test")
 
 

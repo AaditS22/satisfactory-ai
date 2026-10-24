@@ -10,6 +10,7 @@ from layout.wire import route_all
 from solver.gamedata import items
 
 EVAL_PATH = Path("data/eval_set.json")
+TIE = 0.005
 
 def load_eval(stage, path=EVAL_PATH):
     """Loads the fixed test tasks of one curriculum stage"""
@@ -41,10 +42,13 @@ def play_eval(policy, rows, choose):
 
 def eval_stats(results):
     """One row of eval numbers summarizing model performance vs baselines"""
+    solvable = [x for x in results if x["A"] > 0]
     return {"score": mean([x["score"] for x in results]),
             "A": mean([x["A"] for x in results]),
             "B": mean([x["B"] for x in results]),
-            "beats_A": mean([x["score"] > x["A"] for x in results]),
+            "solv_score": mean([x["score"] for x in solvable]),
+            "solv_A": mean([x["A"] for x in solvable]),
+            "gate_A": mean([x["score"] >= x["A"] - TIE for x in solvable]),
             "valid_score": mean([x["score"] for x in results if x["kind"] == "valid"]),
             "failed": mean([x["kind"] == "failed" for x in results]),
             "invalid": mean([x["kind"] == "invalid" for x in results])}
