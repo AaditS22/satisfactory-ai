@@ -1,5 +1,7 @@
+import json
 import pickle
 import shutil
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -48,7 +50,7 @@ def test_choose_greedy_legal_and_repeatable():
 def test_train_short_run_on_cpu():
     torch.manual_seed(0)
     fresh = [p.detach().clone() for p in Policy().parameters()]
-    shutil.rmtree("runs/_test", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test", ignore_errors=True)
     policy, history = train(stage=1, rounds=2, n_games=2, workers=2, T=6, minibatch=6, epochs=1, device="cpu",
                             run="_test", verbose=False)
     assert isinstance(policy, Policy)
@@ -56,42 +58,42 @@ def test_train_short_run_on_cpu():
     assert isinstance(history, list) and len(history) == 2 and all(isinstance(h, float) for h in history)
     assert all(np.isnan(h) or -3.0 <= h <= 1.0 for h in history)
     assert any(not torch.equal(p.detach(), f) for p, f in zip(policy.parameters(), fresh))
-    ev = read_log("runs/_test/eval.csv")
+    ev = read_log("runs/stage1/_test/eval.csv")
     assert np.array_equal(ev["round"], [0, 1])
     for k in ["score", "A", "B", "solv_score", "solv_A", "gate_A", "failed", "invalid", "eval_s"]:
         assert k in ev, k
     assert abs(ev["A"][0] - 0.653) < 0.001 and abs(ev["solv_A"][0] - 0.726) < 0.001
-    assert len(list(Path("runs/_test/eval/round_0001").glob("best_*.png"))) == 10
-    log = read_log("runs/_test/log.csv")
+    assert len(list(Path("runs/stage1/_test/eval/round_0001").glob("best_*.png"))) == 10
+    log = read_log("runs/stage1/_test/log.csv")
     assert np.array_equal(log["round"], [0, 1])
     for k in ["score", "failed", "invalid", "valid_score", "p_belt", "p_floors", "entropy", "approx_kl", "collect_s",
               "play_s", "update_s", "gpu_gb", "lr", "shaping", "wire"]:
         assert k in log, k
     assert np.allclose(log["lr"], [2.5e-4, 1.25e-4])
     assert np.allclose(log["score"], history, atol=1e-4, equal_nan=True)
-    assert len(list(Path("runs/_test").glob("events.out.tfevents*"))) == 1
-    assert Path("runs/_test/last.pt").exists() and Path("runs/_test/best.pt").exists()
-    last = torch.load("runs/_test/last.pt")
+    assert len(list(Path("runs/stage1/_test").glob("events.out.tfevents*"))) == 1
+    assert Path("runs/stage1/_test/last.pt").exists() and Path("runs/stage1/_test/best.pt").exists()
+    last = torch.load("runs/stage1/_test/last.pt")
     assert last["round"] == 1 and last["extra"]["stage"] == 1 and last["extra"]["rounds"] == 2
     assert abs(last["extra"]["best_eval"] - np.max(ev["solv_score"])) < 1e-4
-    shutil.rmtree("runs/_test")
+    shutil.rmtree("runs/stage1/_test")
 
 
 def test_train_resume_continues():
-    shutil.rmtree("runs/_test_resume", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_resume", ignore_errors=True)
     p1, _ = train(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
                   run="_test_resume", verbose=False)
-    ck = torch.load("runs/_test_resume/last.pt")
+    ck = torch.load("runs/stage1/_test_resume/last.pt")
     ck["extra"]["rounds"] = 3
-    torch.save(ck, "runs/_test_resume/last.pt")
+    torch.save(ck, "runs/stage1/_test_resume/last.pt")
     p2, h2 = train(stage=1, rounds=3, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
                    run="_test_resume", resume=True, verbose=False)
     assert len(h2) == 1
-    assert np.array_equal(read_log("runs/_test_resume/log.csv")["round"], [0, 1, 2])
-    assert np.array_equal(read_log("runs/_test_resume/eval.csv")["round"], [0, 1, 2])
-    assert torch.load("runs/_test_resume/last.pt")["round"] == 2
-    assert abs(read_log("runs/_test_resume/log.csv")["lr"][2] - 2.5e-4 / 3) < 1e-9
-    shutil.rmtree("runs/_test_resume")
+    assert np.array_equal(read_log("runs/stage1/_test_resume/log.csv")["round"], [0, 1, 2])
+    assert np.array_equal(read_log("runs/stage1/_test_resume/eval.csv")["round"], [0, 1, 2])
+    assert torch.load("runs/stage1/_test_resume/last.pt")["round"] == 2
+    assert abs(read_log("runs/stage1/_test_resume/log.csv")["lr"][2] - 2.5e-4 / 3) < 1e-9
+    shutil.rmtree("runs/stage1/_test_resume")
 
 
 def test_resume_needs_run_name():
@@ -103,7 +105,7 @@ def test_resume_needs_run_name():
 
 
 def test_resume_rejects_other_rounds():
-    shutil.rmtree("runs/_test_rounds", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_rounds", ignore_errors=True)
     train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_rounds",
           verbose=False)
     try:
@@ -112,45 +114,45 @@ def test_resume_rejects_other_rounds():
         assert False
     except ValueError:
         pass
-    shutil.rmtree("runs/_test_rounds")
+    shutil.rmtree("runs/stage1/_test_rounds")
 
 
 def test_init_and_resume_together_rejected():
     try:
-        train(rounds=1, run="_test_both", resume=True, init="runs/_test_both/last.pt", verbose=False)
+        train(rounds=1, run="_test_both", resume=True, init="runs/stage1/_test_both/last.pt", verbose=False)
         assert False
     except ValueError:
         pass
 
 
 def test_train_init_starts_new_run():
-    shutil.rmtree("runs/_test_init_a", ignore_errors=True)
-    shutil.rmtree("runs/_test_init_b", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_init_a", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_init_b", ignore_errors=True)
     train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_init_a",
           verbose=False)
-    saved = torch.load("runs/_test_init_a/last.pt")["policy"]
+    saved = torch.load("runs/stage1/_test_init_a/last.pt")["policy"]
     policy, history = train(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, lr=0.0, device="cpu",
-                            run="_test_init_b", init="runs/_test_init_a/last.pt", verbose=False)
+                            run="_test_init_b", init="runs/stage1/_test_init_a/last.pt", verbose=False)
     assert len(history) == 2
-    log = read_log("runs/_test_init_b/log.csv")
+    log = read_log("runs/stage1/_test_init_b/log.csv")
     assert np.array_equal(log["round"], [0, 1]) and np.array_equal(log["lr"], [0.0, 0.0])
     for k, v in policy.state_dict().items():
         assert torch.equal(v, saved[k]), k
-    last = torch.load("runs/_test_init_b/last.pt")
+    last = torch.load("runs/stage1/_test_init_b/last.pt")
     assert last["round"] == 1 and last["extra"]["rounds"] == 2
-    shutil.rmtree("runs/_test_init_a")
-    shutil.rmtree("runs/_test_init_b")
+    shutil.rmtree("runs/stage1/_test_init_a")
+    shutil.rmtree("runs/stage1/_test_init_b")
 
 
 def test_train_uses_cuda_when_available():
     if not torch.cuda.is_available():
         return
-    shutil.rmtree("runs/_test_cuda", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_cuda", ignore_errors=True)
     policy, history = train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, run="_test_cuda",
                             verbose=False)
     assert next(policy.parameters()).device.type == "cuda"
-    assert len(history) == 1 and read_log("runs/_test_cuda/log.csv")["gpu_gb"][0] > 0
-    shutil.rmtree("runs/_test_cuda")
+    assert len(history) == 1 and read_log("runs/stage1/_test_cuda/log.csv")["gpu_gb"][0] > 0
+    shutil.rmtree("runs/stage1/_test_cuda")
 
 
 def test_train_passes_solvable():
@@ -161,7 +163,7 @@ def test_train_passes_solvable():
         seen.append((stage, solvable))
         return real(stage, solvable)
 
-    shutil.rmtree("runs/_test_solvable", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_solvable", ignore_errors=True)
     LT.StageEnv = spy
     try:
         train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_solvable",
@@ -169,19 +171,19 @@ def test_train_passes_solvable():
     finally:
         LT.StageEnv = real
     assert seen == [(1, True)]
-    extra = torch.load("runs/_test_solvable/last.pt")["extra"]
+    extra = torch.load("runs/stage1/_test_solvable/last.pt")["extra"]
     assert extra["solvable"] is True and extra["ent_coef"] == 0.01 and extra["stage"] == 1 and extra["rounds"] == 1
-    shutil.rmtree("runs/_test_solvable")
+    shutil.rmtree("runs/stage1/_test_solvable")
 
 
 def test_resume_rejects_other_settings():
-    shutil.rmtree("runs/_test_settings", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_settings", ignore_errors=True)
     base = dict(stage=1, rounds=2, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_settings",
                 verbose=False)
     train(**{**base, "rounds": 1}, ent_coef=0.0)
-    ck = torch.load("runs/_test_settings/last.pt")
+    ck = torch.load("runs/stage1/_test_settings/last.pt")
     ck["extra"]["rounds"] = 2
-    torch.save(ck, "runs/_test_settings/last.pt")
+    torch.save(ck, "runs/stage1/_test_settings/last.pt")
     for bad in [{"stage": 2, "ent_coef": 0.0}, {"ent_coef": 0.01}, {"ent_coef": 0.0, "solvable": True},
                 {"ent_coef": 0.0, "overlap": True}, {"ent_coef": 0.0, "shaping": 0.1}]:
         try:
@@ -191,22 +193,22 @@ def test_resume_rejects_other_settings():
             pass
     _, h = train(**base, ent_coef=0.0, resume=True)
     assert len(h) == 1
-    shutil.rmtree("runs/_test_settings")
+    shutil.rmtree("runs/stage1/_test_settings")
 
 
 def test_train_overlap_runs():
     torch.manual_seed(0)
     fresh = [p.detach().clone() for p in Policy().parameters()]
-    shutil.rmtree("runs/_test_overlap", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_overlap", ignore_errors=True)
     policy, history = train(stage=1, rounds=3, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu",
                             run="_test_overlap", overlap=True, verbose=False)
     assert len(history) == 3
     assert any(not torch.equal(p.detach(), f) for p, f in zip(policy.parameters(), fresh))
-    log = read_log("runs/_test_overlap/log.csv")
+    log = read_log("runs/stage1/_test_overlap/log.csv")
     assert np.array_equal(log["round"], [0, 1, 2]) and (log["play_s"] > 0).all()
-    extra = torch.load("runs/_test_overlap/last.pt")["extra"]
+    extra = torch.load("runs/stage1/_test_overlap/last.pt")["extra"]
     assert extra["overlap"] is True and extra["rounds"] == 3
-    shutil.rmtree("runs/_test_overlap")
+    shutil.rmtree("runs/stage1/_test_overlap")
 
 
 def test_train_shaping_rewards_and_log():
@@ -217,7 +219,7 @@ def test_train_shaping_rewards_and_log():
         pages.append((buffer.rewards.copy(), buffer.dones.copy()))
         return real(policy, optimizer, buffer, *a, **k)
 
-    shutil.rmtree("runs/_test_shaping", ignore_errors=True)
+    shutil.rmtree("runs/stage1/_test_shaping", ignore_errors=True)
     LT.update = spy
     try:
         train(stage=1, rounds=2, n_games=2, workers=2, T=8, minibatch=8, epochs=1, device="cpu", run="_test_shaping",
@@ -227,17 +229,86 @@ def test_train_shaping_rewards_and_log():
     (r0, d0), (r1, d1) = pages
     assert (r0[~d0] <= 0).all() and (r0[~d0] < 0).any()
     assert (r1[~d1] == 0).all()
-    log = read_log("runs/_test_shaping/log.csv")
+    log = read_log("runs/stage1/_test_shaping/log.csv")
     assert np.allclose(log["shaping"], [0.1, 0.0]) and "wire" in log
-    assert torch.load("runs/_test_shaping/last.pt")["extra"]["shaping"] == 0.1
-    shutil.rmtree("runs/_test_shaping")
+    assert torch.load("runs/stage1/_test_shaping/last.pt")["extra"]["shaping"] == 0.1
+    shutil.rmtree("runs/stage1/_test_shaping")
+
+
+def test_train_images_every_zero_means_never():
+    shutil.rmtree("runs/stage1/_test_noimg", ignore_errors=True)
+    train(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_noimg",
+          images_every=0, verbose=False)
+    assert not list(Path("runs/stage1/_test_noimg").glob("eval/**/*.png"))
+    assert Path("runs/stage1/_test_noimg/last.pt").exists()
+    shutil.rmtree("runs/stage1/_test_noimg")
+
+
+def test_run_json_and_existing_run_refused():
+    shutil.rmtree("runs/stage1/_test_note", ignore_errors=True)
+    base = dict(stage=1, rounds=1, n_games=2, workers=2, T=4, minibatch=8, epochs=1, device="cpu", run="_test_note",
+                verbose=False)
+    train(**base, shaping=0.1, note="try shaping")
+    info = json.loads(Path("runs/stage1/_test_note/run.json").read_text())
+    assert info["note"] == "try shaping" and info["config"]["shaping"] == 0.1 and info["config"]["rounds"] == 1
+    assert info["config"]["init"] is None and info["resumed"] == []
+    try:
+        train(**base, shaping=0.1, note="again")
+        assert False
+    except ValueError:
+        pass
+    ck = torch.load("runs/stage1/_test_note/last.pt")
+    ck["extra"]["rounds"] = 2
+    torch.save(ck, "runs/stage1/_test_note/last.pt")
+    train(**{**base, "rounds": 2}, shaping=0.1, resume=True, note="after a crash")
+    info = json.loads(Path("runs/stage1/_test_note/run.json").read_text())
+    assert info["note"] == "try shaping" and [r["at_round"] for r in info["resumed"]] == [1]
+    shutil.rmtree("runs/stage1/_test_note")
+
+
+def run_main(argv):
+    import layout.train as LT
+    real, seen = LT.train, {}
+
+    def spy(**kw):
+        seen.update(kw)
+        return None, [0.5]
+
+    old = sys.argv
+    LT.train, sys.argv = spy, ["layout.train"] + argv
+    try:
+        LT.main()
+    finally:
+        LT.train, sys.argv = real, old
+    return seen
+
+
+def test_main_passes_every_flag():
+    seen = run_main(["--run", "x", "--stage", "2", "--rounds", "7", "--ent-coef", "0.03", "--workers", "3",
+                     "--solvable", "--overlap", "--shaping", "0.1", "--lr", "0.001", "--images-every", "0",
+                     "--init", "a.pt", "--note", "hello"])
+    want = {"run": "x", "stage": 2, "rounds": 7, "ent_coef": 0.03, "workers": 3, "solvable": True, "overlap": True,
+            "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False}
+    for k, v in want.items():
+        assert seen[k] == v, k
+
+
+def test_main_needs_note_for_new_runs():
+    try:
+        run_main(["--run", "x"])
+        assert False
+    except SystemExit:
+        pass
+    assert run_main(["--run", "x", "--resume"])["resume"] is True
 
 
 TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
     test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
     test_resume_needs_run_name, test_resume_rejects_other_rounds, test_init_and_resume_together_rejected,
     test_train_init_starts_new_run, test_train_uses_cuda_when_available, test_train_passes_solvable,
-    test_resume_rejects_other_settings, test_train_overlap_runs, test_train_shaping_rewards_and_log]
+    test_resume_rejects_other_settings, test_train_overlap_runs, test_train_shaping_rewards_and_log,
+    test_train_images_every_zero_means_never, test_run_json_and_existing_run_refused, test_main_passes_every_flag,
+    test_main_needs_note_for_new_runs]
 
 if __name__ == "__main__":
     for t in TESTS:

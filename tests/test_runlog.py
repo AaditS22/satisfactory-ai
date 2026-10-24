@@ -2,7 +2,11 @@ import math
 
 import numpy as np
 
-from layout.runlog import PARTS, mean, kind, round_stats, RunLog, read_log, line, tag
+import json
+import shutil
+from pathlib import Path
+
+from layout.runlog import PARTS, mean, kind, round_stats, RunLog, read_log, line, tag, run_dir, git_state, save_run_info
 
 
 def parts(v):
@@ -105,6 +109,9 @@ class FakeWriter:
     def add_scalar(self, name, v, step):
         self.seen.append((name, v, step))
 
+    def add_text(self, name, s, step):
+        self.seen.append((name, s, step))
+
     def flush(self):
         pass
 
@@ -155,7 +162,37 @@ def test_round_stats_wire_valid_only():
     assert tag("wire") == "penalty/wire" and tag("play_s") == "time/play_s"
 
 
-TESTS = [test_round_stats_wire_valid_only, test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
+def test_run_dir():
+    assert run_dir(2, "stage2_d") == "runs/stage2/stage2_d"
+
+
+def test_save_run_info_new_and_resume(folder="tests/_tmp_runinfo/stage1/x"):
+    shutil.rmtree("tests/_tmp_runinfo", ignore_errors=True)
+    info = save_run_info(folder, "first try", {"lr": 0.00025, "init": None})
+    back = json.loads(Path(folder, "run.json").read_text())
+    assert back == info and back["note"] == "first try" and back["config"] == {"lr": 0.00025, "init": None}
+    assert back["resumed"] == [] and isinstance(back["code"], str) and len(back["started"]) == 16
+    save_run_info(folder, "after crash", {"lr": 1.0}, resumed_at=431)
+    back = json.loads(Path(folder, "run.json").read_text())
+    assert back["note"] == "first try" and back["config"]["lr"] == 0.00025
+    assert len(back["resumed"]) == 1 and back["resumed"][0]["at_round"] == 431 and back["resumed"][0]["note"] == "after crash"
+    shutil.rmtree("tests/_tmp_runinfo")
+
+
+def test_git_state_is_text():
+    s = git_state()
+    assert isinstance(s, str) and (s == "" or len(s.split("+")[0]) >= 7)
+
+
+def test_runlog_text_goes_to_tensorboard(folder="tests/_tmp_runlog4"):
+    log = RunLog(f"{folder}/log.csv", tensorboard=False)
+    log.tb = FakeWriter()
+    log.text("note", "shaping 0.1")
+    assert log.tb.seen == [("note", "shaping 0.1", 0)]
+
+
+TESTS = [test_run_dir, test_save_run_info_new_and_resume, test_git_state_is_text,
+    test_runlog_text_goes_to_tensorboard, test_round_stats_wire_valid_only, test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
     test_round_stats_empty, test_runlog_roundtrip, test_runlog_keeps_small_numbers, test_runlog_append_keeps_old_rows,
     test_runlog_share_one_writer, test_tag_groups,
     test_line]

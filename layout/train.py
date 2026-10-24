@@ -1,5 +1,6 @@
 import argparse
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -10,7 +11,7 @@ from rl.games import ProcGames
 from rl.ppo import update, linear_lr
 from layout.gym_env import StageEnv, N_POS, Shaped, shaping_weight
 from layout.policy import Policy, obs_to_torch
-from layout.runlog import RunLog, round_stats, line
+from layout.runlog import RunLog, round_stats, line, run_dir, save_run_info
 from layout.evaluate import load_eval, evaluate, TIE
 from rl.checkpoint import save_checkpoint, load_checkpoint 
 
@@ -25,7 +26,7 @@ def choose_greedy(policy, obs_list, masks):
 
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
-          shaping=0.0): 
+          shaping=0.0, note=""): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -42,25 +43,40 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError("use --resume (same run) or --init (new run), not both")
     
     run = run or time.strftime("%Y%m%d-%H%M%S")
+
+    folder = run_dir(stage, run)
+    if resume and not Path(f"{folder}/last.pt").exists():
+        raise ValueError(f"no run {run} in runs/stage{stage}/ to resume")
+    if not resume and Path(f"{folder}/last.pt").exists():
+        raise ValueError(f"{folder} already exists: pick a new --run name, or add --resume to continue it")
+    
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
             "shaping": shaping}
 
     start, best = 0, float("-inf") 
     if resume:
-        last_round, extra = load_checkpoint(f"runs/{run}/last.pt", policy, optimizer, device)
+        last_round, extra = load_checkpoint(f"{folder}/last.pt", policy, optimizer, device)
         for k, v in settings.items():
             if k in extra and extra[k] != v:
                 raise ValueError(f"run {run} was started with {k}={extra[k]}, not {v}; --resume needs the same "
-                                f"settings (a new run from these weights: --init runs/{run}/last.pt)")
+                                f"settings")
         start, best = last_round + 1, extra["best_eval"]
         print(f"resuming {run} at round {start} (best eval so far {best:.3f})")
     elif init:
         load_checkpoint(init, policy, device=device)
         print(f"new run {run} starting from the weights in {init}")
 
-    log = RunLog(f"runs/{run}/log.csv", append=resume)
+    log = RunLog(f"{folder}/log.csv", append=resume)
     eval_rows = load_eval(stage)
-    eval_log = RunLog(f"runs/{run}/eval.csv", group="eval", append=resume, share=log)
+    eval_log = RunLog(f"{folder}/eval.csv", group="eval", append=resume, share=log)
+
+    config = {"stage": stage, "rounds": rounds, "n_games": n_games, "workers": workers, "T": T, "lr": lr,
+            "epochs": epochs, "minibatch": minibatch, "ent_coef": ent_coef, "seed": seed, "init": init,
+            "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
+            "images_every": images_every}
+    info = save_run_info(folder, note, config, resumed_at=start if resume else None)
+    log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
+             else f"resumed at round {start}: {note}")
 
     history = []
     with ProcGames(StageEnv(stage, solvable), n_games, workers) as raw:
@@ -103,7 +119,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
             if r % eval_every == 0 or r == rounds - 1:
                 t3 = time.time()
                 k = 10 if images_every and (r % images_every == 0 or r == rounds - 1) else 0
-                e, pngs = evaluate(policy, eval_rows, f"runs/{run}/eval/round_{r:04d}", choose_greedy, k=k)
+                e, pngs = evaluate(policy, eval_rows, f"{folder}/eval/round_{r:04d}", choose_greedy, k=k)
                 e["eval_s"] = time.time() - t3
                 eval_log.write({"round": r, **e})
                 for i, png in enumerate(pngs):
@@ -112,8 +128,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 new_best = e["solv_score"] > best
                 if new_best:
                     best = e["solv_score"]
-                    save_checkpoint(f"runs/{run}/best.pt", policy, optimizer, r, {"best_eval": best, **settings})
-                save_checkpoint(f"runs/{run}/last.pt", policy, optimizer, r, {"best_eval": best, **settings})
+                    save_checkpoint(f"{folder}/best.pt", policy, optimizer, r, {"best_eval": best, **settings})
+                save_checkpoint(f"{folder}/last.pt", policy, optimizer, r, {"best_eval": best, **settings})
  
                 if verbose:
                     print(f"      eval  score {e['score']:.3f}  (A {e['A']:.3f}, B {e['B']:.3f})  "
@@ -138,7 +154,8 @@ def main():
     p.add_argument("--run", default=None)
     p.add_argument("--eval-every", type=int, default=10)
     p.add_argument("--images-every", type=int, default=0)
-    p.add_argument("--resume", action="store_true", help="continue runs/<run>/last.pt")
+    p.add_argument("--resume", action="store_true", help="continue runs/stage<N>/<run>/last.pt")
+    p.add_argument("--note", default="", help="what this run changes (required for a new run)")
     p.add_argument("--lr", type=float, default=2.5e-4)
     p.add_argument("--init", default=None, help="start a new run from this checkpoint's weights")
     p.add_argument("--ent-coef", type=float, default=0.01)
@@ -146,12 +163,16 @@ def main():
     p.add_argument("--overlap", action="store_true", help="overlap CPU and GPU processes")
     p.add_argument("--shaping", type=float, default=0.0)
     args = p.parse_args()
+
+    if not args.resume and not args.note.strip():
+        p.error("a new run needs --note")
+
     t0 = time.time()
     _, history = train(stage=args.stage, rounds=args.rounds, n_games=args.games, workers=args.workers, T=args.T,
                 minibatch=args.minibatch, seed=args.seed, device=args.device, run=args.run,
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
-                shaping=args.shaping)
+                shaping=args.shaping, note=args.note)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":

@@ -1,4 +1,8 @@
 import csv
+import json
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -7,6 +11,33 @@ PARTS = ["p_belt", "p_lifts", "p_crossings", "p_sprawl", "p_floors"]
 GROUPS = {"score": "score", "valid_score": "score", "failed": "rates", "invalid": "rates", "routed": "rates",
           "fraction": "rates", "games": "games", "blocks": "games", "collect_s": "time", "update_s": "time",
           "gpu_gb": "time", "play_s": "time", "wire": "penalty"}
+
+def run_dir(stage, run):
+    """Finds the path to the folder of a run"""
+    return f"runs/stage{stage}/{run}"
+
+def git_state():
+    """Gets the current state of the code from git"""
+    try:
+        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True).stdout.strip()
+    except OSError:
+        return ""
+    return head + ("+changes" if head and dirty else "")
+
+def save_run_info(folder, note, config, resumed_at=None):
+    """Saves important info about a run to a json file"""
+    path = Path(folder) / "run.json"
+    now = time.strftime("%Y-%m-%d %H:%M")
+    if resumed_at is not None and path.exists():
+        info = json.loads(path.read_text())
+        info.setdefault("resumed", []).append({"at_round": resumed_at, "time": now, "code": git_state(), "note": note})
+    else:
+        info = {"note": note, "started": now, "command": " ".join(sys.argv), "code": git_state(), "config": config,
+                "resumed": []}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(info, indent=1))
+    return info
 
 def tag(key):
     if key in PARTS:
@@ -85,6 +116,12 @@ class RunLog:
             import matplotlib.image
             pixels = matplotlib.image.imread(str(png))[:, :, :3]
             self.tb.add_image(name, pixels, step, dataformats="HWC")
+            self.tb.flush()
+
+    def text(self, name, s):
+        """Show a piece of text in TensorBoard's Text tab"""
+        if self.tb is not None:
+            self.tb.add_text(name, s, 0)
             self.tb.flush()
 
     def close(self):
