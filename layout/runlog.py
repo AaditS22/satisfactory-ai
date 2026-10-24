@@ -6,7 +6,7 @@ import numpy as np
 PARTS = ["p_belt", "p_lifts", "p_crossings", "p_sprawl", "p_floors"]
 GROUPS = {"score": "score", "valid_score": "score", "failed": "rates", "invalid": "rates", "routed": "rates",
           "fraction": "rates", "games": "games", "blocks": "games", "collect_s": "time", "update_s": "time",
-          "gpu_gb": "time"}
+          "gpu_gb": "time", "play_s": "time", "wire": "penalty"}
 
 def tag(key):
     if key in PARTS:
@@ -40,6 +40,7 @@ def round_stats(finished):
         out[p] = mean([f["terms"][p] for f in valid])
     out["routed"] = mean([f["terms"]["routed"] for f in done])
     out["fraction"] = mean([f["terms"]["fraction"] for f in done])
+    out["wire"] = mean([f["wire_total"] for f in valid if "wire_total" in f])
     return out
 
 class RunLog:

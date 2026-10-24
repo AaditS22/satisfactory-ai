@@ -4,7 +4,7 @@ from layout.env import LayoutEnv
 from layout.tasks import random_task
 from layout import obs as O
 from layout.gym_env import (S, POS_SHAPE, N_POS, offsets, snap_mask, fine_cell, pad_mask, observe, obs_space,
-    LayoutGym, play_random, a_fits, StageEnv)
+    LayoutGym, play_random, a_fits, StageEnv, shaping_weight, Shaped)
 from layout.testset import STAGES
 from layout.baseline import greedy
 from layout.api import play
@@ -306,7 +306,7 @@ def test_two_stage_step():
     assert m[act(0, 0, 2, 2)]
     obs, r, term, trunc, info = g.step(act(0, 0, 2, 2))
     assert (r, term) == (0.0, False)
-    assert info == {"stage": 0, "failed": False, "blocks": 1}
+    assert info == {"stage": 0, "failed": False, "blocks": 1, "wire": 9 / 96}
     assert list(obs["stage"]) == [0, 0]
     assert g.env.world.blocks[0]["floor"] == 0 and g.env.world.blocks[0]["x"] == 2
     assert list(np.flatnonzero(g.action_masks())) == [1, 2]
@@ -320,7 +320,7 @@ def test_full_plate_episode():
     assert plan == [[2, 0, 0, 2, 2], [1, 0, 1, 2, 2], [1, 0, 2, 2, 2]]
     assert term and abs(r - 12 / 19) < 1e-9 and not info["failed"]
     assert info["terms"]["length"] == 64 and abs(info["terms"]["penalty"] - 7 / 12) < 1e-9
-    assert info["blocks"] == 3
+    assert info["blocks"] == 3 and info["wire_total"] == 9 + 77 + 109
     assert g.action_masks().sum() == 0
     assert obs["grid"][1].sum() == 200 + 180 + 180
     try:
@@ -441,13 +441,76 @@ def test_stage_env_solvable_all_fit():
         assert a_fits(env.task(np.random.default_rng(seed)))
 
 
+def test_wire_info_plate():
+    g, obs, info = plate_gym()
+    wires, rewards = [], []
+    for a in [2, act(0, 0, 2, 2), 1, act(0, 1, 2, 2), 1, act(0, 2, 2, 2)]:
+        obs, r, term, trunc, info = g.step(a)
+        wires.append(info["wire"])
+        rewards.append(r)
+    assert np.allclose(wires, [0, 9 / 96, 0, 77 / 96, 0, 109 / 96])
+    assert rewards[:5] == [0.0] * 5 and abs(rewards[5] - 12 / 19) < 1e-9
+    assert info["wire_total"] == 195
+
+
+def test_wire_total_restarts_on_reset():
+    g, obs, info = plate_gym()
+    for a in [2, act(0, 0, 2, 2), 1, act(0, 1, 2, 2), 1, act(0, 2, 2, 2)]:
+        g.step(a)
+    g.reset(options={"task": dict(PLATE)})
+    for a in [2, act(0, 0, 2, 2), 1, act(0, 1, 2, 2), 1, act(0, 2, 2, 2)]:
+        obs, r, term, trunc, info = g.step(a)
+    assert info["wire_total"] == 195
+
+
+def test_shaping_weight_schedule():
+    assert shaping_weight(0, 2000, 0.1) == 0.1
+    assert abs(shaping_weight(500, 2000, 0.1) - 0.05) < 1e-12
+    assert shaping_weight(1000, 2000, 0.1) == 0.0
+    assert shaping_weight(1500, 2000, 0.1) == 0.0
+    assert abs(shaping_weight(250, 1000, 0.2) - 0.1) < 1e-12
+    assert shaping_weight(7, 2000, 0.0) == 0.0
+    assert isinstance(shaping_weight(1200, 2000, 0.1), float)
+
+
+class FakeGames:
+    def __init__(self):
+        self.seen = None
+
+    def reset(self, seed=0):
+        self.seen = seed
+        return ["o"], np.ones((1, 3), dtype=bool)
+
+    def step(self, actions):
+        infos = [{"wire": 0.5}, {"stage": 1}, {"wire": 2.0, "score": 0.7}]
+        return ["a", "b", "c"], np.ones((3, 3), dtype=bool), np.array([0.0, 0.0, 0.7], dtype=np.float32), \
+            np.array([False, False, True]), infos
+
+
+def test_shaped_subtracts_weight_times_wire():
+    games = Shaped(FakeGames(), weight=0.1)
+    obs, masks, rewards, dones, infos = games.step([0, 0, 0])
+    assert np.allclose(rewards, [-0.05, 0.0, 0.5]) and rewards.dtype == np.float32
+    assert infos[2]["score"] == 0.7 and obs == ["a", "b", "c"] and list(dones) == [False, False, True]
+
+
+def test_shaped_weight_zero_and_changes():
+    games = Shaped(FakeGames())
+    assert np.allclose(games.step([0])[2], [0.0, 0.0, 0.7])
+    games.weight = 0.2
+    assert np.allclose(games.step([0])[2], [-0.1, 0.0, 0.3])
+    assert games.reset(5)[0] == ["o"] and games.games.seen == 5
+
+
 TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_random, test_fine_cell_order,
     test_fine_cell_edges, test_fine_cell_plate, test_fine_cell_random, test_pad_mask_small, test_pad_mask_flat_index,
     test_observe_shapes, test_observe_values, test_obs_space_shape, test_obs_space_rejects, test_obs_space_random,
     test_reset_plate, test_odd_corner_step, test_two_stage_step, test_full_plate_episode, test_illegal_actions, test_reset_seed,
     test_random_play_invariants, test_play_random, test_a_fits_hand, test_a_fits_needs_both_rotations,
     test_stage_env_default_unchanged,
-    test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit]
+    test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit, test_wire_info_plate,
+    test_wire_total_restarts_on_reset, test_shaping_weight_schedule, test_shaped_subtracts_weight_times_wire,
+    test_shaped_weight_zero_and_changes]
 
 if __name__ == "__main__":
     for t in TESTS:

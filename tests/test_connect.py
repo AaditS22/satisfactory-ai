@@ -1,6 +1,6 @@
 import numpy as np
 
-from layout.connect import FLOOR_COST, chain_order, chains, distance, ends_for, nearest, trunk_rates
+from layout.connect import FLOOR_COST, added_belt, chain_order, chains, distance, ends_for, nearest, trunk_rates
 from layout.env import LayoutEnv
 from layout.view import random_episode
 
@@ -192,13 +192,38 @@ def test_chains_random_episodes():
     assert seen >= 20
 
 
+def test_added_belt_hand():
+    env = hand_env(steps=False)
+    got = []
+    for f, x, y in [(0, 1, 0), (1, 1, 0), (0, 1, 20), (1, 1, 20), (0, 7, 0)]:
+        env.step(1, 0, f, x, y)
+        got.append(added_belt(env))
+    assert got == [22, 37, 11, 81, 73]
+
+
+def test_added_belt_first_block_is_entry_distance():
+    for seed in range(15):
+        env = random_episode(seed)
+        b = env.world.blocks[0]
+        ends = [(b["floor"], *b["ends"][i]) for i, inp in enumerate(b["block"]["inputs"]) if inp["item"] in env.entries]
+        assert ends
+        while len(env.world.blocks) > 1:
+            env.world.blocks.pop()
+        want = sum(distance(e, (0, *env.entries[inp["item"]])) for e, inp in
+                   zip(ends, [i for i in b["block"]["inputs"] if i["item"] in env.entries]))
+        if b["block"]["output"]["item"] == env.graph["target"]:
+            want += distance((b["floor"], *b["ends"][-1]), (0, *env.exit))
+        assert added_belt(env) == want
+
+
 if __name__ == "__main__":
     tests = [test_distance_worked_examples, test_distance_invariants,
              test_nearest_worked_examples, test_nearest_does_not_change_inputs, test_nearest_random,
              test_chain_order_worked_example, test_chain_order_single, test_chain_order_start,
              test_chain_order_consumers_start_from_last_producer, test_chain_order_does_not_change_inputs,
              test_chain_order_random, test_trunk_rates, test_ends_for_hand, test_chains_hand,
-             test_chains_unfinished_raises, test_chains_random_episodes]
+             test_chains_unfinished_raises, test_chains_random_episodes, test_added_belt_hand,
+             test_added_belt_first_block_is_entry_distance]
     for t in tests:
         t()
         print(f"ok  {t.__name__}")

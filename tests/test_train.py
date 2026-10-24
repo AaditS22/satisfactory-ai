@@ -65,7 +65,7 @@ def test_train_short_run_on_cpu():
     log = read_log("runs/_test/log.csv")
     assert np.array_equal(log["round"], [0, 1])
     for k in ["score", "failed", "invalid", "valid_score", "p_belt", "p_floors", "entropy", "approx_kl", "collect_s",
-              "play_s", "update_s", "gpu_gb", "lr"]:
+              "play_s", "update_s", "gpu_gb", "lr", "shaping", "wire"]:
         assert k in log, k
     assert np.allclose(log["lr"], [2.5e-4, 1.25e-4])
     assert np.allclose(log["score"], history, atol=1e-4, equal_nan=True)
@@ -183,7 +183,7 @@ def test_resume_rejects_other_settings():
     ck["extra"]["rounds"] = 2
     torch.save(ck, "runs/_test_settings/last.pt")
     for bad in [{"stage": 2, "ent_coef": 0.0}, {"ent_coef": 0.01}, {"ent_coef": 0.0, "solvable": True},
-                {"ent_coef": 0.0, "overlap": True}]:
+                {"ent_coef": 0.0, "overlap": True}, {"ent_coef": 0.0, "shaping": 0.1}]:
         try:
             train(**{**base, **bad}, resume=True)
             assert False, bad
@@ -209,11 +209,35 @@ def test_train_overlap_runs():
     shutil.rmtree("runs/_test_overlap")
 
 
+def test_train_shaping_rewards_and_log():
+    import layout.train as LT
+    real, pages = LT.update, []
+
+    def spy(policy, optimizer, buffer, *a, **k):
+        pages.append((buffer.rewards.copy(), buffer.dones.copy()))
+        return real(policy, optimizer, buffer, *a, **k)
+
+    shutil.rmtree("runs/_test_shaping", ignore_errors=True)
+    LT.update = spy
+    try:
+        train(stage=1, rounds=2, n_games=2, workers=2, T=8, minibatch=8, epochs=1, device="cpu", run="_test_shaping",
+              shaping=0.1, verbose=False)
+    finally:
+        LT.update = real
+    (r0, d0), (r1, d1) = pages
+    assert (r0[~d0] <= 0).all() and (r0[~d0] < 0).any()
+    assert (r1[~d1] == 0).all()
+    log = read_log("runs/_test_shaping/log.csv")
+    assert np.allclose(log["shaping"], [0.1, 0.0]) and "wire" in log
+    assert torch.load("runs/_test_shaping/last.pt")["extra"]["shaping"] == 0.1
+    shutil.rmtree("runs/_test_shaping")
+
+
 TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
     test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
     test_resume_needs_run_name, test_resume_rejects_other_rounds, test_init_and_resume_together_rejected,
     test_train_init_starts_new_run, test_train_uses_cuda_when_available, test_train_passes_solvable,
-    test_resume_rejects_other_settings, test_train_overlap_runs]
+    test_resume_rejects_other_settings, test_train_overlap_runs, test_train_shaping_rewards_and_log]
 
 if __name__ == "__main__":
     for t in TESTS:

@@ -144,7 +144,18 @@ def test_line():
     assert text.startswith("round    3") and "score 0.600" in text and "learn 3.1 s" in text
 
 
-TESTS = [test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
+def test_round_stats_wire_valid_only():
+    a, b = valid(0.6, 1.0), valid(0.8, 0.0)
+    a["wire_total"], b["wire_total"] = 100, 200
+    bad = invalid(-0.5, 0.5)
+    bad["wire_total"] = 900
+    s = round_stats([a, b, bad, failed(-1.5)])
+    assert s["wire"] == 150.0
+    assert math.isnan(round_stats([valid(0.6, 1.0)])["wire"])
+    assert tag("wire") == "penalty/wire" and tag("play_s") == "time/play_s"
+
+
+TESTS = [test_round_stats_wire_valid_only, test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
     test_round_stats_empty, test_runlog_roundtrip, test_runlog_keeps_small_numbers, test_runlog_append_keeps_old_rows,
     test_runlog_share_one_writer, test_tag_groups,
     test_line]

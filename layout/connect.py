@@ -126,3 +126,19 @@ def chains(env):
         res[item] = {"cells": cells, "rates": rates, "n_prod": len(prods)}
 
     return res
+
+def added_belt(env):
+    """Calculates the estimated meters of belt the newest block adds"""
+    b = env.world.blocks[-1]
+    total = 0
+    for i, inp in enumerate(b["block"]["inputs"]):
+        end = (b["floor"], *b["ends"][i])
+        prods = [(o["floor"], *o["ends"][-1]) for o in env.world.blocks[:-1]
+                 if o["block"]["output"]["item"] == inp["item"]]
+        if inp["item"] in env.entries:
+            prods.append((0, *env.entries[inp["item"]]))
+        if prods:
+            total += min(distance(end, p) for p in prods)
+    if b["block"]["output"]["item"] == env.graph["target"]:
+        total += distance((b["floor"], *b["ends"][-1]), (0, *env.exit))
+    return total

@@ -12,6 +12,8 @@ from layout.score import score_episode
 from layout.testset import STAGES
 from layout.baseline import greedy
 from layout.api import play  
+from layout.connect import added_belt
+from layout.score import BELT_REF
 
 S = 2
 COARSE = GRID_MAX // S
@@ -113,6 +115,7 @@ class LayoutGym(gym.Env):
                 raise ValueError("task has no legal first move")
         self.stage = 0
         self.n = 0
+        self.wire_m = 0
         self.mask = self._make_mask()
         return observe(self.env, self.stage, self.n), self._info()
 
@@ -124,6 +127,7 @@ class LayoutGym(gym.Env):
         if not (0 <= action < N_POS and self.mask[action]):
             raise ValueError(f"illegal action {action} in stage {self.stage}")
 
+        wire = 0.0
         if self.stage == 0:
             self.n = action
             self.stage = 1
@@ -131,14 +135,20 @@ class LayoutGym(gym.Env):
             rot, f, cx, cy = (int(v) for v in np.unravel_index(action, POS_SHAPE))
             x, y = fine_cell(self.fine, rot, f, cx, cy)
             self.env.step(self.n, rot, f, x, y)
+            metres = added_belt(self.env)
+            self.wire_m += metres
+            wire = metres / (len(self.env.graph["edges"]) * BELT_REF)
             self.stage = 0
             self.n = 0
 
         self.mask = self._make_mask()
         info = self._info()
+        info["wire"] = wire
         reward = 0.0
         if self.env.done:
             reward, info["terms"] = score_episode(self.env)
+            info["wire_total"] = self.wire_m
+
         return observe(self.env, self.stage, self.n), reward, self.env.done, False, info
 
 def play_random(episodes, seed=0, check=False):
@@ -165,6 +175,26 @@ def play_random(episodes, seed=0, check=False):
     return {"episodes": episodes, "finished": finished, "failed": failed, "valid": valid, "steps": steps,
         "mean_blocks": float(np.mean(blocks)), "max_blocks": int(max(blocks)),
         "mean_score": float(np.mean(scores)), "median_score": float(np.median(scores))}
+
+def shaping_weight(r, rounds, w0):
+    """Find the current reward shaping weight, which goes down linearly to 0 at rounds / 2"""
+    return w0 * max(0.0, 1 - (r / (rounds / 2)))
+
+class Shaped:
+    """Adds reward shaping by subtracting the placement cost from the reward"""
+
+    def __init__(self, games, weight=0.0):
+        self.games = games
+        self.weight = weight
+
+    def reset(self, seed=0):
+        return self.games.reset(seed)
+
+    def step(self, actions):
+        obs, masks, rewards, dones, infos = self.games.step(actions)
+        wire = np.array([info.get("wire", 0.0) for info in infos], dtype=np.float32)
+        rewards = rewards - self.weight * wire
+        return obs, masks, rewards, dones, infos
 
 def a_fits(task):
     """True if Baseline A's placement fits every block on the site (fixed rotation, then free rotation)"""
