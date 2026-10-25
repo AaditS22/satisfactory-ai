@@ -10,7 +10,8 @@ import numpy as np
 PARTS = ["p_belt", "p_lifts", "p_crossings", "p_sprawl", "p_floors"]
 GROUPS = {"score": "score", "valid_score": "score", "failed": "rates", "invalid": "rates", "routed": "rates",
           "fraction": "rates", "games": "games", "blocks": "games", "collect_s": "time", "update_s": "time",
-          "gpu_gb": "time", "play_s": "time", "wire": "penalty"}
+          "gpu_gb": "time", "play_s": "time", "wire": "penalty", "steps": "games", "groups": "games", "idle": "time",
+          "flat": "rates"}
 
 def run_dir(stage, run):
     """Finds the path to the folder of a run"""
@@ -142,4 +143,5 @@ def line(row):
             f"blocks {row['blocks']:.1f}  entropy {row['entropy']:.2f}  kl {row['approx_kl']:.4f}  "
             f"clip {row['clip_frac']:.3f}  vloss {row['value_loss']:.3f}  "
             f"wait {row['collect_s']:.1f} s  learn {row['update_s']:.1f} s"
-            + (f"  (page took {row['play_s']:.1f} s)" if "play_s" in row else ""))
+            + (f"  (page took {row['play_s']:.1f} s)" if "play_s" in row else "")
+            + (f"  steps {row['steps']}  idle {row['idle']:.0%}  flat {row['flat']:.0%}" if "idle" in row else ""))

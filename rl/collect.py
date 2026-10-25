@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from rl.dist import masked_log_probs, sample, pick
+from rl.games import JobQueue
 
 def stack(obs_list):
     """Turns a list of observation dicts into one dict of arrays"""
@@ -44,6 +45,39 @@ def collect(games, obs, masks, policy, buffer, obs_to_torch, gen=None):
     _, _, last_value = act(policy, obs, masks, obs_to_torch, gen)
     buffer.finish(last_value)
     return obs, masks, finished
+
+def collect_groups(games, policy, buffer, jobs, obs_to_torch, broken, gen=None):
+    """Plays every job to the end and writes every game into an EpisodeBuffer, then finishes it"""
+    buffer.reset()
+    queue = JobQueue(jobs)
+    n = games.n
+    playing, current = [False] * n, [None] * n
+    obs, masks = [None] * n, None
+    finished, moves, ticks = [], 0, 0
+    while len(queue) or any(playing):
+        live = [i for i in range(n) if playing[i]]
+        actions = [None] * n
+        if live:
+            a, logp, values = act(policy, [obs[i] for i in live], masks[live], obs_to_torch, gen)
+            for k, i in enumerate(live):
+                actions[i] = int(a[k])
+                buffer.add(i, obs[i], masks[i], a[k], logp[k], values[k])
+
+        offer = queue.offer(playing)
+        obs, masks, rewards, dones, infos = games.step(actions, offer)
+
+        for i in live:
+            if dones[i]:
+                buffer.end_game(i, current[i], infos[i]["score"], broken(infos[i]))
+                finished.append(infos[i])
+        for i, job in queue.taken(offer, playing, dones).items():
+            current[i] = job
+        playing = [o is not None for o in obs]
+        moves += len(live)
+        ticks += 1
+
+    buffer.finish()
+    return finished, 1.0 - moves / (n * ticks)
 
 class Background:
     """Plays the next page in a second thread while the main thread learns from the current one"""

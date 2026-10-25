@@ -11,7 +11,8 @@ from layout.gym_env import LayoutGym, StageEnv, N_POS
 from layout.policy import Policy
 from layout.testset import STAGES
 from layout.runlog import read_log
-from layout.train import train, choose_greedy
+from layout.train import train, choose_greedy, page_jobs, is_broken
+from rl.buffer import EpisodeBuffer
 
 
 def test_stage_env_builds_layout_gym():
@@ -185,7 +186,8 @@ def test_resume_rejects_other_settings():
     ck["extra"]["rounds"] = 2
     torch.save(ck, "runs/stage1/_test_settings/last.pt")
     for bad in [{"stage": 2, "ent_coef": 0.0}, {"ent_coef": 0.01}, {"ent_coef": 0.0, "solvable": True},
-                {"ent_coef": 0.0, "overlap": True}, {"ent_coef": 0.0, "shaping": 0.1}]:
+                {"ent_coef": 0.0, "overlap": True}, {"ent_coef": 0.0, "shaping": 0.1}, {"ent_coef": 0.0, "copies": 2},
+                {"ent_coef": 0.0, "groups": 10}, {"ent_coef": 0.0, "broken_margin": 0.2}]:
         try:
             train(**{**base, **bad}, resume=True)
             assert False, bad
@@ -266,6 +268,66 @@ def test_run_json_and_existing_run_refused():
     shutil.rmtree("runs/stage1/_test_note")
 
 
+def test_page_jobs():
+    assert page_jobs(0, 0, 3, 2) == [1_000_000, 1_000_000, 1_000_001, 1_000_001, 1_000_002, 1_000_002]
+    assert page_jobs(0, 1, 3, 2)[0] == 1_000_003
+    jobs = page_jobs(1, 5, 40, 8)
+    assert len(jobs) == 320 and jobs[0] == 2_000_200 and jobs[7] == 2_000_200 and jobs[8] == 2_000_201
+    seen = {j for r in range(2000) for j in page_jobs(0, r, 40, 1)}
+    assert len(seen) == 80_000 and min(seen) == 1_000_000 and max(seen) < 2_000_000
+
+
+def test_is_broken():
+    assert is_broken({"failed": True})
+    assert is_broken({"failed": False, "terms": {"passed": False}})
+    assert not is_broken({"failed": False, "terms": {"passed": True}})
+
+
+def test_train_groups_short_run():
+    import layout.train as LT
+    real_c, real_u, jobs_seen, pages = LT.collect_groups, LT.update, [], []
+
+    def spy_c(games, policy, buffer, jobs, *a, **k):
+        jobs_seen.append(list(jobs))
+        return real_c(games, policy, buffer, jobs, *a, **k)
+
+    def spy_u(policy, optimizer, buffer, *a, **k):
+        _, d = buffer.get(np.arange(buffer.T))
+        pages.append((type(buffer), buffer.T, buffer.N, d["adv"].copy(), d["ret"].copy()))
+        return real_u(policy, optimizer, buffer, *a, **k)
+
+    shutil.rmtree("runs/stage1/_test_groups", ignore_errors=True)
+    LT.collect_groups, LT.update = spy_c, spy_u
+    try:
+        torch.manual_seed(0)
+        _, history = train(stage=1, rounds=2, n_games=4, workers=2, minibatch=8, epochs=1, device="cpu",
+                           run="_test_groups", copies=2, groups=3, verbose=False)
+    finally:
+        LT.collect_groups, LT.update = real_c, real_u
+    assert jobs_seen == [page_jobs(0, 0, 3, 2), page_jobs(0, 1, 3, 2)]
+    for kind_, T, N, adv, ret in pages:
+        assert kind_ is EpisodeBuffer and N == 1 and T == len(adv) >= 12 and np.isfinite(adv).all()
+    log = read_log("runs/stage1/_test_groups/log.csv")
+    assert np.array_equal(log["games"], [6, 6]) and np.array_equal(log["groups"], [3, 3])
+    assert np.array_equal(log["steps"], [p[1] for p in pages])
+    assert ((log["idle"] >= 0) & (log["idle"] < 1)).all() and ((log["flat"] >= 0) & (log["flat"] <= 1)).all()
+    assert "adv" in log and len(history) == 2
+    extra = torch.load("runs/stage1/_test_groups/last.pt")["extra"]
+    assert extra["copies"] == 2 and extra["groups"] == 3 and extra["broken_margin"] == 0.1
+    shutil.rmtree("runs/stage1/_test_groups")
+
+
+def test_groups_refuse_overlap_and_shaping():
+    for bad in [{"overlap": True}, {"shaping": 0.1}]:
+        try:
+            train(stage=1, rounds=1, n_games=2, workers=2, device="cpu", run="_test_refuse", copies=2, verbose=False,
+                  **bad)
+            assert False, bad
+        except ValueError:
+            pass
+    assert not Path("runs/stage1/_test_refuse").exists()
+
+
 def run_main(argv):
     import layout.train as LT
     real, seen = LT.train, {}
@@ -286,9 +348,10 @@ def run_main(argv):
 def test_main_passes_every_flag():
     seen = run_main(["--run", "x", "--stage", "2", "--rounds", "7", "--ent-coef", "0.03", "--workers", "3",
                      "--solvable", "--overlap", "--shaping", "0.1", "--lr", "0.001", "--images-every", "0",
-                     "--init", "a.pt", "--note", "hello"])
+                     "--init", "a.pt", "--note", "hello", "--copies", "8", "--groups", "20", "--broken-margin", "0.2"])
     want = {"run": "x", "stage": 2, "rounds": 7, "ent_coef": 0.03, "workers": 3, "solvable": True, "overlap": True,
-            "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False}
+            "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False,
+            "copies": 8, "groups": 20, "broken_margin": 0.2}
     for k, v in want.items():
         assert seen[k] == v, k
 
@@ -308,7 +371,8 @@ TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, te
     test_train_init_starts_new_run, test_train_uses_cuda_when_available, test_train_passes_solvable,
     test_resume_rejects_other_settings, test_train_overlap_runs, test_train_shaping_rewards_and_log,
     test_train_images_every_zero_means_never, test_run_json_and_existing_run_refused, test_main_passes_every_flag,
-    test_main_needs_note_for_new_runs]
+    test_main_needs_note_for_new_runs, test_page_jobs, test_is_broken, test_train_groups_short_run,
+    test_groups_refuse_overlap_and_shaping]
 
 if __name__ == "__main__":
     for t in TESTS:

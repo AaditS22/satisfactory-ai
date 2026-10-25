@@ -2,8 +2,10 @@ import numpy as np
 import torch
 from torch import nn
 
-from rl.buffer import RolloutBuffer
-from rl.collect import stack, act, collect, Background
+from rl.buffer import RolloutBuffer, EpisodeBuffer
+from rl.collect import stack, act, collect, Background, collect_groups
+from rl.dist import masked_log_probs, pick
+from rl.ppo import update
 from rl.games import LocalGames, ProcGames
 from rl.target_env import PickTarget
 
@@ -323,6 +325,73 @@ def test_background_one_page_at_a_time():
     bg.wait()
     bg.sync(policy)
 
+GROUP_JOBS = [s for s in (100, 101, 102) for _ in range(4)]
+
+
+def group_page(games, policy, broken=lambda info: False):
+    buf = EpisodeBuffer(copies=4)
+    finished, idle = collect_groups(games, policy, buf, GROUP_JOBS, to_torch, broken, torch.Generator().manual_seed(0))
+    return buf, finished, idle
+
+
+def test_groups_play_every_job_once():
+    torch.manual_seed(0)
+    buf, finished, idle = group_page(LocalGames(PickTarget, 4), Tiny())
+    assert len(finished) == 12 and buf.T == 36 and buf.N == 1
+    assert buf.stats["groups"] == 3 and np.isclose(idle, 0.1)
+    assert all("score" in f for f in finished)
+
+
+def test_groups_every_step_gets_its_game_grade():
+    torch.manual_seed(0)
+    buf, _, _ = group_page(LocalGames(PickTarget, 4), Tiny())
+    _, d = buf.get(np.arange(buf.T))
+    for g in range(12):
+        assert len(set(d["adv"][3 * g:3 * g + 3])) == 1 and len(set(d["ret"][3 * g:3 * g + 3])) == 1
+    assert abs(float(d["adv"].sum())) < 1e-5
+    assert set(np.round(d["ret"] * 3).astype(int)) <= {0, 1, 2, 3}
+
+
+def test_groups_logp_and_values_match_network():
+    torch.manual_seed(0)
+    policy = Tiny()
+    buf, _, _ = group_page(LocalGames(PickTarget, 4), policy)
+    obs, d = buf.get(np.arange(buf.T))
+    assert d["masks"][np.arange(buf.T), d["actions"]].all()
+    with torch.no_grad():
+        logits, value = policy(to_torch(obs, "cpu"))
+        logp = pick(masked_log_probs(logits, torch.as_tensor(d["masks"])), torch.as_tensor(d["actions"]))
+    assert np.allclose(logp.numpy(), d["logp"], atol=1e-5) and np.allclose(value.numpy(), d["values"], atol=1e-5)
+
+
+def test_groups_broken_games_never_graded_up():
+    torch.manual_seed(0)
+    buf, _, _ = group_page(LocalGames(PickTarget, 4), Tiny(), broken=lambda info: info["score"] < 0.5)
+    _, d = buf.get(np.arange(buf.T))
+    assert (d["ret"] < 0.5).any() and (d["adv"][d["ret"] < 0.5] <= 1e-6).all()
+
+
+def test_groups_proc_matches_local():
+    torch.manual_seed(0)
+    policy = Tiny()
+    b1, f1, i1 = group_page(LocalGames(PickTarget, 4), policy)
+    with ProcGames(PickTarget, 4, 2) as proc:
+        b2, f2, i2 = group_page(proc, policy)
+    _, d1 = b1.get(np.arange(b1.T))
+    _, d2 = b2.get(np.arange(b2.T))
+    assert all(np.array_equal(d1[k], d2[k]) for k in d1) and f1 == f2 and i1 == i2
+
+
+def test_groups_page_feeds_update():
+    torch.manual_seed(0)
+    policy = Tiny()
+    buf, _, _ = group_page(LocalGames(PickTarget, 4), policy)
+    opt = torch.optim.Adam(policy.parameters(), lr=1e-3)
+    stats = update(policy, opt, buf, to_torch, epochs=2, minibatch=8, rng=np.random.default_rng(0))
+    assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac"}
+    assert all(np.isfinite(v) for v in stats.values())
+
+
 TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, test_act_only_legal,
     test_act_logp_and_values_match_network, test_act_gen_repeats, test_act_one_legal,
     test_act_greedy_picks_most_likely_legal, test_act_greedy_ignores_randomness, test_act_default_still_samples,
@@ -332,7 +401,10 @@ TESTS = [test_stack_shapes_and_order, test_act_shapes_dtypes, test_act_no_grad, 
     test_collect_continues_games_across_pages, test_collect_last_value_used_for_unfinished_games,
     test_collect_with_worker_processes_matches_local, test_background_page_matches_collect,
     test_background_actor_is_a_copy, test_background_sync_copies_weights, test_background_buffers_take_turns,
-    test_background_reraises_errors, test_background_one_page_at_a_time]
+    test_background_reraises_errors, test_background_one_page_at_a_time,
+    test_groups_play_every_job_once, test_groups_every_step_gets_its_game_grade,
+    test_groups_logp_and_values_match_network, test_groups_broken_games_never_graded_up, test_groups_proc_matches_local,
+    test_groups_page_feeds_update]
 
 if __name__ == "__main__":
     for t in TESTS:

@@ -15,6 +15,34 @@ def gae(rewards, values, dones, last_value, gamma=1.0, lam=0.95):
 
     return adv, adv + values
 
+def loo_advantage(returns):
+    """Finds the score of every game compared with its copies"""
+    G, K = returns.shape
+    if K < 2:
+        raise ValueError("K must be at least 2.")
+    
+    row_sums = returns.sum(axis=1, keepdims=True)
+    others_avg = (row_sums - returns) / (K - 1)
+    out = (returns - others_avg).astype(np.float32)
+    
+    return out
+
+def fix_broken(returns, broken, margin):
+    """Makes broken games count slightly worse than the worst instead of completely different"""
+    out = returns.astype(np.float64)
+
+    for g in range(out.shape[0]):
+        b = broken[g]
+        if not b.any():
+            continue
+
+        if b.all():
+            out[g] = out[g].mean()
+        else:
+            worst = out[g, ~b].min()
+            out[g, b] = worst - margin
+    return out
+    
 class RolloutBuffer:
     """Writes T steps of N games. Fill it row by row with add(), then finish(), then read steps with get()."""
 
@@ -65,3 +93,62 @@ class RolloutBuffer:
 
     def reset(self):
         self.t = 0
+
+class EpisodeBuffer:
+    """Steps of whole games, where every task was repeated 'copies' times"""
+
+    def __init__(self, copies, margin=0.1):
+        self.copies, self.margin = copies, margin
+        self.reset()
+
+    def reset(self):
+        self.open = {}
+        self.games = []
+        self.T, self.N = 0, 1
+
+    def add(self, slot, obs, mask, action, logp, value):
+        """Store one step of the game this slot is playing"""
+        self.open.setdefault(slot, []).append((obs, mask, action, logp, value))
+
+    def end_game(self, slot, job, score, broken):
+        """Close the game this slot was playing"""
+        self.games.append((job, self.open.pop(slot), score, broken))
+
+    def finish(self):
+        """Grade every game against the other copies of its task, then lay all steps out as one list"""
+        if self.open:
+            raise ValueError(f"{len(self.open)} games are still being played")
+        rows = {}
+        for g, game in enumerate(self.games):
+            rows.setdefault(game[0], []).append(g)
+        if not rows or any(len(r) != self.copies for r in rows.values()):
+            raise ValueError(f"every task needs exactly {self.copies} finished copies")
+
+        table = np.array(list(rows.values()))
+        scores = np.array([game[2] for game in self.games], dtype=np.float64)
+        broken = np.array([game[3] for game in self.games], dtype=bool)
+        fixed = fix_broken(scores[table], broken[table], self.margin)
+        grades = loo_advantage(fixed)
+        game_adv = np.zeros(len(self.games), dtype=np.float32)
+        game_adv[table] = grades
+
+        steps = [(step, g) for g, game in enumerate(self.games) for step in game[1]]
+        game_of = np.array([g for _, g in steps])
+        self.obs = {k: np.stack([step[0][k] for step, _ in steps]) for k in steps[0][0][0]}
+        self.masks = np.stack([step[1] for step, _ in steps])
+        self.actions = np.array([step[2] for step, _ in steps], dtype=np.int64)
+        self.logp = np.array([step[3] for step, _ in steps], dtype=np.float32)
+        self.values = np.array([step[4] for step, _ in steps], dtype=np.float32)
+        self.adv = game_adv[game_of]
+        self.ret = scores[game_of].astype(np.float32)
+        self.T = len(steps)
+        self.stats = {"steps": self.T, "groups": len(table), "flat": float(np.mean(fixed.max(1) == fixed.min(1))),
+                      "adv": float(np.abs(grades).mean())}
+        self.games = []
+
+    def get(self, idx):
+        """Gets the steps in idx (same keys as RolloutBuffer.get)"""
+        obs = {k: v[idx] for k, v in self.obs.items()}
+        data = {"masks": self.masks[idx], "actions": self.actions[idx], "logp": self.logp[idx],
+                "values": self.values[idx], "adv": self.adv[idx], "ret": self.ret[idx]}
+        return obs, data

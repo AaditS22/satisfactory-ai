@@ -151,6 +151,16 @@ def test_line():
     assert text.startswith("round    3") and "score 0.600" in text and "learn 3.1 s" in text
 
 
+def test_line_and_tags_for_group_pages():
+    row = {"round": 3, **round_stats([valid(0.6, 1.0)]), "entropy": 2.5, "approx_kl": 0.003, "clip_frac": 0.05,
+           "value_loss": 0.1, "collect_s": 1.2, "update_s": 3.1}
+    assert "idle" not in line(row)
+    text = line({**row, "steps": 1600, "groups": 40, "flat": 0.05, "adv": 0.01, "idle": 0.08})
+    assert text.endswith("steps 1600  idle 8%  flat 5%")
+    assert tag("steps") == "games/steps" and tag("groups") == "games/groups" and tag("idle") == "time/idle"
+    assert tag("flat") == "rates/flat" and tag("adv") == "ppo/adv"
+
+
 def test_round_stats_wire_valid_only():
     a, b = valid(0.6, 1.0), valid(0.8, 0.0)
     a["wire_total"], b["wire_total"] = 100, 200
@@ -195,7 +205,7 @@ TESTS = [test_run_dir, test_save_run_info_new_and_resume, test_git_state_is_text
     test_runlog_text_goes_to_tensorboard, test_round_stats_wire_valid_only, test_mean, test_kind, test_round_stats_hand, test_round_stats_all_floats, test_round_stats_no_valid_games,
     test_round_stats_empty, test_runlog_roundtrip, test_runlog_keeps_small_numbers, test_runlog_append_keeps_old_rows,
     test_runlog_share_one_writer, test_tag_groups,
-    test_line]
+    test_line, test_line_and_tags_for_group_pages]
 
 if __name__ == "__main__":
     for t in TESTS:

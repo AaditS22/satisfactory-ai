@@ -5,13 +5,13 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from rl.buffer import RolloutBuffer
-from rl.collect import collect, act, Background
+from rl.buffer import RolloutBuffer, EpisodeBuffer
+from rl.collect import collect, act, Background, collect_groups
+from layout.runlog import RunLog, round_stats, line, run_dir, save_run_info, kind
 from rl.games import ProcGames
 from rl.ppo import update, linear_lr
 from layout.gym_env import StageEnv, N_POS, Shaped, shaping_weight
 from layout.policy import Policy, obs_to_torch
-from layout.runlog import RunLog, round_stats, line, run_dir, save_run_info
 from layout.evaluate import load_eval, evaluate, TIE
 from rl.checkpoint import save_checkpoint, load_checkpoint 
 
@@ -24,9 +24,17 @@ def choose_greedy(policy, obs_list, masks):
     actions, _, _ = act(policy, obs_list, masks, obs_to_torch, greedy=True)
     return actions
 
+def is_broken(info):
+    """Checks if a game is broken or not"""
+    return kind(info) != "valid"
+
+def page_jobs(seed, r, groups, copies):
+    """Reset seeds for round r's page"""
+    return [1_000_000 * (seed + 1) + r * groups + g for g in range(groups) for _ in range(copies)]
+
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
-          shaping=0.0, note=""): 
+          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -35,7 +43,9 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
 
     policy = Policy().to(device)
     optimizer = torch.optim.Adam(policy.parameters(), lr=lr)
-    buffer = RolloutBuffer(T, n_games, N_POS)
+    if copies and (overlap or shaping):
+        raise ValueError("--copies can't be combined with --overlap or --shaping yet")
+    buffer = EpisodeBuffer(copies, broken_margin) if copies else RolloutBuffer(T, n_games, N_POS)
 
     if resume and run is None:
         raise ValueError("resume needs the run name (--run)")
@@ -51,7 +61,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError(f"{folder} already exists: pick a new --run name, or add --resume to continue it")
     
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
-            "shaping": shaping}
+            "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin}
 
     start, best = 0, float("-inf") 
     if resume:
@@ -73,14 +83,14 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     config = {"stage": stage, "rounds": rounds, "n_games": n_games, "workers": workers, "T": T, "lr": lr,
             "epochs": epochs, "minibatch": minibatch, "ent_coef": ent_coef, "seed": seed, "init": init,
             "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
-            "images_every": images_every}
+            "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin}
     info = save_run_info(folder, note, config, resumed_at=start if resume else None)
     log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
              else f"resumed at round {start}: {note}")
 
     history = []
     with ProcGames(StageEnv(stage, solvable), n_games, workers) as raw:
-        games = Shaped(raw)
+        games = raw if copies else Shaped(raw)
         obs, masks = games.reset(seed * 1000 + start * n_games)
         if overlap:
             bg = Background(policy, games, [buffer, RolloutBuffer(T, n_games, N_POS)], obs_to_torch, gen)
@@ -99,6 +109,10 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 if r + 1 < rounds:
                     games.weight = shaping_weight(r + 1, rounds, shaping)
                     bg.start(obs, masks)
+            elif copies:
+                jobs = page_jobs(seed, r, groups, copies)
+                finished, idle = collect_groups(games, policy, buffer, jobs, obs_to_torch, is_broken, gen)
+                page, play_s = buffer, time.time() - t0
             else:
                 games.weight = shaping_weight(r, rounds, shaping)
                 obs, masks, finished = collect(games, obs, masks, policy, buffer, obs_to_torch, gen)
@@ -110,6 +124,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
             row = {"round": r, **round_stats(finished), **stats, "lr": lr_now,
                    "collect_s": t1 - t0, "play_s": play_s, "shaping": shaping_weight(r, rounds, shaping),
                     "update_s": t2 - t1, "gpu_gb": gpu_gb(device)}
+            if copies:
+                row.update(page.stats, idle=idle)
             log.write(row)
 
             history.append(row["score"])
@@ -162,6 +178,9 @@ def main():
     p.add_argument("--solvable", action="store_true", help="train only on tasks Baseline A can fit on the site")
     p.add_argument("--overlap", action="store_true", help="overlap CPU and GPU processes")
     p.add_argument("--shaping", type=float, default=0.0)
+    p.add_argument("--copies", type=int, default=0, help="play every task this many times per page, grade each game against its copies")
+    p.add_argument("--groups", type=int, default=40, help="with --copies: tasks per page")
+    p.add_argument("--broken-margin", type=float, default=0.1, help="with --copies: a broken game counts this much below its worst working copy")
     args = p.parse_args()
 
     if not args.resume and not args.note.strip():
@@ -172,7 +191,8 @@ def main():
                 minibatch=args.minibatch, seed=args.seed, device=args.device, run=args.run,
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
-                shaping=args.shaping, note=args.note)
+                shaping=args.shaping, note=args.note, copies=args.copies, groups=args.groups,
+                broken_margin=args.broken_margin)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":
