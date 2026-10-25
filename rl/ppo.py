@@ -13,6 +13,13 @@ def ppo_losses(new_logp, old_logp, adv, new_value, ret, clip=0.2):
 def normalise(adv):
     """Normalizes advantages to have a mean of 0 and var of 1"""
     return (adv - adv.mean()) / (adv.std() + 1e-8)
+
+def scale_adv(adv, scale=None):
+    """Scales grades used for the push in one minibatch"""
+    if scale is None:
+        return normalise(adv)
+
+    return (adv / scale)
  
 def to_tensors(data, device):
     """Turns numpy arrays to tensors made for the given device"""
@@ -38,12 +45,12 @@ def health(new_logp, old_logp, clip):
     return kl, frac
  
 def update(policy, optimizer, buffer, obs_to_torch, epochs=4, minibatch=512, clip=0.2,
-           vf_coef=0.5, ent_coef=0.01, max_grad_norm=0.5, rng=None):
+           vf_coef=0.5, ent_coef=0.01, max_grad_norm=0.5, rng=None, adv_scale=None):
     """Learn from one full buffer page, doing 'ephocs' passes, each split into random groups of `minibatch` steps"""
     rng = rng or np.random.default_rng()
     device = next(policy.parameters()).device
     total = buffer.T * buffer.N
-    log = {"policy_loss": [], "value_loss": [], "entropy": [], "approx_kl": [], "clip_frac": []}
+    log = {"policy_loss": [], "value_loss": [], "entropy": [], "approx_kl": [], "clip_frac": [], "push": []}
     obs_all, data_all = buffer.get(np.arange(total))
     obs_all = obs_to_torch(obs_all, device)
     data_all = to_tensors(data_all, device)
@@ -59,7 +66,7 @@ def update(policy, optimizer, buffer, obs_to_torch, epochs=4, minibatch=512, cli
             log_p = masked_log_probs(logits, d["masks"])
             new_logp = pick(log_p, d["actions"])
             ent = entropy(log_p).mean()
-            adv = normalise(d["adv"])
+            adv = scale_adv(d["adv"], adv_scale)
             pl, vl = ppo_losses(new_logp, d["logp"], adv, new_value, d["ret"], clip)
             loss = pl + vf_coef * vl - ent_coef * ent
 
@@ -74,6 +81,7 @@ def update(policy, optimizer, buffer, obs_to_torch, epochs=4, minibatch=512, cli
             log["entropy"].append(ent.item())
             log["approx_kl"].append(kl)
             log["clip_frac"].append(frac)
+            log["push"].append(adv.abs().mean().item())
  
     return {k: float(np.mean(v)) for k, v in log.items()}
 

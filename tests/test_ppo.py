@@ -6,7 +6,7 @@ from torch import nn
 
 from rl.buffer import RolloutBuffer
 from rl.dist import masked_log_probs, pick
-from rl.ppo import ppo_losses, normalise, to_tensors, update, linear_lr
+from rl.ppo import ppo_losses, normalise, scale_adv, to_tensors, update, linear_lr
 
 
 def one(ratio, adv, clip=0.2):
@@ -135,7 +135,7 @@ def test_update_returns_stats():
     buf = make_buffer(policy)
     stats = update(policy, torch.optim.Adam(policy.parameters(), lr=1e-2), buf, tiny_to_torch, epochs=2, minibatch=3,
         rng=np.random.default_rng(0))
-    assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac"}
+    assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac", "push"}
     assert all(math.isfinite(v) for v in stats.values())
     assert stats["entropy"] > 0
 
@@ -195,6 +195,60 @@ def test_update_pushes_good_action_up():
     assert p_after[0] > p_before[0] and p_after[1] < p_before[1]
 
 
+def test_scale_adv_hand():
+    assert torch.allclose(scale_adv(torch.tensor([1.0, 2.0, 3.0])), torch.tensor([-1.0, 0.0, 1.0]), atol=1e-6)
+    assert torch.allclose(scale_adv(torch.tensor([0.002, -0.002]), 0.02), torch.tensor([0.1, -0.1]))
+    late = torch.tensor([0.001, 0.0, -0.001])
+    assert torch.allclose(scale_adv(late), torch.tensor([1.0, 0.0, -1.0]), atol=1e-4)
+    assert torch.allclose(scale_adv(late, 0.03), torch.tensor([1 / 30, 0.0, -1 / 30]), atol=1e-6)
+
+
+def test_scale_adv_fixed_keeps_mean():
+    assert torch.allclose(scale_adv(torch.full((3,), 0.05), 0.05), torch.ones(3))
+    assert torch.allclose(scale_adv(torch.full((3,), 0.05)), torch.zeros(3))
+
+
+def even_buffer(policy, size):
+    buf = make_buffer(policy)
+    buf.adv = np.where(np.arange(8).reshape(4, 2) % 2 == 0, size, -size).astype(np.float32)
+    return buf
+
+
+def test_update_push_fixed_vs_curve():
+    for scale, want in [(0.02, 0.5), (None, math.sqrt(7 / 8))]:
+        torch.manual_seed(0)
+        policy = Tiny()
+        buf = even_buffer(policy, 0.01)
+        stats = update(policy, torch.optim.Adam(policy.parameters(), lr=1e-2), buf, tiny_to_torch, epochs=1,
+            minibatch=8, rng=np.random.default_rng(0), adv_scale=scale)
+        assert abs(stats["push"] - want) < 1e-4, (scale, stats["push"])
+
+
+def test_update_push_fixed_scale_minibatches():
+    torch.manual_seed(0)
+    policy = Tiny()
+    buf = even_buffer(policy, 0.01)
+    stats = update(policy, torch.optim.Adam(policy.parameters(), lr=1e-2), buf, tiny_to_torch, epochs=2, minibatch=3,
+        rng=np.random.default_rng(0), adv_scale=0.02)
+    assert abs(stats["push"] - 0.5) < 1e-6
+
+
+def test_update_fixed_scale_pushes_good_action_up():
+    torch.manual_seed(0)
+    policy = Tiny()
+    actions = [np.array([0, 1])] * 8
+    buf = make_buffer(policy, T=8, same_x=True, actions=actions)
+    buf.adv = np.where(buf.actions == 0, 0.02, -0.02).astype(np.float32)
+    x = {"x": torch.ones(1, 3)}
+    with torch.no_grad():
+        p_before = torch.softmax(policy(x)[0], 1)[0]
+    update(policy, torch.optim.Adam(policy.parameters(), lr=5e-2), buf, tiny_to_torch, epochs=4, minibatch=16,
+        ent_coef=0.0, rng=np.random.default_rng(0), adv_scale=0.02)
+    with torch.no_grad():
+        p_after = torch.softmax(policy(x)[0], 1)[0]
+    assert p_after[0] > p_before[0] and p_after[1] < p_before[1]
+
+
 def test_linear_lr_hand():
     assert math.isclose(linear_lr(0, 1000, 2.5e-4), 2.5e-4)
     assert math.isclose(linear_lr(500, 1000, 2.5e-4), 1.25e-4)
@@ -216,7 +270,9 @@ TESTS = [test_returns_scalars, test_ratio_one_is_minus_mean_adv, test_lesson_tab
     test_clip_parameter, test_gradient_free_zone, test_gradient_zero_when_braked, test_gradient_wrong_way_pushes_back,
     test_value_loss_hand, test_normalise_hand, test_to_tensors_types, test_update_returns_stats, test_update_step_count,
     test_update_first_group_has_ratio_one, test_update_changes_every_weight, test_update_vf_coef_zero_leaves_value_head,
-    test_update_pushes_good_action_up, test_linear_lr_hand, test_linear_lr_follows_rounds]
+    test_update_pushes_good_action_up, test_scale_adv_hand, test_scale_adv_fixed_keeps_mean,
+    test_update_push_fixed_vs_curve, test_update_push_fixed_scale_minibatches,
+    test_update_fixed_scale_pushes_good_action_up, test_linear_lr_hand, test_linear_lr_follows_rounds]
 
 if __name__ == "__main__":
     for t in TESTS:

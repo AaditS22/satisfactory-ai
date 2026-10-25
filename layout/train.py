@@ -32,9 +32,14 @@ def page_jobs(seed, r, groups, copies):
     """Reset seeds for round r's page"""
     return [1_000_000 * (seed + 1) + r * groups + g for g in range(groups) for _ in range(copies)]
 
+def first_scale(adv):
+    """Spread of one page's grades or None if they are all equal"""
+    s = float(np.std(adv, ddof=1)) if len(adv) > 1 else 0.0
+    return s if s > 1e-8 else None
+
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
-          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1): 
+          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -45,6 +50,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     optimizer = torch.optim.Adam(policy.parameters(), lr=lr)
     if copies and (overlap or shaping):
         raise ValueError("--copies can't be combined with --overlap or --shaping yet")
+    if fixed_scale and not copies:
+          raise ValueError("--fixed-scale needs --copies")
     buffer = EpisodeBuffer(copies, broken_margin) if copies else RolloutBuffer(T, n_games, N_POS)
 
     if resume and run is None:
@@ -61,9 +68,9 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError(f"{folder} already exists: pick a new --run name, or add --resume to continue it")
     
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
-            "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin}
+            "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin, "fixed_scale": fixed_scale}
 
-    start, best = 0, float("-inf") 
+    start, best, scale = 0, float("-inf"), None 
     if resume:
         last_round, extra = load_checkpoint(f"{folder}/last.pt", policy, optimizer, device)
         for k, v in settings.items():
@@ -71,6 +78,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 raise ValueError(f"run {run} was started with {k}={extra[k]}, not {v}; --resume needs the same "
                                 f"settings")
         start, best = last_round + 1, extra["best_eval"]
+        scale = extra.get("adv_scale")
         print(f"resuming {run} at round {start} (best eval so far {best:.3f})")
     elif init:
         load_checkpoint(init, policy, device=device)
@@ -83,7 +91,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     config = {"stage": stage, "rounds": rounds, "n_games": n_games, "workers": workers, "T": T, "lr": lr,
             "epochs": epochs, "minibatch": minibatch, "ent_coef": ent_coef, "seed": seed, "init": init,
             "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
-            "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin}
+            "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin,
+            "fixed_scale": fixed_scale}
     info = save_run_info(folder, note, config, resumed_at=start if resume else None)
     log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
              else f"resumed at round {start}: {note}")
@@ -118,14 +127,19 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 obs, masks, finished = collect(games, obs, masks, policy, buffer, obs_to_torch, gen)
                 page, play_s = buffer, time.time() - t0
 
+            if fixed_scale and scale is None:
+                scale = first_scale(page.adv)
             t1 = time.time()
-            stats = update(policy, optimizer, page, obs_to_torch, epochs, minibatch, ent_coef=ent_coef, rng=rng)
+            stats = update(policy, optimizer, page, obs_to_torch, epochs, minibatch, ent_coef=ent_coef, rng=rng,
+                    adv_scale=scale)
             t2 = time.time()
             row = {"round": r, **round_stats(finished), **stats, "lr": lr_now,
                    "collect_s": t1 - t0, "play_s": play_s, "shaping": shaping_weight(r, rounds, shaping),
                     "update_s": t2 - t1, "gpu_gb": gpu_gb(device)}
             if copies:
                 row.update(page.stats, idle=idle)
+            if fixed_scale:
+                row["scale"] = scale if scale is not None else float("nan")
             log.write(row)
 
             history.append(row["score"])
@@ -144,8 +158,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
                 new_best = e["solv_score"] > best
                 if new_best:
                     best = e["solv_score"]
-                    save_checkpoint(f"{folder}/best.pt", policy, optimizer, r, {"best_eval": best, **settings})
-                save_checkpoint(f"{folder}/last.pt", policy, optimizer, r, {"best_eval": best, **settings})
+                    save_checkpoint(f"{folder}/best.pt", policy, optimizer, r, {"best_eval": best, **settings, "adv_scale": scale})
+                save_checkpoint(f"{folder}/last.pt", policy, optimizer, r, {"best_eval": best, **settings, "adv_scale": scale})
  
                 if verbose:
                     print(f"      eval  score {e['score']:.3f}  (A {e['A']:.3f}, B {e['B']:.3f})  "
@@ -181,6 +195,7 @@ def main():
     p.add_argument("--copies", type=int, default=0, help="play every task this many times per page, grade each game against its copies")
     p.add_argument("--groups", type=int, default=40, help="with --copies: tasks per page")
     p.add_argument("--broken-margin", type=float, default=0.1, help="with --copies: a broken game counts this much below its worst working copy")
+    p.add_argument("--fixed-scale", action="store_true")
     args = p.parse_args()
 
     if not args.resume and not args.note.strip():
@@ -192,7 +207,7 @@ def main():
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
                 shaping=args.shaping, note=args.note, copies=args.copies, groups=args.groups,
-                broken_margin=args.broken_margin)
+                broken_margin=args.broken_margin, fixed_scale=args.fixed_scale)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":
