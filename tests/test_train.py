@@ -401,6 +401,43 @@ def test_train_without_fixed_scale_uses_curve():
     shutil.rmtree("runs/stage1/_test_curve")
 
 
+def test_scale_refusals():
+    base = dict(stage=1, rounds=1, n_games=2, workers=2, device="cpu", run="_test_refuse", copies=2, verbose=False)
+    for bad in [{"set_scale": 0.05}, {"fixed_scale": True, "set_scale": 0.0}, {"fixed_scale": True, "set_scale": -0.1},
+                {"fixed_scale": True, "set_scale": 0.05, "resume": True}]:
+        try:
+            train(**base, **bad)
+            assert False, bad
+        except ValueError:
+            pass
+    assert not Path("runs/stage1/_test_refuse").exists()
+
+
+def test_train_set_scale_used_from_round_0():
+    import layout.train as LT
+    real_u, seen = LT.update, []
+
+    def spy_u(policy, optimizer, buffer, *a, **k):
+        seen.append(k.get("adv_scale"))
+        return real_u(policy, optimizer, buffer, *a, **k)
+
+    shutil.rmtree("runs/stage1/_test_setscale", ignore_errors=True)
+    LT.update = spy_u
+    try:
+        train(stage=1, rounds=2, n_games=4, workers=2, minibatch=8, epochs=1, device="cpu", run="_test_setscale",
+              copies=2, groups=3, fixed_scale=True, set_scale=0.05, verbose=False)
+    finally:
+        LT.update = real_u
+    assert seen == [0.05, 0.05]
+    log = read_log("runs/stage1/_test_setscale/log.csv")
+    assert np.allclose(log["scale"], 0.05)
+    extra = torch.load("runs/stage1/_test_setscale/last.pt")["extra"]
+    assert extra["adv_scale"] == 0.05 and "set_scale" not in extra
+    info = json.loads(Path("runs/stage1/_test_setscale/run.json").read_text())
+    assert info["config"]["set_scale"] == 0.05
+    shutil.rmtree("runs/stage1/_test_setscale")
+
+
 def run_main(argv):
     import layout.train as LT
     real, seen = LT.train, {}
@@ -422,10 +459,10 @@ def test_main_passes_every_flag():
     seen = run_main(["--run", "x", "--stage", "2", "--rounds", "7", "--ent-coef", "0.03", "--workers", "3",
                      "--solvable", "--overlap", "--shaping", "0.1", "--lr", "0.001", "--images-every", "0",
                      "--init", "a.pt", "--note", "hello", "--copies", "8", "--groups", "20", "--broken-margin", "0.2",
-                     "--fixed-scale"])
+                     "--fixed-scale", "--scale", "0.05"])
     want = {"run": "x", "stage": 2, "rounds": 7, "ent_coef": 0.03, "workers": 3, "solvable": True, "overlap": True,
             "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False,
-            "copies": 8, "groups": 20, "broken_margin": 0.2, "fixed_scale": True}
+            "copies": 8, "groups": 20, "broken_margin": 0.2, "fixed_scale": True, "set_scale": 0.05}
     for k, v in want.items():
         assert seen[k] == v, k
 
@@ -447,7 +484,8 @@ TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, te
     test_train_images_every_zero_means_never, test_run_json_and_existing_run_refused, test_main_passes_every_flag,
     test_main_needs_note_for_new_runs, test_page_jobs, test_is_broken, test_train_groups_short_run,
     test_groups_refuse_overlap_and_shaping, test_first_scale, test_fixed_scale_needs_copies,
-    test_train_fixed_scale_frozen_and_resumed, test_train_without_fixed_scale_uses_curve]
+    test_train_fixed_scale_frozen_and_resumed, test_train_without_fixed_scale_uses_curve, test_scale_refusals,
+    test_train_set_scale_used_from_round_0]
 
 if __name__ == "__main__":
     for t in TESTS:

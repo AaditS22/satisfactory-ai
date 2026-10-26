@@ -1,8 +1,11 @@
 import argparse
 import time
 
-from layout.evaluate import load_eval, play_eval, TIE
-from layout.runlog import mean
+from layout.evaluate import load_eval, TIE
+from layout.runlog import mean, kind
+from layout.gym_env import LayoutGym
+from layout.api import plan_of
+from rl.games import ProcGames, JobQueue
 
 import torch
 from layout.policy import Policy, obs_to_torch
@@ -11,7 +14,64 @@ from rl.collect import act
 
 import json
 from pathlib import Path
-from layout.api import plan_of 
+
+class TaskGym(LayoutGym):
+    def __init__(self, tasks):
+        super().__init__()
+        self.tasks = tasks
+
+    def reset(self, seed=None, options=None):
+        if seed is not None and not (options or {}).get("task"):
+            options = {"task": self.tasks[seed % len(self.tasks)]}
+        return super().reset(seed=seed, options=options)
+
+    def step(self, action):
+        obs, reward, term, trunc, info = super().step(action)
+        if term or trunc:
+            info["plan"] = plan_of(self.env)
+        return obs, reward, term, trunc, info
+
+class EvalTasks:
+    """Picklable maker of TaskGyms for worker processes"""
+
+    def __init__(self, tasks):
+        self.tasks = tasks
+
+    def __call__(self):
+        return TaskGym(self.tasks)
+
+def play_jobs(games, jobs, choose):
+    """Plays every job once on the game slots"""
+    queue = JobQueue(jobs)
+    n = games.n
+    playing, current = [False] * n, [None] * n
+    obs, masks = [None] * n, None
+    out = {}
+    while len(queue) or any(playing):
+        live = [i for i in range(n) if playing[i]]
+        actions = [None] * n
+        if live:
+            picked = choose([obs[i] for i in live], masks[live])
+            for k, i in enumerate(live):
+                actions[i] = int(picked[k])
+        offer = queue.offer(playing)
+        obs, masks, rewards, dones, infos = games.step(actions, offer)
+        for i in live:
+            if dones[i]:
+                out[current[i]] = infos[i]
+        for i, job in queue.taken(offer, playing, dones).items():
+            current[i] = job
+        playing = [o is not None for o in obs]
+    return out
+
+def as_results(rows, infos, first_job):
+    """One result dict per eval row"""
+    res = []
+    for j, r in enumerate(rows):
+        info = infos[first_job + j]
+        res.append({"score": info["score"], "kind": kind(info), "A": r["A"]["score"], "B": r["B"]["score"],
+                    "plan": info["plan"]})
+    return res
 
 def keep_best(tries):
     """Finds, per task, the result with the highest score"""
@@ -38,8 +98,8 @@ def save_plans(path, rows, greedy_res, best_res):
     out = []
     for r, x, b in zip(rows, greedy_res, best_res):
         out.append({"seed": r["seed"],
-                    "greedy": {"plan": plan_of(x["gym"].env), "score": x["score"]},
-                    "best": {"plan": plan_of(b["gym"].env), "score": b["score"]}})
+                    "greedy": {"plan": x["plan"], "score": x["score"]},
+                    "best": {"plan": b["plan"], "score": b["score"]}})
     Path(path).write_text(json.dumps(out, indent=1))
 
 def main():
@@ -50,6 +110,8 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None)
     p.add_argument("--save", default=None)
+    p.add_argument("--workers", type=int, default=16)
+    p.add_argument("--slots", type=int, default=48)
     args = p.parse_args()
 
     device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,19 +119,22 @@ def main():
     load_checkpoint(args.checkpoint, policy, device=device)
     policy.eval()
     rows = load_eval(args.stage)
+    n = len(rows)
     gen = torch.Generator(device=device).manual_seed(args.seed)
 
-    def greedy(policy, obs_list, masks):
+    def greedy(obs_list, masks):
         return act(policy, obs_list, masks, obs_to_torch, greedy=True)[0]
 
-    def sampled(policy, obs_list, masks):
+    def sampled(obs_list, masks):
         return act(policy, obs_list, masks, obs_to_torch, gen=gen)[0]
 
     t0 = time.time()
-    g = play_eval(policy, rows, greedy)
-    tries = [play_eval(policy, rows, sampled) for _ in range(args.k)]
+    with ProcGames(EvalTasks([r["task"] for r in rows]), args.slots, args.workers) as games:
+        g = as_results(rows, play_jobs(games, list(range(n)), greedy), 0)
+        infos = play_jobs(games, list(range(n, n * (args.k + 1))), sampled)
+    tries = [as_results(rows, infos, n * (t + 1)) for t in range(args.k)]
     best = keep_best(tries)
-    print(f"{len(rows)} tasks, {args.k} samples each, {time.time() - t0:.0f} s\n")
+    print(f"{n} tasks, {args.k} samples each, {time.time() - t0:.0f} s\n")
 
     print("task                       A      B      greedy  best-of-k")
     for r, x, b in zip(rows, g, best):
@@ -81,7 +146,7 @@ def main():
     if args.save:
         save_plans(args.save, rows, g, best)
         print(f"saved {args.save}")
-        
+
     print("\non the tasks Baseline A can solve:")
     for name, res in [("greedy", g), (f"best-of-{args.k}", best)]:
         s = compare(res)

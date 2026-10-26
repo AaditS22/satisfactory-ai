@@ -388,7 +388,7 @@ def test_groups_page_feeds_update():
     buf, _, _ = group_page(LocalGames(PickTarget, 4), policy)
     opt = torch.optim.Adam(policy.parameters(), lr=1e-3)
     stats = update(policy, opt, buf, to_torch, epochs=2, minibatch=8, rng=np.random.default_rng(0))
-    assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac"}
+    assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac", "push"}
     assert all(np.isfinite(v) for v in stats.values())
 
 

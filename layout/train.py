@@ -39,7 +39,7 @@ def first_scale(adv):
 
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
-          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False): 
+          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False, set_scale=None): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -48,10 +48,19 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
 
     policy = Policy().to(device)
     optimizer = torch.optim.Adam(policy.parameters(), lr=lr)
+
     if copies and (overlap or shaping):
         raise ValueError("--copies can't be combined with --overlap or --shaping yet")
     if fixed_scale and not copies:
           raise ValueError("--fixed-scale needs --copies")
+    if set_scale is not None:
+        if not fixed_scale:
+            raise ValueError("--scale needs --fixed-scale")
+        if set_scale <= 0:
+            raise ValueError("--scale must be > 0")
+        if resume:
+            raise ValueError("--resume keeps the run's own scale; drop --scale")
+        
     buffer = EpisodeBuffer(copies, broken_margin) if copies else RolloutBuffer(T, n_games, N_POS)
 
     if resume and run is None:
@@ -70,7 +79,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
             "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin, "fixed_scale": fixed_scale}
 
-    start, best, scale = 0, float("-inf"), None 
+    start, best, scale = 0, float("-inf"), set_scale
     if resume:
         last_round, extra = load_checkpoint(f"{folder}/last.pt", policy, optimizer, device)
         for k, v in settings.items():
@@ -92,7 +101,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
             "epochs": epochs, "minibatch": minibatch, "ent_coef": ent_coef, "seed": seed, "init": init,
             "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
             "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin,
-            "fixed_scale": fixed_scale}
+            "fixed_scale": fixed_scale, "set_scale": set_scale}
     info = save_run_info(folder, note, config, resumed_at=start if resume else None)
     log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
              else f"resumed at round {start}: {note}")
@@ -196,6 +205,7 @@ def main():
     p.add_argument("--groups", type=int, default=40, help="with --copies: tasks per page")
     p.add_argument("--broken-margin", type=float, default=0.1, help="with --copies: a broken game counts this much below its worst working copy")
     p.add_argument("--fixed-scale", action="store_true")
+    p.add_argument("--scale", type=float, default=None, help="with --fixed-scale: use this scale instead of measuring it")
     args = p.parse_args()
 
     if not args.resume and not args.note.strip():
@@ -207,7 +217,7 @@ def main():
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
                 shaping=args.shaping, note=args.note, copies=args.copies, groups=args.groups,
-                broken_margin=args.broken_margin, fixed_scale=args.fixed_scale)
+                broken_margin=args.broken_margin, fixed_scale=args.fixed_scale, set_scale=args.scale)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":
