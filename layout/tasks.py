@@ -5,6 +5,7 @@ import numpy as np
 from solver.lp_solve import allowed_recipes, solve_lp, RESOURCE_LIMITS
 from siting.choose import min_floor_area
 from layout.blocks import make_block
+from solver.graph import build_graph, BELT_CAPACITY
 
 RATES = [1, 2, 2.5, 3, 4, 5, 7.5, 10, 15, 20, 30, 45, 60, 90, 120] # items/min a player could ask for
 MAX_MACHINES = 48
@@ -155,3 +156,15 @@ def random_task(rng, target=None):
                 "floors": FLOORS, "side": int(rng.integers(4)), "alternates": alternates}
         except ValueError:
             continue
+
+def item_flows(task):
+    """Gets the total items/min for every item in the graph"""
+    graph = build_graph(task["target"], task["rate"], task["alternates"])
+    flows = {}
+    for e in graph["edges"]:
+        flows[e["item"]] = flows.get(e["item"], 0.0) + e["rate"]
+    return flows
+
+def one_belt(task):
+    """True if every item's total flow fits on one top-tier belt"""
+    return max(item_flows(task).values()) <= BELT_CAPACITY[-1] + 1e-9

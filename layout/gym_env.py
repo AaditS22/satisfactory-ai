@@ -6,7 +6,7 @@ import argparse
 import time
 
 from layout.env import LayoutEnv, N_MAX
-from layout.tasks import random_task, GRID_MAX, FLOORS
+from layout.tasks import random_task, one_belt, GRID_MAX, FLOORS
 from layout import obs as O
 from layout.score import score_episode
 from layout.testset import STAGES
@@ -220,7 +220,7 @@ class StageEnv:
         while True:
             target = self.targets[rng.integers(len(self.targets))]
             task = random_task(rng, target)
-            if not self.solvable or a_fits(task):
+            if one_belt(task) and (not self.solvable or a_fits(task)):
                 return task
 
 def main():

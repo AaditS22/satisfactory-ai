@@ -1,7 +1,7 @@
 import numpy as np
 
 from layout.env import LayoutEnv
-from layout.tasks import random_task
+from layout.tasks import random_task, one_belt
 from layout import obs as O
 from layout.gym_env import (S, POS_SHAPE, N_POS, offsets, snap_mask, fine_cell, pad_mask, observe, obs_space,
     LayoutGym, play_random, a_fits, StageEnv, shaping_weight, Shaped)
@@ -441,6 +441,17 @@ def test_stage_env_solvable_all_fit():
         assert a_fits(env.task(np.random.default_rng(seed)))
 
 
+def test_stage_env_skips_over_belt_tasks():
+    rng = np.random.default_rng(1_004_236)
+    bad = random_task(rng, STAGES[2][rng.integers(len(STAGES[2]))])
+    assert one_belt(bad) is False
+    for env in (StageEnv(3), StageEnv(3, solvable=True)):
+        t = env.task(np.random.default_rng(1_004_236))
+        assert t != bad and one_belt(t) and t["target"] in STAGES[2]
+        assert env.task(np.random.default_rng(1_004_236)) == t
+    assert a_fits(StageEnv(3, solvable=True).task(np.random.default_rng(1_004_236)))
+
+
 def test_wire_info_plate():
     g, obs, info = plate_gym()
     wires, rewards = [], []
@@ -508,7 +519,8 @@ TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_rand
     test_reset_plate, test_odd_corner_step, test_two_stage_step, test_full_plate_episode, test_illegal_actions, test_reset_seed,
     test_random_play_invariants, test_play_random, test_a_fits_hand, test_a_fits_needs_both_rotations,
     test_stage_env_default_unchanged,
-    test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit, test_wire_info_plate,
+    test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit, test_stage_env_skips_over_belt_tasks,
+    test_wire_info_plate,
     test_wire_total_restarts_on_reset, test_shaping_weight_schedule, test_shaped_subtracts_weight_times_wire,
     test_shaped_weight_zero_and_changes]
 

@@ -6,10 +6,32 @@ from siting.choose import min_floor_area
 from layout.env import LayoutEnv
 from layout.tasks import (FLOORS, GRID_MAX, MAX_MACHINES, RATES, STEP, all_alternates, machine_count,
                           min_sides, random_alternates, random_task, round_up, scale, site_size, targets,
-                          valid_rates)
+                          valid_rates, item_flows, one_belt)
+from layout.testset import STAGES
+from layout.baseline import greedy
+from layout.api import play
+from layout.connect import chains, ends_for
 
 RIP = "Desc_IronPlateReinforced_C"
 KEYS = {"target", "rate", "width", "depth", "floors", "side", "alternates"}
+SCREW = "Desc_IronScrew_C"
+
+
+def plate_task(rate):
+    return {"target": "Desc_IronPlate_C", "rate": rate, "alternates": frozenset()}
+
+
+def crash_task():
+    rng = np.random.default_rng(1_004_236)
+    return random_task(rng, STAGES[2][rng.integers(len(STAGES[2]))])
+
+
+def finished_a(task):
+    for free_rot in (False, True):
+        env = play(task, greedy(task, free_rot))
+        if not env.failed:
+            return env
+    return None
 
 
 def test_round_up():
@@ -234,13 +256,60 @@ def test_random_agent_on_random_tasks():
     assert outcomes["ok"] > 0 and outcomes["fail"] > 0, outcomes
 
 
+def test_item_flows_plate():
+    assert item_flows(plate_task(30)) == {"Desc_IronPlate_C": 30.0, "Desc_IronIngot_C": 45.0, "Desc_OreIron_C": 45.0}
+    assert item_flows(plate_task(120)) == {"Desc_IronPlate_C": 120.0, "Desc_IronIngot_C": 180.0, "Desc_OreIron_C": 180.0}
+
+
+def test_one_belt_plate():
+    assert one_belt(plate_task(30)) is True
+    assert one_belt(plate_task(120)) is True
+
+
+def test_one_belt_catches_crash_task():
+    task = crash_task()
+    assert task["target"] == "Desc_ModularFrame_C" and task["rate"] == 30
+    flows = item_flows(task)
+    assert abs(flows[SCREW] - 1380.0) < 1e-6
+    assert max(flows, key=flows.get) == SCREW
+    assert one_belt(task) is False
+    env = finished_a(task)
+    assert env is not None
+    try:
+        chains(env)
+        assert False, "scorer accepted an item over one belt"
+    except AssertionError as e:
+        assert str(e) == ""
+
+
+def test_item_flows_match_scorer():
+    rng = np.random.default_rng(503)
+    checked = 0
+    for stage in (1, 2, 3):
+        for _ in range(15):
+            task = random_task(rng, STAGES[stage - 1][rng.integers(len(STAGES[stage - 1]))])
+            env = play(task, greedy(task, False))
+            if env.failed:
+                continue
+            flows = item_flows(task)
+            assert set(flows) == {e["item"] for e in env.graph["edges"]}
+            for item, total in flows.items():
+                assert abs(sum(ends_for(env, item)[1]) - total) < 1e-6, (task, item)
+            assert one_belt(task) is True
+            chains(env)
+            checked += 1
+    assert checked >= 30, checked
+
+
 if __name__ == "__main__":
     tests = [test_round_up, test_site_size_worked_examples, test_site_size_invariants,
              test_all_alternates, test_targets, test_random_alternates,
              test_scale, test_machine_count, test_valid_rates_worked_examples, test_valid_rates_invariants,
              test_min_sides, test_random_task_shape, test_random_task_deterministic,
              test_random_task_consistent, test_random_task_variety,
-             test_env_reset_never_fails_at_start, test_random_agent_on_random_tasks]
+             test_env_reset_never_fails_at_start, test_random_agent_on_random_tasks,
+             test_item_flows_plate, test_one_belt_plate, test_one_belt_catches_crash_task,
+             test_item_flows_match_scorer]
     for t in tests:
         t()
         print(f"ok  {t.__name__}")
