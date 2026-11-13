@@ -124,9 +124,22 @@ def test_pick_T():
     assert pick_T(res, 5.0) == 3.0
 
 
+def test_trained_cost_head_is_softened_too():
+    obs, _ = two_obs()
+    assert obs[1]["cost"].any()
+    p = fresh()
+    with torch.no_grad():
+        p.decoder.cost_head.weight.copy_(torch.randn(12, 12, 1, 1))
+    before = logits_of(p, obs)
+    w = p.decoder.cost_head.weight.clone()
+    soften(p, 2.0)
+    assert torch.allclose(p.decoder.cost_head.weight, w / 2.0)
+    assert torch.allclose(logits_of(p, obs), before / 2.0, atol=1e-5)
+
+
 TESTS = [test_pick_T, test_logits_divided_by_T, test_T_one_changes_nothing, test_greedy_move_unchanged_and_entropy_up,
     test_only_output_layers_change, test_value_unchanged, test_save_soft_roundtrip, test_load_soft_matches_soften,
-    test_entropy_chooser_records_and_is_legal]
+    test_entropy_chooser_records_and_is_legal, test_trained_cost_head_is_softened_too]
 
 if __name__ == "__main__":
     for t in TESTS:

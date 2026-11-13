@@ -11,21 +11,15 @@ from rl.collect import stack
 from rl.dist import masked_log_probs, sample, entropy
 from rl.games import ProcGames
 
-FIRST_JOB = 900_000_000  # far away from every training seed (1,000,000 x (seed + 1) + ...)
-
+FIRST_JOB = 900_000_000
 
 def soften(policy, T):
-    """Divide every output logit of the policy by T, in place, by scaling its two output layers.
-
-    policy: a Policy. T: float > 0 (T > 1 makes sampling less sure, T = 1 changes nothing).
-    The greedy move never changes, because dividing all logits by the same T keeps their order.
-    Returns nothing.
-    """
+    """Divides every output logit of the policy by T"""
     with torch.no_grad():
-        for layer in (policy.summary.n_head, policy.decoder.head):
+        for layer in (policy.summary.n_head, policy.decoder.head, policy.decoder.cost_head):
             layer.weight.div_(T)
-            layer.bias.div_(T)
-
+            if layer.bias is not None:
+                layer.bias.div_(T)
 
 def load_soft(path, T, device):
     """A fresh Policy with a checkpoint's weights, softened by T"""
@@ -35,9 +29,8 @@ def load_soft(path, T, device):
     policy.eval()
     return policy
 
-
 def entropy_chooser(policy, gen, record):
-    """A choose(obs_list, masks) for play_jobs that samples moves and appends each step's entropy to record"""
+    """A choose for play_jobs that samples moves and appends each step's entropy to record"""
     device = next(policy.parameters()).device
 
     def choose(obs_list, masks):
@@ -50,7 +43,6 @@ def entropy_chooser(policy, gen, record):
             return sample(log_p, gen).cpu().numpy()
 
     return choose
-
 
 def measure(path, temps, stage, games, slots, workers, seed, device):
     """Mean entropy per step when the softened policy plays `games` training tasks, for every T in temps"""
@@ -65,7 +57,6 @@ def measure(path, temps, stage, games, slots, workers, seed, device):
             out[T] = float(np.mean(record))
     return out
 
-
 def pick_T(res, target):
     """Smallest T whose entropy reaches target, or the largest T tried if none does"""
     temps = sorted(res)
@@ -74,13 +65,11 @@ def pick_T(res, target):
             return T
     return temps[-1]
 
-
 def save_soft(path, T, out_path, device):
     """Save the softened weights as a checkpoint that --init can load"""
     policy = load_soft(path, T, device)
     optimizer = torch.optim.Adam(policy.parameters())
     save_checkpoint(out_path, policy, optimizer, 0, {"softened_from": path, "T": T})
-
 
 def main():
     p = argparse.ArgumentParser()
@@ -88,8 +77,8 @@ def main():
     p.add_argument("--stage", type=int, default=3)
     p.add_argument("--temps", type=float, nargs="+", default=[1.0])
     p.add_argument("--games", type=int, default=224)
-    p.add_argument("--save", nargs="+", default=None, help="where to write softened checkpoints (one per --target, or one with a single --temps value)")
-    p.add_argument("--target", type=float, nargs="+", default=None, help="entropies to reach: picks the smallest T for each and saves it")
+    p.add_argument("--save", nargs="+", default=None)
+    p.add_argument("--target", type=float, nargs="+")
     p.add_argument("--slots", type=int, default=48)
     p.add_argument("--workers", type=int, default=16)
     p.add_argument("--seed", type=int, default=0)
@@ -115,7 +104,6 @@ def main():
         save_soft(args.checkpoint, T, path, device)
         note = "" if res[T] >= target else "  (target NOT reached, used the largest T)"
         print(f"target {target}: T {T} (entropy {res[T]:.3f}) saved {path}{note}")
-
 
 if __name__ == "__main__":
     main()

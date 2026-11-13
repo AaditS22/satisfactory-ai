@@ -4,7 +4,8 @@ import torch
 from layout.env import LayoutEnv
 from layout import obs as O
 from layout.policy import (flatten_floors, ConvBlock, GridEncoder, adjacency, neighbour_mean, masked_mean,
-    head_rows, GraphEncoder, Summary, grow, add_to_every_cell, Decoder, stack_obs, obs_to_torch, merge_logits, Policy)
+    head_rows, GraphEncoder, Summary, grow, add_to_every_cell, Decoder, stack_obs, obs_to_torch, merge_logits, Policy,
+    cost_maps)
 from layout.gym_env import observe
 
 
@@ -276,7 +277,8 @@ def test_summary_grad():
 def decoder_inputs(b=2, seed=0):
     g = torch.Generator().manual_seed(seed)
     return [torch.rand(b, 32, 48, 48, generator=g), torch.rand(b, 64, 24, 24, generator=g),
-        torch.rand(b, 128, 12, 12, generator=g), torch.rand(b, 128, 6, 6, generator=g), torch.rand(b, 128, generator=g)]
+        torch.rand(b, 128, 12, 12, generator=g), torch.rand(b, 128, 6, 6, generator=g), torch.rand(b, 128, generator=g),
+        torch.rand(b, 12, 48, 48, generator=g)]
 
 
 def test_grow_hand():
@@ -303,8 +305,8 @@ def test_decoder_shape():
 
 def test_decoder_params():
     d = Decoder()
-    assert len(list(d.parameters())) == 16
-    assert n_params(d) == 644044
+    assert len(list(d.parameters())) == 17
+    assert n_params(d) == 644188
 
 
 def test_decoder_map_order():
@@ -325,10 +327,13 @@ def test_decoder_uses_every_input():
     base = decoder_inputs(seed=1)
     with torch.no_grad():
         out0 = d(*base)
-        for i in range(5):
+        for i in range(6):
             changed = [t.clone() for t in base]
             changed[i] = changed[i] + 1.0
-            assert not torch.allclose(d(*changed), out0), i
+            if i == 5:
+                assert torch.equal(d(*changed), out0)
+            else:
+                assert not torch.allclose(d(*changed), out0), i
 
 
 def test_decoder_skip_is_local():
@@ -392,9 +397,9 @@ def test_policy_shapes():
 
 def test_policy_params():
     net = Policy()
-    assert len(list(net.parameters())) == 52
-    assert n_params(net) == 1352702
-    assert n_params(net.grid) == 636128 and n_params(net.decoder) == 644044
+    assert len(list(net.parameters())) == 53
+    assert n_params(net) == 1352846
+    assert n_params(net.grid) == 636128 and n_params(net.decoder) == 644188
 
 
 def test_policy_stage_routing():
@@ -433,6 +438,90 @@ def test_policy_gpu():
     assert torch.allclose(a, b.cpu(), atol=1e-2, rtol=1e-2) and torch.allclose(va, vb.cpu(), atol=1e-2, rtol=1e-2)
 
 
+def test_decoder_cost_head_starts_at_zero():
+    d = Decoder()
+    assert d.cost_head.bias is None
+    assert d.cost_head.weight.shape == (12, 12, 1, 1)
+    assert (d.cost_head.weight == 0).all()
+
+
+def test_decoder_cost_adds_per_map():
+    d = Decoder()
+    inputs = decoder_inputs(seed=4)
+    cost = torch.zeros(2, 12, 48, 48)
+    for k in range(12):
+        cost[:, k] = k
+    inputs[5] = cost
+    with torch.no_grad():
+        d.head.weight.zero_()
+        d.head.bias.zero_()
+        d.cost_head.weight.copy_(2.0 * torch.eye(12).reshape(12, 12, 1, 1))
+        maps = d(*inputs).reshape(2, 4, 3, 48, 48)
+    for rot in range(4):
+        for f in range(3):
+            assert (maps[:, rot, f] == 2.0 * (rot * 3 + f)).all(), (rot, f)
+
+
+def test_cost_maps_reshape_and_missing():
+    obs = policy_obs()
+    obs["cost"] = torch.arange(2 * 4 * 3 * 48 * 48, dtype=torch.float32).reshape(2, 4, 3, 48, 48)
+    c = cost_maps(obs)
+    assert c.shape == (2, 12, 48, 48)
+    assert torch.equal(c[1, 2 * 3 + 1], obs["cost"][1, 2, 1])
+    del obs["cost"]
+    z = cost_maps(obs)
+    assert z.shape == (2, 12, 48, 48) and z.dtype == torch.float32 and not z.any()
+
+
+def test_policy_reads_cost():
+    torch.manual_seed(5)
+    net = Policy()
+    obs = policy_obs()
+    obs["cost"] = torch.rand(2, 4, 3, 48, 48)
+    with torch.no_grad():
+        net.decoder.head.weight.zero_()
+        net.decoder.head.bias.zero_()
+        net.decoder.cost_head.weight.copy_(torch.eye(12).reshape(12, 12, 1, 1))
+        logits, value = net(obs)
+    assert torch.allclose(logits[1], obs["cost"][1].reshape(-1))
+
+
+def test_policy_same_without_cost_key_at_zero_weight():
+    torch.manual_seed(6)
+    net = Policy()
+    obs = policy_obs()
+    obs["cost"] = torch.rand(2, 4, 3, 48, 48)
+    with torch.no_grad():
+        a, va = net(obs)
+        del obs["cost"]
+        b, vb = net(obs)
+    assert torch.equal(a, b) and torch.equal(va, vb)
+
+
+def test_load_old_checkpoint_without_cost_head():
+    torch.manual_seed(7)
+    old = Policy()
+    sd = old.state_dict()
+    del sd["decoder.cost_head.weight"]
+    new = Policy()
+    with torch.no_grad():
+        new.decoder.cost_head.weight.fill_(5.0)
+    new.load_state_dict(sd)
+    assert (new.decoder.cost_head.weight == 0).all()
+    for k, v in sd.items():
+        assert torch.equal(new.state_dict()[k], v), k
+    assert "decoder.cost_head.weight" not in sd
+
+
+def test_load_keeps_trained_cost_head():
+    a = Policy()
+    with torch.no_grad():
+        a.decoder.cost_head.weight.fill_(3.0)
+    b = Policy()
+    b.load_state_dict(a.state_dict())
+    assert (b.decoder.cost_head.weight == 3.0).all()
+
+
 TESTS = [test_flatten_floors, test_conv_block_shape, test_conv_block_params, test_encoder_shapes,
     test_encoder_params, test_encoder_grad, test_encoder_batch_independent, test_adjacency_hand,
     test_neighbour_mean_rounds, test_masked_mean_hand, test_head_rows_hand, test_graph_encoder_shape,
@@ -442,7 +531,9 @@ TESTS = [test_flatten_floors, test_conv_block_shape, test_conv_block_params, tes
     test_summary_grad, test_grow_hand, test_add_to_every_cell_hand, test_decoder_shape, test_decoder_params,
     test_decoder_map_order, test_decoder_uses_every_input, test_decoder_skip_is_local, test_decoder_grad,
     test_obs_to_torch_types, test_merge_logits_hand, test_policy_shapes, test_policy_params, test_policy_stage_routing,
-    test_policy_grad, test_policy_gpu]
+    test_policy_grad, test_policy_gpu, test_decoder_cost_head_starts_at_zero, test_decoder_cost_adds_per_map,
+    test_cost_maps_reshape_and_missing, test_policy_reads_cost, test_policy_same_without_cost_key_at_zero_weight,
+    test_load_old_checkpoint_without_cost_head, test_load_keeps_trained_cost_head]
 
 if __name__ == "__main__":
     for t in TESTS:

@@ -39,7 +39,7 @@ def first_scale(adv):
 
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
-          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False, set_scale=None): 
+          shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False, set_scale=None, cost_map=False): 
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -77,7 +77,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError(f"{folder} already exists: pick a new --run name, or add --resume to continue it")
     
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
-            "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin, "fixed_scale": fixed_scale}
+            "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin, "fixed_scale": fixed_scale,
+            "cost_map": cost_map}
 
     start, best, scale = 0, float("-inf"), set_scale
     if resume:
@@ -101,13 +102,13 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
             "epochs": epochs, "minibatch": minibatch, "ent_coef": ent_coef, "seed": seed, "init": init,
             "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
             "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin,
-            "fixed_scale": fixed_scale, "set_scale": set_scale}
+            "fixed_scale": fixed_scale, "set_scale": set_scale, "cost_map": cost_map}
     info = save_run_info(folder, note, config, resumed_at=start if resume else None)
     log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
              else f"resumed at round {start}: {note}")
 
     history = []
-    with ProcGames(StageEnv(stage, solvable), n_games, workers) as raw:
+    with ProcGames(StageEnv(stage, solvable, cost_map), n_games, workers) as raw:
         games = raw if copies else Shaped(raw)
         obs, masks = games.reset(seed * 1000 + start * n_games)
         if overlap:
@@ -206,6 +207,7 @@ def main():
     p.add_argument("--broken-margin", type=float, default=0.1, help="with --copies: a broken game counts this much below its worst working copy")
     p.add_argument("--fixed-scale", action="store_true")
     p.add_argument("--scale", type=float, default=None, help="with --fixed-scale: use this scale instead of measuring it")
+    p.add_argument("--cost-map", action="store_true", help="training games show the cost maps (off: zeros, so the cost head stays at 0)")
     args = p.parse_args()
 
     if not args.resume and not args.note.strip():
@@ -217,7 +219,7 @@ def main():
                 eval_every=args.eval_every, images_every=args.images_every, resume=args.resume,
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
                 shaping=args.shaping, note=args.note, copies=args.copies, groups=args.groups,
-                broken_margin=args.broken_margin, fixed_scale=args.fixed_scale, set_scale=args.scale)
+                broken_margin=args.broken_margin, fixed_scale=args.fixed_scale, set_scale=args.scale, cost_map=args.cost_map)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":

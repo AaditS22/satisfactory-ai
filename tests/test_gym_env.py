@@ -8,6 +8,7 @@ from layout.gym_env import (S, POS_SHAPE, N_POS, offsets, snap_mask, fine_cell, 
 from layout.testset import STAGES
 from layout.baseline import greedy
 from layout.api import play
+from layout.costmap import block_cost, COST_CAP
 
 
 PLATE = {"target": "Desc_IronPlate_C", "rate": 30, "width": 24, "depth": 24, "floors": 3, "side": 0}
@@ -15,7 +16,7 @@ TIGHT = {"target": "Desc_IronRod_C", "rate": 90, "width": 40, "depth": 16, "floo
     "alternates": frozenset()}
 ROOMY = {"target": "Desc_IronRod_C", "rate": 30, "width": 40, "depth": 24, "floors": 3, "side": 3,
     "alternates": frozenset()}
-KEYS = {"grid", "vec", "stage", "nodes", "node_mask", "edges", "edge_rate", "edge_mask"}
+KEYS = {"grid", "vec", "stage", "nodes", "node_mask", "edges", "edge_rate", "edge_mask", "cost"}
 
 
 def plate_env(steps):
@@ -182,12 +183,14 @@ def test_observe_shapes():
     ob = observe(env, 1, 2)
     assert set(ob) == KEYS
     shapes = {"grid": (10, 3, 96, 96), "vec": (23,), "stage": (2,), "nodes": (40, 15),
-        "node_mask": (40,), "edges": (64, 2), "edge_rate": (64,), "edge_mask": (64,)}
+        "node_mask": (40,), "edges": (64, 2), "edge_rate": (64,), "edge_mask": (64,), "cost": (4, 3, 48, 48)}
     for k, s in shapes.items():
         assert ob[k].shape == s, k
     assert ob["grid"].dtype == np.uint8
     assert ob["stage"].dtype == np.float32
     assert ob["vec"].dtype == np.float32
+    assert ob["cost"].dtype == np.float32
+    assert not ob["cost"].any()
 
 
 def test_observe_values():
@@ -212,6 +215,8 @@ def test_obs_space_shape():
     assert sp["grid"].dtype == np.uint8
     assert sp["edges"].dtype == np.int32
     assert sp["node_mask"].shape == (40,)
+    assert sp["cost"].shape == (4, 3, 48, 48)
+    assert sp["cost"].dtype == np.float32
     assert sp.contains(observe(plate_env(0), 0, 0))
     assert sp.contains(observe(plate_env(3), 0, 0))
     env = plate_env(0)
@@ -513,6 +518,69 @@ def test_shaped_weight_zero_and_changes():
     assert games.reset(5)[0] == ["o"] and games.games.seen == 5
 
 
+def test_cost_zero_at_n_step():
+    g, obs, info = plate_gym()
+    assert obs["cost"].shape == POS_SHAPE
+    assert not obs["cost"].any()
+
+
+def test_cost_at_position_step():
+    g, obs, info = plate_gym()
+    obs, r, term, trunc, info = g.step(2)
+    want = block_cost(g.env, 2, g.fine)
+    F = want.shape[1]
+    assert np.array_equal(obs["cost"][:, :F], want)
+    assert not obs["cost"][:, F:].any()
+    assert obs["cost"].any()
+    assert obs["cost"].max() <= COST_CAP
+
+
+def test_cost_only_on_legal_squares():
+    g, obs, info = plate_gym()
+    obs, r, term, trunc, info = g.step(1)
+    legal = g.action_masks()
+    assert not obs["cost"].reshape(-1)[~legal].any()
+    assert obs["cost"].reshape(-1)[legal].any()
+
+
+def test_cost_lowest_next_to_the_entry():
+    g, obs, info = plate_gym()
+    obs, r, term, trunc, info = g.step(1)
+    c = obs["cost"].reshape(-1)
+    legal = g.action_masks()
+    best = int(np.flatnonzero(legal)[np.argmin(c[legal])])
+    rot, f, cx, cy = (int(v) for v in np.unravel_index(best, POS_SHAPE))
+    x, y = fine_cell(g.fine, rot, f, cx, cy)
+    b = g.env.block(1, rot)
+    ex, ey = b["inputs"][0]["end"]
+    sx, sy = g.env.entries[b["inputs"][0]["item"]]
+    assert abs(x + ex - sx) + abs(y + ey - sy) == round(float(c[best]) * 64) <= 4
+    assert c[legal].max() * 64 > 20
+
+
+def test_cost_back_to_zero_after_placing():
+    g, obs, info = plate_gym()
+    g.step(2)
+    obs, r, term, trunc, info = g.step(act(0, 0, 2, 2))
+    assert info["stage"] == 0
+    assert not obs["cost"].any()
+
+
+def test_cost_off_gives_zeros():
+    g = LayoutGym(cost=False)
+    g.reset(options={"task": dict(PLATE)})
+    obs, r, term, trunc, info = g.step(2)
+    assert info["stage"] == 1
+    assert obs["cost"].shape == POS_SHAPE and not obs["cost"].any()
+
+
+def test_stage_env_passes_cost():
+    assert LayoutGym().use_cost is True
+    assert StageEnv(1)().use_cost is True
+    assert StageEnv(1, cost=False)().use_cost is False
+    assert StageEnv(2, True, False).cost is False
+
+
 TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_random, test_fine_cell_order,
     test_fine_cell_edges, test_fine_cell_plate, test_fine_cell_random, test_pad_mask_small, test_pad_mask_flat_index,
     test_observe_shapes, test_observe_values, test_obs_space_shape, test_obs_space_rejects, test_obs_space_random,
@@ -522,7 +590,9 @@ TESTS = [test_constants, test_offsets, test_snap_mask_small, test_snap_mask_rand
     test_stage_env_solvable_redraws, test_stage_env_solvable_all_fit, test_stage_env_skips_over_belt_tasks,
     test_wire_info_plate,
     test_wire_total_restarts_on_reset, test_shaping_weight_schedule, test_shaped_subtracts_weight_times_wire,
-    test_shaped_weight_zero_and_changes]
+    test_shaped_weight_zero_and_changes,
+    test_cost_zero_at_n_step, test_cost_at_position_step, test_cost_only_on_legal_squares, test_cost_lowest_next_to_the_entry,
+    test_cost_back_to_zero_after_placing, test_cost_off_gives_zeros, test_stage_env_passes_cost]
 
 if __name__ == "__main__":
     for t in TESTS:

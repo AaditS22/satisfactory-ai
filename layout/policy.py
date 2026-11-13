@@ -136,8 +136,10 @@ class Decoder(nn.Module):
         self.up2 = ConvBlock(C3 + C2, C2)
         self.up1 = ConvBlock(C2 + C1, C1)
         self.head = nn.Conv2d(32, N_MAPS, kernel_size=1)
+        self.cost_head = nn.Conv2d(N_MAPS, N_MAPS, bias=False, kernel_size=1)
+        nn.init.zeros_(self.cost_head.weight)
  
-    def forward(self, s1, s2, s3, bottom, z):
+    def forward(self, s1, s2, s3, bottom, z, cost):
         x = add_to_every_cell(bottom, self.inject(z))
         x = grow(x)
         x = self.up3(torch.cat([x, s3], dim=1))
@@ -145,8 +147,15 @@ class Decoder(nn.Module):
         x = self.up2(torch.cat([x, s2], dim=1))
         x = grow(x)
         x = self.up1(torch.cat([x, s1], dim=1))
-        x = self.head(x)
+        x = self.head(x) + self.cost_head(cost)
         return x.reshape(x.shape[0], -1)
+
+    def _load_from_state_dict(self, state_dict, prefix, *args, **kwargs):
+        """Loads old cost head's weights for cost head"""
+        key = prefix + "cost_head.weight"
+        if key not in state_dict:
+            state_dict[key] = torch.zeros_like(self.cost_head.weight)
+        super()._load_from_state_dict(state_dict, prefix, *args, **kwargs)
 
 def stack_obs(obs_list):
     """Stacks a list of observations into one dict"""
@@ -165,6 +174,13 @@ def obs_to_torch(obs, device="cpu"):
             t = t.float()
         out[k] = t
     return out
+
+def cost_maps(obs):
+    """obs["cost"] (B, 4, 3, 48, 48) -> (B, 12, 48, 48)"""
+    B = obs["grid"].shape[0]
+    if "cost" not in obs:
+        return torch.zeros(B, N_MAPS, POS_SHAPE[2], POS_SHAPE[3], device=obs["grid"].device)
+    return obs["cost"].reshape(B, N_MAPS, POS_SHAPE[2], POS_SHAPE[3])
  
 def merge_logits(n_logits, pos_logits, stage):
     """Create a single score list per example (choosing from scores for N or position based on stage)"""
@@ -187,7 +203,7 @@ class Policy(nn.Module):
         s1, s2, s3, bottom = self.grid(flatten_floors(obs["grid"]))
         g = self.graph(obs["nodes"], obs["node_mask"], obs["edges"], obs["edge_rate"], obs["edge_mask"])
         z, value, n_logits = self.summary(bottom, g, obs["vec"], obs["stage"])
-        pos_logits = self.decoder(s1, s2, s3, bottom, z)
+        pos_logits = self.decoder(s1, s2, s3, bottom, z, cost_maps(obs))
         logits = merge_logits(n_logits, pos_logits, obs["stage"])
         return logits, value
  

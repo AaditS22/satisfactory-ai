@@ -160,9 +160,9 @@ def test_train_passes_solvable():
     import layout.train as LT
     real, seen = LT.StageEnv, []
 
-    def spy(stage, solvable=False):
+    def spy(stage, solvable=False, cost=True):
         seen.append((stage, solvable))
-        return real(stage, solvable)
+        return real(stage, solvable, cost)
 
     shutil.rmtree("runs/stage1/_test_solvable", ignore_errors=True)
     LT.StageEnv = spy
@@ -187,7 +187,8 @@ def test_resume_rejects_other_settings():
     torch.save(ck, "runs/stage1/_test_settings/last.pt")
     for bad in [{"stage": 2, "ent_coef": 0.0}, {"ent_coef": 0.01}, {"ent_coef": 0.0, "solvable": True},
                 {"ent_coef": 0.0, "overlap": True}, {"ent_coef": 0.0, "shaping": 0.1}, {"ent_coef": 0.0, "copies": 2},
-                {"ent_coef": 0.0, "groups": 10}, {"ent_coef": 0.0, "broken_margin": 0.2}]:
+                {"ent_coef": 0.0, "groups": 10}, {"ent_coef": 0.0, "broken_margin": 0.2},
+                {"ent_coef": 0.0, "cost_map": True}]:
         try:
             train(**{**base, **bad}, resume=True)
             assert False, bad
@@ -459,10 +460,11 @@ def test_main_passes_every_flag():
     seen = run_main(["--run", "x", "--stage", "2", "--rounds", "7", "--ent-coef", "0.03", "--workers", "3",
                      "--solvable", "--overlap", "--shaping", "0.1", "--lr", "0.001", "--images-every", "0",
                      "--init", "a.pt", "--note", "hello", "--copies", "8", "--groups", "20", "--broken-margin", "0.2",
-                     "--fixed-scale", "--scale", "0.05"])
+                     "--fixed-scale", "--scale", "0.05", "--cost-map"])
     want = {"run": "x", "stage": 2, "rounds": 7, "ent_coef": 0.03, "workers": 3, "solvable": True, "overlap": True,
             "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False,
-            "copies": 8, "groups": 20, "broken_margin": 0.2, "fixed_scale": True, "set_scale": 0.05}
+            "copies": 8, "groups": 20, "broken_margin": 0.2, "fixed_scale": True, "set_scale": 0.05,
+            "cost_map": True}
     for k, v in want.items():
         assert seen[k] == v, k
 
@@ -476,6 +478,40 @@ def test_main_needs_note_for_new_runs():
     assert run_main(["--run", "x", "--resume"])["resume"] is True
 
 
+def test_main_cost_map_off_by_default():
+    assert run_main(["--run", "x", "--note", "n"])["cost_map"] is False
+
+
+def test_train_cost_map_flag():
+    import layout.train as LT
+    real, seen = LT.StageEnv, []
+
+    def spy(stage, solvable=False, cost=True):
+        seen.append(cost)
+        return real(stage, solvable, cost)
+
+    heads = {}
+    LT.StageEnv = spy
+    try:
+        for on in (False, True):
+            name = f"_test_cost_{int(on)}"
+            shutil.rmtree(f"runs/stage1/{name}", ignore_errors=True)
+            torch.manual_seed(0)
+            policy, _ = train(stage=1, rounds=1, n_games=4, workers=2, minibatch=8, epochs=1, device="cpu", run=name,
+                              copies=2, groups=2, cost_map=on, verbose=False)
+            heads[on] = policy.decoder.cost_head.weight.detach().clone()
+            extra = torch.load(f"runs/stage1/{name}/last.pt")["extra"]
+            assert extra["cost_map"] is on
+            info = json.loads(Path(f"runs/stage1/{name}/run.json").read_text())
+            assert info["config"]["cost_map"] is on
+            shutil.rmtree(f"runs/stage1/{name}")
+    finally:
+        LT.StageEnv = real
+    assert seen == [False, True]
+    assert (heads[False] == 0).all()
+    assert (heads[True] != 0).any()
+
+
 TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, test_stage_env_picklable,
     test_choose_greedy_legal_and_repeatable, test_train_short_run_on_cpu, test_train_resume_continues,
     test_resume_needs_run_name, test_resume_rejects_other_rounds, test_init_and_resume_together_rejected,
@@ -485,7 +521,7 @@ TESTS = [test_stage_env_builds_layout_gym, test_stage_env_only_stage_targets, te
     test_main_needs_note_for_new_runs, test_page_jobs, test_is_broken, test_train_groups_short_run,
     test_groups_refuse_overlap_and_shaping, test_first_scale, test_fixed_scale_needs_copies,
     test_train_fixed_scale_frozen_and_resumed, test_train_without_fixed_scale_uses_curve, test_scale_refusals,
-    test_train_set_scale_used_from_round_0]
+    test_train_set_scale_used_from_round_0, test_main_cost_map_off_by_default, test_train_cost_map_flag]
 
 if __name__ == "__main__":
     for t in TESTS:

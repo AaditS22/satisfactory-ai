@@ -14,6 +14,7 @@ from layout.baseline import greedy
 from layout.api import play  
 from layout.connect import added_belt
 from layout.score import BELT_REF
+from layout.costmap import block_cost, COST_CAP
 
 S = 2
 COARSE = GRID_MAX // S
@@ -49,9 +50,10 @@ def pad_mask(m):
     out[:, :F, :W, :D] = m
     return out
 
-def observe(env, stage, n):
+def observe(env, stage, n, cost=None):
     out = {"grid": O.grid_obs(env), "vec": O.vec_obs(env),
-        "stage": np.array([stage, n / N_MAX], dtype=np.float32)}
+        "stage": np.array([stage, n / N_MAX], dtype=np.float32),
+        "cost": cost if cost is not None else np.zeros(POS_SHAPE, dtype=np.float32)}
     out.update(O.graph_obs(env))
     return out
 
@@ -65,13 +67,15 @@ def obs_space():
         "edges": spaces.Box(0, O.MAX_NODES - 1, (O.MAX_EDGES, 2), np.int32),
         "edge_rate": spaces.Box(0, 1, (O.MAX_EDGES,), np.float32),
         "edge_mask": spaces.MultiBinary(O.MAX_EDGES),
+        "cost": spaces.Box(0, COST_CAP, POS_SHAPE, np.float32),
     })
 
 class LayoutGym(gym.Env):
 
     metadata = {"render_modes": []}
 
-    def __init__(self, task_fn=random_task):
+    def __init__(self, task_fn=random_task, cost=True):
+        self.use_cost = cost 
         self.observation_space = obs_space()
         self.action_space = spaces.Discrete(N_POS)
         self.env = LayoutEnv()
@@ -95,6 +99,16 @@ class LayoutGym(gym.Env):
             mask[:] = pad_mask(snap_mask(self.fine)).reshape(-1)
         return mask
 
+    def _cost(self):
+        """The cost maps for the position step. None at the n step."""
+        if not self.use_cost or self.stage == 0 or self.env.done:
+            return None
+        
+        c = block_cost(self.env, self.n, self.fine)
+        out = np.zeros(POS_SHAPE, dtype=np.float32)
+        out[:, :c.shape[1]] = c
+        return out
+
     def _info(self):
         return {"stage": self.stage, "failed": self.env.failed, "blocks": len(self.env.world.blocks)}
 
@@ -117,7 +131,7 @@ class LayoutGym(gym.Env):
         self.n = 0
         self.wire_m = 0
         self.mask = self._make_mask()
-        return observe(self.env, self.stage, self.n), self._info()
+        return observe(self.env, self.stage, self.n, self._cost()), self._info()
 
     def step(self, action):
         """Performs an action and receievs a reward if complete"""
@@ -149,7 +163,7 @@ class LayoutGym(gym.Env):
             reward, info["terms"] = score_episode(self.env)
             info["wire_total"] = self.wire_m
 
-        return observe(self.env, self.stage, self.n), reward, self.env.done, False, info
+        return observe(self.env, self.stage, self.n, self._cost()), reward, self.env.done, False, info
 
 def play_random(episodes, seed=0, check=False):
     """Plays random legal actions for many episodes"""
@@ -207,13 +221,14 @@ def a_fits(task):
 class StageEnv:
     """Performs make env for one stage from the curriculum/test set"""
 
-    def __init__(self, stage, solvable=False):
+    def __init__(self, stage, solvable=False, cost=True):
         self.stage = stage
         self.targets = STAGES[stage - 1]
         self.solvable = solvable
+        self.cost = cost
 
     def __call__(self):
-        return LayoutGym(task_fn=self.task)
+        return LayoutGym(task_fn=self.task, cost=self.cost)
 
     def task(self, rng):
         """Random task for one of this stage's targets (with solvable=True redraw until Baseline A fits it)"""
