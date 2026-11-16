@@ -52,7 +52,7 @@ def get_run(run: str, per_task: bool = False) -> str:
     summary = registry.load_summary(run)
     if summary is None:
         raise ValueError(f"{run} is not in the registry; list_runs shows what is")
-    if per_task:
+    if per_task and "best" in summary:
         summary["per_task"] = [{"seed": t["seed"], "greedy": round(t["greedy"]["score"], 4),
                                 "greedy_kind": t["greedy"]["kind"], "best": round(t["best"]["score"], 4),
                                 "best_kind": t["best"]["kind"], "blocks": t["best"]["blocks"]}

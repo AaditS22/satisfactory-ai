@@ -146,7 +146,7 @@ def summarise(run, meta, tasks, base, spec_run=None, spec_tasks=None, config=Non
     if spec_tasks and spec_run != run:
         model_parts["specialist"] = parts(rows, "spec")
 
-    return tidy({"run": run, "stage": base["stage"], "source": meta, "tasks": len(every), "solvable": len(rows),
+    return tidy({"run": run, "stage": base["stage"], "status": "finished", "source": meta, "tasks": len(every), "solvable": len(rows),
             "flags": flags,
             "greedy": level(rows, "greedy", tie), "best": level(rows, "best", tie),
             "A": mean(r["A"]["score"] for r in rows), "B": mean(r["B"]["score"] for r in rows),
@@ -173,19 +173,51 @@ def digest(run, plans, meta, folder=None):
     stage = stage_of([p["seed"] for p in plans], rows)
     base = baselines(stage)
     tasks = make_tasks(plans, [r for r in rows if r["stage"] == stage], say=print)
+    folder = run_folder(stage, run, folder)
     stored = {"run": run, "stage": stage, "source": meta, "tasks": tasks,
-              "training": training(run_folder(stage, run, folder), registry.load_config())}
+              "training": training(folder, registry.load_config()),
+              "prereg": registry.read_json(folder / "prereg.json")}
     summary = resummarise(stored, base)
     registry.save_run(summary, stored)
+    keep_patch(run, folder)
     return summary
 
 def resummarise(stored, base=None):
     """Builds a run's summary again from its stored per-task results (no replays)"""
+    if not stored["tasks"]:
+        return training_summary(stored)
     base = base or baselines(stored["stage"])
     spec_run = registry.specialists().get(stored["stage"])
     spec = registry.load_tasks(spec_run) if spec_run and spec_run != stored["run"] else None
-    return summarise(stored["run"], stored["source"], stored["tasks"], base, spec_run, spec and spec["tasks"],
-                     train=stored.get("training"))
+    summary = summarise(stored["run"], stored["source"], stored["tasks"], base, spec_run, spec and spec["tasks"],
+                        train=stored.get("training"))
+    return {**summary, "prereg": stored.get("prereg")}
+
+def training_summary(stored):
+    """The summary of a run that has no best_of results (it was killed or it crashed)"""
+    train = stored.get("training")
+    flags = [f"{stored['status']}: {stored['reason']}"] + (train["flags"] if train else [])
+    return tidy({"run": stored["run"], "stage": stored["stage"], "status": stored["status"],
+                 "reason": stored["reason"], "source": stored["source"], "flags": flags, "training": train,
+                 "prereg": stored.get("prereg")})
+
+def digest_training(run, stage, status, reason, folder=None):
+    """Stores a run that ended without best_of results: its training record, status and the reason"""
+    folder = run_folder(stage, run, folder)
+    stored = {"run": run, "stage": stage, "status": status, "reason": reason, "tasks": [],
+              "source": {"digested": time.strftime("%Y-%m-%d %H:%M")},
+              "training": training(folder, registry.load_config()),
+              "prereg": registry.read_json(folder / "prereg.json")}
+    summary = training_summary(stored)
+    registry.save_run(summary, stored)
+    keep_patch(run, folder)
+    return summary
+
+def keep_patch(run, folder):
+    """Copies the run's saved code patch into the registry"""
+    patch = Path(folder) / "code.patch"
+    if patch.exists():
+        registry.run_file(run, "code.patch").write_bytes(patch.read_bytes())
 
 def refresh():
     """Rebuilds every summary, e.g. after the specialists file or the config changed"""
@@ -211,6 +243,9 @@ def cmp_text(p):
 
 def report(s):
     """The summary as plain text"""
+    if "best" not in s:
+        return "\n".join([f"{s['run']}  stage {s['stage']}  {s['status'].upper()}: {s['reason']}"]
+                         + [f"  FLAG: {x}" for x in s["flags"][1:]] + train_report(s["training"]))
     k = s["source"]["k"]
     out = [f"{s['run']}  stage {s['stage']}  {s['solvable']} A-solvable tasks of {s['tasks']}  "
            f"(A {f(s['A'])}, B {f(s['B'])})"]

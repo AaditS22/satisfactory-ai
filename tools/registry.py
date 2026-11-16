@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import time
 from pathlib import Path
 
 ROOT = Path("runs/registry")
@@ -19,7 +20,13 @@ def write_json(path, data, indent=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(data, indent=indent), encoding="utf-8")
-    os.replace(tmp, path)
+    for attempt in range(5):
+        try:
+            return os.replace(tmp, path)
+        except PermissionError:
+            if attempt == 4:
+                raise
+            time.sleep(0.2)
 
 def load_config():
     """The editable settings in tools/config.json"""
@@ -59,8 +66,13 @@ def all_runs():
 
 def index_row(s):
     """The short index row of one summary"""
+    if "best" not in s:
+        return {"run": s["run"], "stage": s["stage"], "status": s["status"], "digested": s["source"]["digested"],
+                "k": None, "greedy": None, "greedy_broken": None, "best": None, "best_broken": None, "vs_A": None,
+                "vs_B": None, "specialist": None, "vs_specialist": None, "flags": s["flags"]}
     spec = s["vs"]["specialist"]
-    return {"run": s["run"], "stage": s["stage"], "digested": s["source"]["digested"], "k": s["source"]["k"],
+    return {"run": s["run"], "stage": s["stage"], "status": s.get("status", "finished"),
+            "digested": s["source"]["digested"], "k": s["source"]["k"],
             "greedy": s["greedy"]["mean"], "greedy_broken": s["greedy"]["broken"],
             "best": s["best"]["mean"], "best_broken": s["best"]["broken"],
             "vs_A": s["vs"]["A"]["best"]["diff"], "vs_B": s["vs"]["B"]["best"]["diff"],

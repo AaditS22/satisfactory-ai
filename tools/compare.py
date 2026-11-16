@@ -23,6 +23,8 @@ def results(name, base, key="best"):
     stored = registry.load_tasks(name) if name else None
     if stored is None:
         raise ValueError(f"{name} is not in the registry")
+    if not stored["tasks"]:
+        raise ValueError(f"{name} has no best_of results ({stored.get('status')}), so it cannot be compared")
     if stored["stage"] != base["stage"]:
         raise ValueError(f"{name} is a stage-{stored['stage']} run, the others are stage {base['stage']}")
     return {t["seed"]: t[key] for t in stored["tasks"]}
@@ -103,7 +105,7 @@ def task_view(seed, runs=None, plans=True):
     out = {**label(t), "stage": stage, "solvable": t["solvable"], "big_block": t["big"],
            "A": lean(t["A"], plans), "B": lean(t["B"], plans), "runs": {}}
     for r in runs:
-        mine = next((x for x in registry.load_tasks(r)["tasks"] if x["seed"] == seed), None)
+        mine = next((x for x in (registry.load_tasks(r) or {"tasks": []})["tasks"] if x["seed"] == seed), None)
         if mine:
             out["runs"][r] = {"greedy": lean(mine["greedy"], plans), "best": lean(mine["best"], plans)}
     return tidy(out)
@@ -163,6 +165,9 @@ def list_text():
     """The registry index as plain text"""
     out = ["run                  stage  greedy (broken)  best (broken)  vs B     vs specialist   flags"]
     for r in registry.load_index():
+        if r["best"] is None:
+            out.append(f"{r['run']:20s} {r['stage']:5d}  {r['status']}: no best_of results" + " " * 31 + f"{len(r['flags'])}")
+            continue
         out.append(f"{r['run']:20s} {r['stage']:5d}  {f(r['greedy'])} ({r['greedy_broken']:2d})      {f(r['best'])} "
                    f"({r['best_broken']:2d})     {f(r['vs_B'], True)}   {str(r['vs_specialist'] or '-'):14s}  {len(r['flags'])}")
     return "\n".join(out)

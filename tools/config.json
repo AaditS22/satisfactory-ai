@@ -2,12 +2,56 @@
  "tie": 0.005,
  "big_block": 9,
  "worst_tasks": 8,
- "rate_bands": {"default": [5, 15], "1": [20, 60]},
+ "rate_bands": {
+  "default": [
+   5,
+   15
+  ],
+  "1": [
+   20,
+   60
+  ]
+ },
  "curve_blocks": 10,
  "flags": {
   "drift_entropy": 0.3,
   "drift_valid": 0.02,
   "entropy_collapse": 0.3,
   "broken_rise": 0.02
+ },
+ "supervisor": {
+  "poll_s": 20,
+  "min_free_ram_gb": 6.0,
+  "kill_free_ram_gb": 1.0,
+  "start_grace_s": 900,
+  "hang_s": 900,
+  "milestones": [
+   50,
+   200,
+   500,
+   1000,
+   1500
+  ],
+  "broken_share": 0.25,
+  "broken_window": 20,
+  "collapse_after": 50,
+  "rules": {
+   "nan": "kill",
+   "drift": "kill",
+   "broken": "kill",
+   "entropy_collapse": "kill",
+   "hang": "kill",
+   "low_ram": "kill"
+  },
+  "sec_per_round": 7.0,
+  "eval_overhead": 1.08,
+  "best_of_k": 64,
+  "best_of_s": 900,
+  "best_of_timeout_s": 5400,
+  "keep_plans": false,
+  "max_rounds": 5000,
+  "max_workers": 16,
+  "max_queue": 10,
+  "on_event": null
  }
 }
