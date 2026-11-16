@@ -1,0 +1,99 @@
+import shutil
+from pathlib import Path
+
+import numpy as np
+
+from layout.evaluate import load_eval, play_eval, eval_stats, best_order, save_best, evaluate, TIE
+
+
+def first_legal(policy, obs_list, masks):
+    assert len(obs_list) == len(masks) and masks.any(1).all()
+    return np.array([int(np.flatnonzero(m)[0]) for m in masks])
+
+
+def result(score, k, a, b=0.0):
+    return {"score": score, "kind": k, "A": a, "B": b, "gym": None}
+
+
+def test_load_eval_stage_one():
+    rows = load_eval(1)
+    assert len(rows) == 150 and all(r["stage"] == 1 for r in rows)
+    assert sum(r["A"]["score"] > 0 for r in rows) == 144
+    assert all(r["task"]["alternates"] is None or isinstance(r["task"]["alternates"], frozenset) for r in rows)
+    assert all(isinstance(r["A"]["score"], float) and isinstance(r["B"]["score"], float) for r in rows)
+
+
+def test_load_eval_other_stage():
+    rows = load_eval(2)
+    assert len(rows) == 100 and {r["target"] for r in rows} == {"Desc_IronPlateReinforced_C", "Desc_Rotor_C"}
+
+
+def test_play_eval_results():
+    rows = load_eval(1)[:4]
+    res = play_eval(None, rows, first_legal)
+    assert len(res) == 4
+    for x, r in zip(res, rows):
+        assert x["kind"] in ("valid", "invalid", "failed") and x["A"] == r["A"]["score"] and x["B"] == r["B"]["score"]
+        assert x["gym"].env.done and x["gym"].task["target"] == r["target"]
+        assert (x["score"] > 0) == (x["kind"] == "valid")
+
+
+def test_play_eval_repeatable():
+    rows = load_eval(1)[4:7]
+    a = [x["score"] for x in play_eval(None, rows, first_legal)]
+    b = [x["score"] for x in play_eval(None, rows, first_legal)]
+    assert a == b
+
+
+def test_play_eval_passes_policy_and_shrinks():
+    sizes = []
+
+    def spy(policy, obs_list, masks):
+        assert policy == "net"
+        sizes.append(len(obs_list))
+        return first_legal(policy, obs_list, masks)
+
+    play_eval("net", load_eval(1)[:3], spy)
+    assert sizes[0] == 3 and sizes[-1] >= 1 and sizes == sorted(sizes, reverse=True)
+
+
+def test_eval_stats_hand():
+    s = eval_stats([result(0.7, "valid", 0.6, 0.8), result(0.5, "valid", 0.6, 0.6), result(-0.4, "invalid", 0.2),
+                    result(-1.5, "failed", -1.6)])
+    assert abs(s["score"] - (-0.175)) < 1e-9 and abs(s["A"] - (-0.05)) < 1e-9 and abs(s["B"] - 0.35) < 1e-9
+    assert abs(s["solv_score"] - 0.8 / 3) < 1e-9 and abs(s["solv_A"] - 0.6 * 2 / 3 - 0.2 / 3) < 1e-9
+    assert abs(s["gate_A"] - 1 / 3) < 1e-9 and abs(s["valid_score"] - 0.6) < 1e-9
+    assert s["failed"] == 0.25 and s["invalid"] == 0.25
+
+
+def test_eval_stats_gate_band():
+    s = eval_stats([result(0.6 - TIE, "valid", 0.6), result(0.6 - 2 * TIE, "valid", 0.6), result(0.7, "valid", 0.6),
+                    result(-1.2, "failed", -1.3)])
+    assert TIE == 0.005 and s["gate_A"] == 2 / 3 and abs(s["solv_A"] - 0.6) < 1e-9
+    assert abs(s["solv_score"] - (0.595 + 0.59 + 0.7) / 3) < 1e-9 and abs(s["score"] - (0.595 + 0.59 + 0.7 - 1.2) / 4) < 1e-9
+
+
+def test_eval_stats_no_solvable_task():
+    s = eval_stats([result(-1.2, "failed", -1.3)])
+    assert np.isnan(s["solv_score"]) and np.isnan(s["gate_A"]) and s["failed"] == 1.0
+
+
+def test_best_order():
+    res = [result(0.2, "valid", 0), result(-1.0, "failed", 0), result(0.7, "valid", 0), result(0.5, "valid", 0)]
+    assert best_order(res, 2) == [2, 3]
+    assert best_order(res, 10) == [2, 3, 0, 1]
+
+
+def test_save_best_and_evaluate():
+    folder = Path("tests/_tmp_eval")
+    shutil.rmtree(folder, ignore_errors=True)
+    rows = load_eval(1)[:3]
+    stats, paths = evaluate(None, rows, folder / "r0", first_legal, k=2)
+    assert set(stats) == {"score", "A", "B", "solv_score", "solv_A", "gate_A", "valid_score", "failed", "invalid"}
+    assert [p.name for p in paths] == ["best_0.png", "best_1.png"] and all(p.exists() for p in paths)
+    res = play_eval(None, rows, first_legal)
+    paths = save_best(res, folder / "r1", k=10)
+    assert len(paths) == 3
+    stats, paths = evaluate(None, rows, folder / "r2", first_legal, k=0)
+    assert paths == [] and not (folder / "r2").exists() and "score" in stats
+    shutil.rmtree(folder)
