@@ -1,0 +1,6 @@
+{
+ "tie": 0.005,
+ "big_block": 9,
+ "worst_tasks": 8,
+ "rate_bands": {"default": [5, 15], "1": [20, 60]}
+}

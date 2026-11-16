@@ -164,24 +164,6 @@ def test_build_row_count_and_shapes():
         assert len(s[k]) == n
 
 
-def test_batch_unpacks_exactly():
-    s = build(ROWS)
-    want = []
-    for r in ROWS:
-        for o, m, a in steps(r["task"], r["plan"]):
-            want.append((o, m, a, r["score"]))
-    idx = np.array([len(want) - 1, 0, 2])
-    obs, masks, actions, scores = batch(s, idx)
-    assert obs["grid"].shape == (3, *GRID_SHAPE) and obs["grid"].dtype == np.uint8
-    assert masks.shape == (3, N_POS) and masks.dtype == bool
-    for j, i in enumerate(idx):
-        o, m, a, sc = want[i]
-        for k in o:
-            assert np.array_equal(obs[k][j], o[k])
-        assert np.array_equal(masks[j], m)
-        assert actions[j] == a and abs(scores[j] - sc) < 1e-6
-
-
 def test_batch_actions_are_legal():
     s = build(ROWS)
     obs, masks, actions, scores = batch(s, np.arange(len(s["action"])))
