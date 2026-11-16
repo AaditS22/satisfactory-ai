@@ -2,5 +2,12 @@
  "tie": 0.005,
  "big_block": 9,
  "worst_tasks": 8,
- "rate_bands": {"default": [5, 15], "1": [20, 60]}
+ "rate_bands": {"default": [5, 15], "1": [20, 60]},
+ "curve_blocks": 10,
+ "flags": {
+  "drift_entropy": 0.3,
+  "drift_valid": 0.02,
+  "entropy_collapse": 0.3,
+  "broken_rise": 0.02
+ }
 }

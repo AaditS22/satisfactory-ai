@@ -1,9 +1,11 @@
 import argparse
 import json
+import math
 import time
 from pathlib import Path
 
 from tools import registry
+from tools.curve import training
 from tools.baselines import baselines, eval_rows, stage_of
 from tools.replay import replay, broken
 from tools.stats import mean, paired, band, bands
@@ -93,14 +95,14 @@ def mismatch(tasks):
 def tidy(x):
     """Rounds every number in a summary to 5 decimals to keep the file small"""
     if isinstance(x, float):
-        return round(x, 5)
+        return round(x, 5) if math.isfinite(x) else None
     if isinstance(x, dict):
         return {k: tidy(v) for k, v in x.items()}
     if isinstance(x, list):
         return [tidy(v) for v in x]
     return x
 
-def summarise(run, meta, tasks, base, spec_run=None, spec_tasks=None, config=None):
+def summarise(run, meta, tasks, base, spec_run=None, spec_tasks=None, config=None, train=None):
     """Builds the compact summary of a run from its per-task results"""
     config = config or registry.load_config()
     tie, big_n = config["tie"], config["big_block"]
@@ -133,6 +135,9 @@ def summarise(run, meta, tasks, base, spec_run=None, spec_tasks=None, config=Non
     if errors:
         flags.append(f"plans that could not be replayed at all: seeds {sorted(set(errors))}")
 
+    if train:
+        flags += train["flags"]
+
     rate_groups = {b: [r for r in rows if band(r["rate"], edges) == b] for b in bands(edges)}
     targets = sorted({r["target"] for r in rows})
     worst = sorted(rows, key=lambda r: r["best"]["score"] - r["B"]["score"])[:config["worst_tasks"]]
@@ -156,15 +161,20 @@ def summarise(run, meta, tasks, base, spec_run=None, spec_tasks=None, config=Non
                            for r in rows if broken(r[k])] for k in ("greedy", "best")},
             "worst_vs_B": [task_line(r) for r in worst],
             "unsolvable": {"n": len(rest), "best_works": sum(not broken(r["best"]) for r in rest)},
-            "replay_gap": gap})
+            "replay_gap": gap, "training": train})
 
-def digest(run, plans, meta):
+def run_folder(stage, run, folder=None):
+    """The folder training wrote for a run (runs/stage<N>/<run> unless another one is given)"""
+    return Path(folder) if folder else Path(f"runs/stage{stage}/{run}")
+
+def digest(run, plans, meta, folder=None):
     """Replays a best_of plan file and stores the run's per-task results and summary in the registry"""
     rows = eval_rows()
     stage = stage_of([p["seed"] for p in plans], rows)
     base = baselines(stage)
     tasks = make_tasks(plans, [r for r in rows if r["stage"] == stage], say=print)
-    stored = {"run": run, "stage": stage, "source": meta, "tasks": tasks}
+    stored = {"run": run, "stage": stage, "source": meta, "tasks": tasks,
+              "training": training(run_folder(stage, run, folder), registry.load_config())}
     summary = resummarise(stored, base)
     registry.save_run(summary, stored)
     return summary
@@ -174,13 +184,18 @@ def resummarise(stored, base=None):
     base = base or baselines(stored["stage"])
     spec_run = registry.specialists().get(stored["stage"])
     spec = registry.load_tasks(spec_run) if spec_run and spec_run != stored["run"] else None
-    return summarise(stored["run"], stored["source"], stored["tasks"], base, spec_run, spec and spec["tasks"])
+    return summarise(stored["run"], stored["source"], stored["tasks"], base, spec_run, spec and spec["tasks"],
+                     train=stored.get("training"))
 
 def refresh():
     """Rebuilds every summary, e.g. after the specialists file or the config changed"""
     for run in registry.all_runs():
-        registry.save_run(resummarise(registry.load_tasks(run)))
-        print(f"refreshed {run}")
+        stored = registry.load_tasks(run)
+        fresh = training(run_folder(stored["stage"], run), registry.load_config())
+        if fresh:
+            stored["training"] = fresh
+        registry.save_run(resummarise(stored), stored if fresh else None)
+        print(f"refreshed {run}" + ("" if stored.get("training") else "  (no training record)"))
 
 def f(x, sign=False):
     """A number as text with 3 decimals, or '-' if there is none"""
@@ -227,11 +242,36 @@ def report(s):
         for b in s["broken"][key]:
             out.append(f"  broken {key}: {b['seed']} {b['target']} {b['rate']}/min {b['site']} {b['kind']} "
                        f"{b['score']:.3f} blocks {b['blocks']}")
+    if s["big_block"]:
+        out.append("big-block tasks:")
+        for t in s["big_block"]["tasks"]:
+            sp = f"  specialist {f(t['specialist'])} {t['specialist_blocks']}" if "specialist" in t else ""
+            out.append(f"  {t['seed']} {t['rate']}/min  {f(t['best'])} {t['blocks']}  B {f(t['B'])} {t['B_blocks']}{sp}")
     out.append("worst tasks vs B:")
     for t in s["worst_vs_B"]:
         out.append(f"  {t['seed']} {t['target']} {t['rate']}/min {t['site']}  {f(t['best'])} vs B {f(t['B'])} "
                    f"({t['best'] - t['B']:+.3f})  blocks {t['blocks']}  B {t['B_blocks']}")
-    return "\n".join(out)
+    return "\n".join(out + train_report(s.get("training")))
+
+def train_report(t):
+    """The training record as lines of text"""
+    if not t:
+        return ["training: no record (the run folder was not found when this was digested)"]
+    e, v, ev = t["entropy"], t["valid_score"], t["eval"]
+    out = [f"training: {t['rounds_done']} of {t['rounds_planned']} rounds  scale {t['scale']}  code {t['code']}"
+           + (f"  resumed at {t['resumed']}" if t["resumed"] else ""),
+           f"  note: {t['note']}",
+           f"  entropy {f(e['rounds_0_4'])} -> {f(e['last_10'])}   valid score {f(v['rounds_0_4'])} -> {f(v['last_10'])}",
+           f"  eval (greedy): first {f(ev['first'])}  rounds 10-50 {f(ev['rounds_10_50'])}  last 200 {f(ev['last_200'])}"
+           f"  last {f(ev['last'])}  best {f(ev['best'] and ev['best']['score'])}"
+           + (f" (round {ev['best']['round']})" if ev["best"] else ""),
+           "  rounds        entropy  valid  broken   push    kl   eval  eval broken"]
+    evals = {b["rounds"]: b for b in t["eval_blocks"]}
+    for b in t["train_blocks"]:
+        x = evals.get(b["rounds"], {})
+        out.append(f"  {b['rounds']:12s}  {f(b['entropy'])}  {f(b['valid_score'])}  {f(b['broken'])}  {f(b.get('push'))}"
+                   f"  {f(b['approx_kl'])}  {f(x.get('solv_score'))}  {f(x.get('broken'))}")
+    return out
 
 def main():
     p = argparse.ArgumentParser(description="turn a best_of plan file into a permanent registry entry")
@@ -241,6 +281,7 @@ def main():
     p.add_argument("--seed", type=int, default=0, help="the --seed best_of was run with")
     p.add_argument("--checkpoint", default="last.pt", help="which checkpoint the plans came from")
     p.add_argument("--note", default="", help="anything worth remembering about this entry")
+    p.add_argument("--folder", default=None, help="the run's training folder (default runs/stage<N>/<run>)")
     p.add_argument("--force", action="store_true", help="replace an entry that already exists")
     p.add_argument("--refresh", action="store_true", help="rebuild every summary from the stored per-task results")
     p.add_argument("--show", metavar="RUN", help="print a stored summary")
@@ -261,7 +302,7 @@ def main():
     meta = {"plans": Path(args.plans).name, "k": args.k, "seed": args.seed, "checkpoint": args.checkpoint,
             "note": args.note, "digested": time.strftime("%Y-%m-%d %H:%M")}
     t0 = time.time()
-    summary = digest(args.run, plans, meta)
+    summary = digest(args.run, plans, meta, args.folder)
     print(f"stored runs/registry/{args.run}/ in {time.time() - t0:.0f} s\n")
     print(report(summary))
 
