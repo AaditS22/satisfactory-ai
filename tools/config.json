@@ -46,7 +46,7 @@
   "sec_per_round": 7.0,
   "eval_overhead": 1.08,
   "best_of_k": 64,
-  "best_of_s": 900,
+  "best_of_s": 300,
   "best_of_timeout_s": 5400,
   "keep_plans": false,
   "max_rounds": 5000,

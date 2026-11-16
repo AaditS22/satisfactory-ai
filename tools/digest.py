@@ -320,10 +320,14 @@ def main():
     p.add_argument("--force", action="store_true", help="replace an entry that already exists")
     p.add_argument("--refresh", action="store_true", help="rebuild every summary from the stored per-task results")
     p.add_argument("--show", metavar="RUN", help="print a stored summary")
+    p.add_argument("--remove", metavar="RUN", help="delete a run's registry entry (not its training folder)")
     args = p.parse_args()
 
     if args.refresh:
         return refresh()
+    if args.remove:
+        gone = registry.remove_run(args.remove)
+        return print(f"removed {args.remove} from the registry" if gone else f"{args.remove} is not in the registry")
     if args.show:
         s = registry.load_summary(args.show)
         return print(report(s) if s else f"{args.show} is not in the registry")

@@ -16,11 +16,15 @@ except ImportError:
 
 from tools import registry
 from tools import compare
+from tools import control
 
 mcp = MCPServer("satisfactory-runs", instructions=(
-    "Read-only access to the run registry of the Satisfactory layout RL project. Start with list_runs, then "
-    "get_run for one run's summary. Scores are on A-solvable eval tasks; always read the broken count next to a "
-    "mean. Verdicts (helps / neutral / worse / inconclusive) follow the project's pre-registered rule."))
+    "The run registry and training control of the Satisfactory layout RL project. Reading: start with list_runs, "
+    "then get_run for one run's summary. Scores are on A-solvable eval tasks; always read the broken count next to "
+    "a mean. Verdicts (helps / neutral / worse / inconclusive) follow the project's pre-registered rule. Control: "
+    "queue_run / queue_resume add to the queue, start_supervisor works through it, live_status and get_events show "
+    "progress, stop_run stops the current training. Greedy eval dips and hovers even in good runs: never stop a "
+    "run for that alone. Every new run needs a note, and a prereg text saying what result will mean what."))
 
 def tool(fn):
     """Registers fn as an MCP tool that answers with compact JSON text, or {"error": ...} for a bad request"""
@@ -79,7 +83,53 @@ def get_config() -> str:
     """The editable settings: tie size, rate bands, flag thresholds and the current specialist of each stage"""
     return {"config": registry.load_config(), "specialists": {str(k): v for k, v in registry.specialists().items()}}
 
-TOOLS = [list_runs, get_run, compare_runs, compare_set, get_task, get_config]
+@tool
+def live_status() -> str:
+    """What is happening right now: whether the supervisor runs, the current run's round, latest numbers, kill rules that are firing, time left, free RAM, GPU, running processes, the queue and the last events"""
+    return control.live_status()
+
+@tool
+def get_events(since: int = 0, limit: int = 20) -> str:
+    """The supervisor's numbered event files (started, milestone, warning, killed, crashed, finished, refused, deadline, queue_empty) with a number above 'since'"""
+    return control.get_events(since, limit)
+
+@tool
+def list_queue() -> str:
+    """The runs waiting in the queue, each with its exact training command and a time estimate"""
+    return control.list_queue()
+
+@tool
+def queue_run(run: str, stage: int, settings: dict, note: str, prereg: str = "") -> str:
+    """Queues a NEW training run; settings uses layout.train's flag names with underscores, e.g. {"rounds": 2000, "workers": 16, "ent_coef": 0.01, "solvable": true, "copies": 8, "groups": 14, "fixed_scale": true, "scale": 0.061034, "seed": 0, "cost_map": true, "init": "runs/other/f_soft_wide.pt"}; note says what the run changes; prereg says what result will mean what; the request is checked and refused with a reason if it breaks a rule"""
+    return control.queue_run(run, stage, settings, note, prereg)
+
+@tool
+def queue_resume(run: str) -> str:
+    """Queues the rest of a run that stopped early, with exactly its own settings read from its run.json (same seed, no init, note or scale)"""
+    return control.queue_resume(run)
+
+@tool
+def remove_queued(id: int) -> str:
+    """Takes one waiting run out of the queue by its id from list_queue"""
+    return control.remove_queued(id)
+
+@tool
+def start_supervisor(deadline: str = "") -> str:
+    """Starts the supervisor in the background so it works through the queue; deadline like "09:00" means: do not start a run that would not finish by then; refused if one is already running or the queue is empty"""
+    return control.start_supervisor(deadline)
+
+@tool
+def stop_run(reason: str, stop_supervisor: bool = False) -> str:
+    """Stops the training that is running now (its training record is kept in the registry as killed, with the reason); stop_supervisor also ends the supervisor, otherwise it goes on with the next queued run"""
+    return control.stop_run(reason, stop_supervisor)
+
+@tool
+def cleanup_processes(dry_run: bool = True) -> str:
+    """Lists leftover game workers whose training program is gone, and stops them when dry_run is false; never touches a training that is still running"""
+    return control.cleanup_processes(dry_run)
+
+TOOLS = [list_runs, get_run, compare_runs, compare_set, get_task, get_config, live_status, get_events, list_queue,
+         queue_run, queue_resume, remove_queued, start_supervisor, stop_run, cleanup_processes]
 
 def check():
     """Prints what the server would offer and the exact text to register it, to test the setup without Claude"""

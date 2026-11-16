@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 import time
 from pathlib import Path
 
@@ -29,8 +30,8 @@ def write_json(path, data, indent=None):
             time.sleep(0.2)
 
 def load_config():
-    """The editable settings in tools/config.json"""
-    return read_json(HERE / "config.json")
+    """The editable settings in tools/config.json (or the file the TOOLS_CONFIG variable names, used by tests)"""
+    return read_json(os.environ.get("TOOLS_CONFIG") or HERE / "config.json")
 
 def specialists():
     """The current specialist run of every stage, from tools/specialists.json"""
@@ -88,3 +89,13 @@ def save_run(summary, tasks=None):
     rows = [r for r in load_index() if r["run"] != run] + [index_row(summary)]
     rows.sort(key=lambda r: (r["stage"], r["digested"], r["run"]))
     write_json(ROOT / "index.json", rows, indent=1)
+
+def remove_run(run):
+    """Deletes a run's registry entry and its index row; gives False if it was not there"""
+    folder = ROOT / check_name(run)
+    rows = load_index()
+    if not folder.exists() and not any(r["run"] == run for r in rows):
+        return False
+    shutil.rmtree(folder, ignore_errors=True)
+    write_json(ROOT / "index.json", [r for r in rows if r["run"] != run], indent=1)
+    return True
