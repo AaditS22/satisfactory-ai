@@ -86,3 +86,21 @@ def test_errors(reg):
         compare_runs("A", "B")
     with pytest.raises(ValueError):
         task_view(5)
+
+
+def test_server_tools_answer_with_json_text(reg):
+    pytest.importorskip("mcp")
+    import json
+    from tools import server
+    runs = json.loads(server.list_runs())
+    assert [r["run"] for r in runs["runs"]] == ["a", "b", "mix"] and runs["specialists"] == {"3": "a"}
+    assert json.loads(server.list_runs(stage=1))["runs"] == []
+    assert json.loads(server.get_run("b"))["best"]["broken"] == 0
+    assert len(json.loads(server.get_run("b", per_task=True))["per_task"]) == 6
+    assert json.loads(server.compare_runs("b", "B"))["all"]["diff"] == 0
+    assert json.loads(server.compare_set(["a", "b"]))["set"]["n"] == 5
+    assert set(json.loads(server.get_task(55040))["runs"]) == {"a", "b", "mix"}
+    assert "tie" in json.loads(server.get_config())["config"]
+    assert "not in the registry" in json.loads(server.get_run("nope"))["error"]
+    assert "layouts" in json.loads(server.compare_runs("a", "b", "x"))["error"]
+    assert "bad run name" in json.loads(server.get_run("../x"))["error"]
