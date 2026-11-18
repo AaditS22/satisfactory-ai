@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import traceback
+from multiprocessing.connection import wait
 
 import numpy as np
 
@@ -35,9 +36,22 @@ def _pack(obs, masks, rewards, dones, infos):
 class LocalGames:
     """N games inside one program played one after another"""
 
-    def __init__(self, make_env, n_games):
+    def __init__(self, make_env, n_games, n_parts=1):
         self.n = n_games
         self.envs = [make_env() for _ in range(n_games)]
+        self.split = np.array_split(np.arange(n_games), min(n_parts, n_games))
+        self._answers = []
+
+    def send_part(self, k, actions, jobs):
+        """Step only part k's games (answered at the next recv_parts)"""
+        envs = [self.envs[i] for i in self.split[k]]
+        self._answers.append((k, _pack(*_play(envs, actions, jobs))))
+
+    def recv_parts(self):
+        """Answer of the oldest part still waiting, one at a time, so parts come back out of step like workers do"""
+        if not self._answers:
+            raise RuntimeError("no part is waiting for an answer")
+        return [self._answers.pop(0)]
 
     def reset(self, seed=0):
         obs, masks = _reset(self.envs, [seed + i for i in range(self.n)])
@@ -79,7 +93,7 @@ class ProcGames:
         ctx = mp.get_context("spawn")
         self.n = n_games
         self.split = np.array_split(np.arange(n_games), min(n_workers, n_games))
-        self.conns, self.procs = [], []
+        self.conns, self.procs, self._busy = [], [], set()
         for idx in self.split:
             parent, child = ctx.Pipe()
             p = ctx.Process(target=_worker, args=(child, make_env, len(idx)), daemon=True)
@@ -108,9 +122,33 @@ class ProcGames:
         return obs, np.stack(masks)
 
     def step(self, actions, jobs=None):
+        if self._busy:
+            raise RuntimeError("some parts are still waiting for answers")
         actions = list(actions)
         parts = [([actions[i] for i in idx], None if jobs is None else [jobs[i] for i in idx]) for idx in self.split]
         return _pack(*self._ask("step", parts))
+
+    def send_part(self, k, actions, jobs):
+        """Step only worker k's games, without waiting for the answer"""
+        if k in self._busy:
+            raise RuntimeError(f"part {k} is still waiting for its last answer")
+        self.conns[k].send(("step", (list(actions), list(jobs))))
+        self._busy.add(k)
+
+    def recv_parts(self):
+        """Wait until at least one waiting worker answers; returns every answer that is ready as (k, step result)"""
+        if not self._busy:
+            raise RuntimeError("no part is waiting for an answer")
+        ready = wait([self.conns[k] for k in self._busy])
+        out = []
+        for conn in ready:
+            k = self.conns.index(conn)
+            status, res = conn.recv()
+            self._busy.discard(k)
+            if status == "error":
+                raise RuntimeError("a game worker crashed:\n" + res)
+            out.append((k, _pack(*res)))
+        return out
 
     def close(self):
         for conn in self.conns:

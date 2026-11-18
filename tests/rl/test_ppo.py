@@ -264,3 +264,62 @@ def test_linear_lr_follows_rounds():
         assert all(x > 0 for x in lrs)
         assert all(a > b for a, b in zip(lrs, lrs[1:]))
         assert math.isclose(lrs[-1], 1e-3 / rounds)
+
+
+def test_ppo_losses_weight_scales_policy_term():
+    new_logp = torch.tensor([0.1, -0.1])
+    old = torch.zeros(2)
+    adv = torch.tensor([1.0, -1.0])
+    pl1, vl1 = ppo_losses(new_logp, old, adv, torch.zeros(2), torch.zeros(2))
+    pl2, vl2 = ppo_losses(new_logp, old, adv, torch.zeros(2), torch.zeros(2), weight=torch.tensor([2.0, 2.0]))
+    assert torch.isclose(pl2, 2 * pl1) and torch.equal(vl1, vl2)
+
+
+def run_lag(lag, played_by=None):
+    torch.manual_seed(0)
+    policy = Tiny()
+    buf = make_buffer(played_by or policy, T=6, N=2)
+    stats = update(policy, torch.optim.Adam(policy.parameters(), lr=1e-2), buf, tiny_to_torch, epochs=2, minibatch=4,
+                   rng=np.random.default_rng(0), lag=lag)
+    return stats, [p.detach().clone() for p in policy.parameters()]
+
+
+def test_lag_on_fresh_page_changes_nothing():
+    s_off, w_off = run_lag("off")
+    for lag in ("log", "fix"):
+        s, w = run_lag(lag)
+        assert all(torch.allclose(a, b, atol=1e-6) for a, b in zip(w_off, w))
+        assert abs(s["lag_kl"]) < 1e-6 and s["lag_clip"] == 0.0
+        assert np.isclose(s["approx_kl"], s_off["approx_kl"], atol=1e-6)
+    assert "lag_kl" not in s_off and "w_capped" in run_lag("fix")[0] and "w_capped" not in run_lag("log")[0]
+
+
+def test_lag_fix_restores_clip_room_on_late_page():
+    torch.manual_seed(5)
+    old = Tiny()
+    with torch.no_grad():
+        for p in old.parameters():
+            p.add_(torch.randn_like(p) * 0.8)
+    s_log, w_log = run_lag("log", old)
+    s_fix, w_fix = run_lag("fix", old)
+    assert s_log["lag_kl"] > 0.01 and np.isclose(s_log["lag_kl"], s_fix["lag_kl"])
+    assert s_fix["clip_frac"] < s_log["clip_frac"]
+    assert not all(torch.allclose(a, b) for a, b in zip(w_log, w_fix))
+
+
+def test_lag_fix_weight_is_capped():
+    torch.manual_seed(0)
+    policy = Tiny()
+    buf = make_buffer(policy, T=6, N=2)
+    buf.logp = buf.logp - 3.0
+    stats = update(policy, torch.optim.Adam(policy.parameters(), lr=1e-3), buf, tiny_to_torch, epochs=1, minibatch=12,
+                   rng=np.random.default_rng(0), lag="fix", w_cap=2.0)
+    assert stats["w_capped"] == 1.0
+
+
+def test_lag_bad_value():
+    try:
+        run_lag("maybe")
+        assert False
+    except ValueError:
+        pass

@@ -205,3 +205,31 @@ def test_proc_page_matches_local():
     local = play_page(LocalGames(PickTarget, 5), jobs, chooser())
     with ProcGames(PickTarget, 5, 2) as proc:
         assert play_page(proc, jobs, chooser()) == local
+
+
+def test_parts_step_only_their_games():
+    for games in (LocalGames(PickTarget, 4, n_parts=2), ProcGames(PickTarget, 4, 2)):
+        with games:
+            assert [list(x) for x in games.split] == [[0, 1], [2, 3]]
+            games.send_part(1, [None, None], [11, 12])
+            (k, (obs, masks, rewards, dones, infos)), = games.recv_parts()
+            assert k == 1 and len(obs) == 2 and np.array_equal(obs[0]["target"], fresh(11)[0]["target"])
+            assert masks.shape == (2, 8) and not dones.any()
+
+
+def test_proc_part_busy_rules():
+    with ProcGames(PickTarget, 4, 2) as games:
+        for f in (games.recv_parts,):
+            try:
+                f()
+                assert False
+            except RuntimeError:
+                pass
+        games.send_part(0, [None, None], [1, 2])
+        for f in (lambda: games.send_part(0, [None, None], [3, 4]), lambda: games.step([None] * 4)):
+            try:
+                f()
+                assert False
+            except RuntimeError:
+                pass
+        assert games.recv_parts()[0][0] == 0

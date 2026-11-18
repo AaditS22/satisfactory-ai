@@ -3,7 +3,9 @@ import torch
 from torch import nn
 
 from rl.buffer import RolloutBuffer, EpisodeBuffer
-from rl.collect import stack, act, collect, Background, collect_groups
+import time
+
+from rl.collect import stack, act, collect, Background, collect_groups, collect_groups_async
 from rl.dist import masked_log_probs, pick
 from rl.ppo import update
 from rl.games import LocalGames, ProcGames
@@ -250,6 +252,23 @@ def test_background_page_matches_collect():
     assert f1 == f2 and np.array_equal(masks, masks1) and secs > 0
 
 
+def test_background_reuses_one_thread():
+    # a new thread per page leaks native memory when the actor runs on CUDA, so every page must use the same thread
+    torch.manual_seed(2)
+    policy = Tiny()
+    bg, _, obs, masks = bg_for(policy, 4, 2)
+    seen = set()
+    for _ in range(5):
+        bg.start(obs, masks)
+        seen.add(bg.thread.ident)
+        _, obs, masks, _, _ = bg.wait()
+    worker = bg._worker
+    assert len(seen) == 1 and worker.is_alive()
+    bg.close()
+    worker.join(timeout=5)
+    assert not worker.is_alive()
+
+
 def test_background_actor_is_a_copy():
     _, _, _, _, b1 = page(6, 4, seed=2)
     torch.manual_seed(2)
@@ -390,3 +409,122 @@ def test_groups_page_feeds_update():
     stats = update(policy, opt, buf, to_torch, epochs=2, minibatch=8, rng=np.random.default_rng(0))
     assert set(stats) == {"policy_loss", "value_loss", "entropy", "approx_kl", "clip_frac", "push"}
     assert all(np.isfinite(v) for v in stats.values())
+
+
+class Sure(nn.Module):
+    """Always plays the target (huge logit on it), so pages don't depend on the random draws"""
+    def __init__(self):
+        super().__init__()
+        self.v = nn.Linear(10, 1)
+
+    def forward(self, obs):
+        x = torch.cat([obs["target"], obs["progress"]], 1)
+        return 50.0 * obs["target"], self.v(x).squeeze(1)
+
+
+class VarLen(PickTarget):
+    """Game length depends on the seed (2, 3 or 4 moves); seeds ending in 7 are slow on their last move"""
+    def reset(self, seed=None, options=None):
+        if seed is not None:
+            self.K = 2 + seed % 3
+            self.slow = seed % 10 == 7
+        return super().reset(seed=seed, options=options)
+
+    def step(self, action):
+        out = super().step(action)
+        if out[2] and getattr(self, "slow", False):
+            time.sleep(0.05)
+        return out
+
+
+VAR_JOBS = [s for s in (100, 101, 102, 107, 117) for _ in range(3)]
+
+
+def async_page(games, policy, jobs=VAR_JOBS, copies=3, broken=lambda info: False):
+    buf = EpisodeBuffer(copies=copies)
+    finished, idle = collect_groups_async(games, policy, buf, jobs, to_torch, broken, torch.Generator().manual_seed(0))
+    return buf, finished, idle
+
+
+def test_async_same_page_as_sync_when_moves_are_fixed():
+    torch.manual_seed(0)
+    policy = Sure()
+    b1, f1, _ = group_page(LocalGames(PickTarget, 4), policy)
+    b2, f2, _ = async_page(LocalGames(PickTarget, 4, n_parts=2), policy, GROUP_JOBS, 4)
+    with ProcGames(PickTarget, 4, 2) as proc:
+        b3, f3, _ = async_page(proc, policy, GROUP_JOBS, 4)
+    assert b1.T == b2.T == b3.T == 36 and len(f1) == len(f2) == len(f3) == 12
+    for b in (b2, b3):
+        assert b.stats == b1.stats
+        assert sorted(zip(b1.ret, b1.adv)) == sorted(zip(b.ret, b.adv))
+
+
+def test_async_plays_every_job_with_out_of_step_workers():
+    torch.manual_seed(0)
+    policy = Tiny()
+    with ProcGames(VarLen, 5, 3) as proc:
+        buf, finished, idle = async_page(proc, policy)
+    assert len(finished) == 15 and buf.stats["groups"] == 5
+    assert buf.T == 3 * sum(2 + s % 3 for s in (100, 101, 102, 107, 117))
+    assert 0 <= idle < 1
+    obs, d = buf.get(np.arange(buf.T))
+    assert d["masks"][np.arange(buf.T), d["actions"]].all()
+    with torch.no_grad():
+        logits, value = policy(to_torch(obs, "cpu"))
+        logp = pick(masked_log_probs(logits, torch.as_tensor(d["masks"])), torch.as_tensor(d["actions"]))
+    assert np.allclose(logp.numpy(), d["logp"], atol=1e-5) and np.allclose(value.numpy(), d["values"], atol=1e-5)
+
+
+def test_async_each_game_is_whole_and_in_order():
+    torch.manual_seed(0)
+    buf, _, _ = async_page(LocalGames(VarLen, 4, n_parts=3), Tiny())
+    obs, d = buf.get(np.arange(buf.T))
+    starts = np.flatnonzero(obs["progress"][:, 0] == 0)
+    assert len(starts) == 15
+    for a, b in zip(starts, list(starts[1:]) + [buf.T]):
+        game = obs["progress"][a:b, 0]
+        assert (np.diff(game) > 0).all() and len(set(d["adv"][a:b])) == 1 and len(set(d["ret"][a:b])) == 1
+
+
+def test_async_more_jobs_than_slots_and_one_part():
+    torch.manual_seed(0)
+    jobs = [s for s in range(200, 210) for _ in range(2)]
+    buf, finished, _ = async_page(LocalGames(VarLen, 3), Tiny(), jobs, 2)
+    assert len(finished) == 20 and buf.stats["groups"] == 10
+
+
+class SlowEnd(VarLen):
+    """Every game's last move takes 50 ms (like routing and scoring), games last 2-4 moves"""
+    def reset(self, seed=None, options=None):
+        out = super().reset(seed=seed, options=options)
+        self.slow = True
+        return out
+
+
+def test_async_slow_steps_only_hold_up_their_own_worker():
+    jobs = [s for s in range(300, 320) for _ in range(2)]
+    policy = Sure()
+    times = {}
+    with ProcGames(SlowEnd, 4, 4) as proc:
+        proc.reset(0)
+        for name, play in (("sync", collect_groups), ("async", collect_groups_async)):
+            buf = EpisodeBuffer(copies=2)
+            t = time.perf_counter()
+            f, _ = play(proc, policy, buf, jobs, to_torch, lambda info: False, torch.Generator().manual_seed(0))
+            times[name] = time.perf_counter() - t
+            assert len(f) == 40
+    assert times["async"] < 0.8 * times["sync"], times
+
+
+def test_background_groups_page():
+    torch.manual_seed(0)
+    policy = Sure()
+    games = LocalGames(PickTarget, 4, n_parts=2)
+    bufs = [EpisodeBuffer(4), EpisodeBuffer(4)]
+    bg = Background(policy, games, bufs, to_torch, torch.Generator().manual_seed(0))
+    bg.sync(policy)
+    bg.start_groups(GROUP_JOBS, lambda info: False)
+    buf, finished, idle, secs = bg.wait()
+    assert buf is bufs[0] and len(finished) == 12 and buf.T == 36 and secs > 0 and 0 <= idle < 1
+    bg.start_groups(GROUP_JOBS, lambda info: False, use_async=False)
+    assert bg.wait()[0] is bufs[1]

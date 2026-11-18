@@ -318,15 +318,58 @@ def test_train_groups_short_run():
     shutil.rmtree("runs/stage1/_test_groups")
 
 
-def test_groups_refuse_overlap_and_shaping():
-    for bad in [{"overlap": True}, {"shaping": 0.1}]:
+def test_groups_refuse_shaping_and_bad_new_flags():
+    for bad in [{"shaping": 0.1}, {"lag": "fix"}, {"lag": "log"}, {"lag": "maybe", "overlap": True},
+                {"stop_at": 0}, {"stop_at": 2}]:
         try:
             train(stage=1, rounds=1, n_games=2, workers=2, device="cpu", run="_test_refuse", copies=2, verbose=False,
                   **bad)
             assert False, bad
         except ValueError:
             pass
+    try:
+        train(stage=1, rounds=1, n_games=2, workers=2, device="cpu", run="_test_refuse", async_play=True, verbose=False)
+        assert False
+    except ValueError:
+        pass
     assert not Path("runs/stage1/_test_refuse").exists()
+
+
+def test_train_groups_overlap_async_lag_fix():
+    import layout.train as LT
+    real_u, seen = LT.update, []
+
+    def spy_u(policy, optimizer, buffer, *a, **k):
+        seen.append(k["lag"])
+        return real_u(policy, optimizer, buffer, *a, **k)
+
+    shutil.rmtree("runs/stage1/_test_ovgroups", ignore_errors=True)
+    LT.update = spy_u
+    try:
+        torch.manual_seed(0)
+        _, history = train(stage=1, rounds=5, n_games=4, workers=2, minibatch=8, epochs=1, device="cpu",
+                           run="_test_ovgroups", copies=2, groups=3, overlap=True, async_play=True, lag="fix",
+                           stop_at=3, verbose=False)
+    finally:
+        LT.update = real_u
+    assert len(history) == 3 and seen == ["fix"] * 3
+    log = read_log("runs/stage1/_test_ovgroups/log.csv")
+    assert np.array_equal(log["round"], [0, 1, 2]) and np.array_equal(log["games"], [6, 6, 6])
+    assert np.isfinite(log["lag_kl"]).all() and abs(log["lag_kl"][0]) < 1e-5 and (log["play_s"] > 0).all()
+    assert np.allclose(log["lr"], [2.5e-4 * (1 - r / 5) for r in range(3)])
+    extra = torch.load("runs/stage1/_test_ovgroups/last.pt")["extra"]
+    assert extra["overlap"] is True and extra["async_play"] is True and extra["lag"] == "fix"
+    shutil.rmtree("runs/stage1/_test_ovgroups")
+
+
+def test_train_groups_async_only():
+    shutil.rmtree("runs/stage1/_test_async", ignore_errors=True)
+    torch.manual_seed(0)
+    _, history = train(stage=1, rounds=2, n_games=4, workers=2, minibatch=8, epochs=1, device="cpu",
+                       run="_test_async", copies=2, groups=3, async_play=True, verbose=False)
+    log = read_log("runs/stage1/_test_async/log.csv")
+    assert len(history) == 2 and np.array_equal(log["games"], [6, 6]) and "lag_kl" not in log
+    shutil.rmtree("runs/stage1/_test_async")
 
 
 def test_first_scale():
@@ -460,11 +503,12 @@ def test_main_passes_every_flag():
     seen = run_main(["--run", "x", "--stage", "2", "--rounds", "7", "--ent-coef", "0.03", "--workers", "3",
                      "--solvable", "--overlap", "--shaping", "0.1", "--lr", "0.001", "--images-every", "0",
                      "--init", "a.pt", "--note", "hello", "--copies", "8", "--groups", "20", "--broken-margin", "0.2",
-                     "--fixed-scale", "--scale", "0.05", "--cost-map"])
+                     "--fixed-scale", "--scale", "0.05", "--cost-map", "--async-play", "--lag", "fix",
+                     "--stop-at", "5", "--epochs", "2"])
     want = {"run": "x", "stage": 2, "rounds": 7, "ent_coef": 0.03, "workers": 3, "solvable": True, "overlap": True,
             "shaping": 0.1, "lr": 0.001, "images_every": 0, "init": "a.pt", "note": "hello", "resume": False,
             "copies": 8, "groups": 20, "broken_margin": 0.2, "fixed_scale": True, "set_scale": 0.05,
-            "cost_map": True}
+            "cost_map": True, "async_play": True, "lag": "fix", "stop_at": 5, "epochs": 2}
     for k, v in want.items():
         assert seen[k] == v, k
 
