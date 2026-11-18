@@ -42,9 +42,14 @@ python -m layout.train --run stage3_b --stage 3 --rounds 2000 --ent-coef 0.01 --
 **Other useful flags:**
 - `--resume` continues a stopped run from its last checkpoint. It needs the exact same settings as the original run, without --init, --note or --scale.
 - `--lr` sets the starting learning rate (default 2.5e-4).
+- `--epochs` sets how many passes the update makes over each page (default 4).
 - `--scale` sets the fixed scale by hand instead of measuring it (needs --fixed-scale).
 - `--broken-margin` sets how much worse a broken game counts than the worst working copy (default 0.1).
 - `--eval-every` sets how often the greedy eval runs on the test tasks (default every 10 rounds).
+- `--async-play` (needs --copies) lets each worker move on as soon as it answers, instead of every game waiting for the slowest worker on every tick (a game's last move, which routes and scores, or a reset can take 100+ ms while a normal move takes ~3 ms). Same jobs, same weights per page; only the order of the random draws changes.
+- `--overlap` plays the next page in the background while the network learns from the current one. Each page is then played by weights one update old.
+- `--lag` (with --overlap): `log` records how far apart the playing weights and the current ones are (lag_kl, lag_clip, clip_frac_played); `fix` also corrects for it with decoupled PPO (the clip is measured from the current weights, and each move is weighted by p_current / p_played, capped at 2).
+- `--stop-at N` stops after N rounds but keeps the lr schedule of --rounds (for short tests that match a full run's first N rounds).
 
 **Output**:
 - `log.csv`: one row per round (scores, penalty parts, entropy, KL, timings).
@@ -101,9 +106,51 @@ Reference scores: A 0.599, B 0.653 (90 tasks).
 | run | init | change | greedy | best-of-64 | notes |
 |---|---|---|---|---|---|
 | stage3_a | stage2_e | lr 1e-4 | | | Got worse early. Stopped at round 60 |
-| **stage3_b** | stage1_h | e's recipe | **0.460** | **0.632** | Learned all run (greedy 0.296 -> 0.50). Above A, 0.020 below B |
+| stage3_b | stage1_h | e's recipe | 0.460 | 0.632 | Learned all run (greedy 0.296 -> 0.50). Above A, 0.020 below B |
+| **stage3_f** | stage3_d softened | softened start + cost-map input | **0.561** | **0.649** | Best-of-64 +0.050 vs A (helps), -0.004 vs B (neutral). Specialist |
+| stage3_h | stage3_f softened + widened | n head widened to 16 machines | 0.530 | 0.633 | One best-of-64 layout broken (task 56030) |
+| stage3_i | stage3_f softened + widened | h with seed 1 | 0.497 | 0.649 | The break in h was luck. Same best-of-64 as f, worse greedy |
 
 Notes:
-- **Building from stage 2s weights does not yet work:** current hypothesis is that the model is already sure of itself, and a sure model plays the same moves in all 8 copies during the group baseline. The few moves that differ get big grades, and the update jumps around instead of improving
+- **Building from a previous model's weights does work, once softened:** a sure model plays the same moves in all 8 copies, so the few moves that differ get big grades and the update jumps around. `python -m layout.soften` divides the output logits by a temperature, chosen so the entropy on the new stage's tasks is ~1.34, before the run starts.
+- **Cost map:** `--cost-map` gives the network a map of what each position would cost. It went into stage3_f and has been on since.
+- **Widening:** `python -m layout.widen` copies the n head's row for 8 machines into rows 9-16, so the model can place blocks of up to 16 machines. Stage 4 needs blocks of 9-10.
+- **Run-to-run noise:** h and i differ only in seed. Their greedy differs by 0.033 and their best-of-64 by 0.016, so one run is not enough to judge small changes.
+
+## Stage 4: (Items - heavy modular frame, motor)
+
+Reference scores: A 0.532, B 0.569 (88 tasks). Games are about twice as long as stage 3.
+
+| run | init | change | greedy | best-of-64 | notes |
+|---|---|---|---|---|---|
+| stage4_a | stage3_i softened on stage 4 | stage 3 recipe (lr 2.5e-4) | 0.349 | 0.541 | Drifted: entropy +0.75 by round 110, eval fell. 10 broken greedy layouts |
+| stage4_b | stage3_f softened + widened | same | | | Same drift (entropy ~2.8 by round 200, eval 0.318). Stopped at round 229. ~14 s per round |
+| **stage4_c** | stage4_b's start | lr 1e-4 + async play + overlap + lag fix | 0.458 | 0.594 | No drift. Best-of-64 beats A (+0.061) and B (+0.025) |
+| **stage4_d** | stage4_b's start | c with 16 copies x 7 tasks (same 112 games) | **0.517** | **0.594** | Same best-of-64 as c. Only 2 broken greedy layouts (c: 7). Specialist |
+
+220-round tests (from stage4_b's start, stopped with `--stop-at`):
+
+| test | s / round | entropy (r190-219) | eval (r150-210) | result |
+|---|---|---|---|---|
+| sync (stage4_b) | 13.9 | 2.80 | 0.402 | baseline |
+| `--async-play` | 9.7 | 3.24 | 0.298 | 30% faster, drift judged one-seed noise |
+| async + `--overlap --lag fix` | 8.5 | 2.79 | 0.404 | 40% faster, same as baseline. Chosen |
+| async + `--overlap` (no fix) | 8.6 | 2.27 | 0.453 | Stale pages shrink the step, so it drifted less |
+| lr 1e-4 (with the speedups) | | -0.23 entropy rise | 0.464 | Stopped the drift. Chosen |
+| 2 epochs | | | 0.424 | Held, but didn't improve |
+| entropy bonus 0.003 | | ~0.5 | 0.35 | Collapsed |
+
+Notes:
+- **Why stage 4 drifted:** the updates were too big for it. At lr 2.5e-4, approx_kl was ~0.10-0.14 and clip_frac ~0.28 every round. lr 1e-4 fixed it.
+- **Speed:** a sync round waited for the slowest game on every tick, and the last move of a game (route + score) takes 100+ ms. `--async-play` lets each worker move on when it answers (a page takes ~3.4 s instead of ~7.4 s). `--overlap` plays the next page in the background while the network learns.
+- **Overlap with group training needs the lag fix:** the page is played by weights one update old. Plain PPO measures the clip from those old weights, so part of the clip room is used up before learning starts. `--lag fix` uses decoupled PPO (Hilton et al. 2021): the clip is measured from the current weights, and each move is weighted by p_current / p_played, capped at 2. This is the overlap that failed in smoke_j, now working.
+- **Overlap slowdown (fixed):** the first overlap runs got slower over time within one process (eval 15 s -> 161 s by round 1600, RAM falling ~1 GB per 100 rounds). A new background thread per page leaked ~0.3 MB of native memory each time it ran the policy on CUDA, which fragmented the memory heap. One thread is now reused for every page. Eval stays at ~12-13 s.
+- **16 copies vs 8:** the same number of games split into fewer tasks with more copies each. Each game is graded against 15 others, so the grade is less noisy. Greedy improved (0.517 vs 0.458, 1.9 SE, just short of the 2 SE rule), best-of-64 didn't change.
+- **Stage 4 is cleared at the same level as stage 3:** best-of-64 beats A and B, greedy is level with A (-0.015, inconclusive). Greedy is still 0.052 below B.
+
+Current recipe (stage4_d):
+```
+python -m layout.train --run stage4_d --stage 4 --rounds 2000 --workers 16 --init runs/other/f_s4soft_wide.pt --ent-coef 0.01 --solvable --copies 16 --groups 7 --fixed-scale --scale 0.056543 --cost-map --async-play --overlap --lag fix --seed 0 --lr 0.0001 --note "..."
+```
 
 ### To be continued...
