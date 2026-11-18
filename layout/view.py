@@ -315,6 +315,52 @@ def draw(env, path, title=None, routes=None):
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
+def draw_compare(rows, path, title, dpi=80):
+    """Save a PNG with one row of floors per layout of the same task.
+
+    rows: (label, result, highlight) per layout, where result is layout.api.evaluate's output for a finished,
+    routed layout and highlight frames that row in blue."""
+    env0 = rows[0][1]["env"]
+    F, X, Y = env0.world.owner.shape
+    colours = recipe_colours(env0.world.blocks)
+    fig, axes = plt.subplots(len(rows), F, figsize=(19, 6.7 * len(rows) + 0.4), squeeze=False)
+    for row, (label, res, highlight) in enumerate(rows):
+        env, routes = res["env"], res["routes"]
+        info = route_info(env, routes) if routes is not None else None
+        icol = item_colours(env, colours) if routes is not None else None
+        for f in range(F):
+            _draw_floor(axes[row, f], env, f, recipe_colours(env.world.blocks), routes, info, icol)
+        colour = "#1a5fb4" if highlight else "#333333"
+        axes[row, 0].annotate(f"{label}   score {res['score']:.2f}", xy=(0, 1), xycoords="axes fraction",
+                              xytext=(0, 24), textcoords="offset points", fontsize=15, fontweight="bold",
+                              ha="left", va="bottom", color=colour)
+        t = res["terms"]
+        if "length" in t:
+            axes[row, F - 1].annotate(
+                f"belts {t['length']:.0f} m  ·  lifts {t['lifts']:.0f}  ·  crossings {t['crossings']:.0f}  ·  "
+                f"floors used {t['floors']:.0f}", xy=(1, 1), xycoords="axes fraction", xytext=(0, 26),
+                textcoords="offset points", fontsize=11.5, ha="right", va="bottom", color="#555555")
+        if highlight:
+            for ax in axes[row]:
+                for s in ax.spines.values():
+                    s.set_edgecolor(colour)
+                    s.set_linewidth(2.5)
+
+    totals = {}
+    for b in env0.world.blocks:
+        totals[b["block"]["recipe"]] = totals.get(b["block"]["recipe"], 0) + b["block"]["n"]
+    handles = [Patch(fc=col, ec=col, label=f"{letter}: {recipe_label(r)} ({totals[r]})")
+               for r, (col, letter) in colours.items()]
+    handles.append(Line2D([], [], ls="none", marker="^", ms=9, mfc="#999999", mec="black", label="lift to another floor"))
+    handles.append(Line2D([], [], ls="none", marker="o", ms=7, mfc="white", mec="black", label="belt crossing"))
+    legend_rows = (len(handles) + 3) // 4
+    fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=10.5, frameon=False)
+    fig.suptitle(title, fontsize=18, y=0.995)
+    height = fig.get_figheight()
+    fig.tight_layout(rect=(0, (0.35 * legend_rows + 0.2) / height, 1, 1 - 0.5 / height), h_pad=4.5)
+    fig.savefig(path, dpi=dpi)
+    plt.close(fig)
+
 def random_episode(seed):
     """Play one random-agent episode on a random task; returns the finished env."""
     from layout.env import LayoutEnv

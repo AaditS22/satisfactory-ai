@@ -97,6 +97,7 @@ executor/   FactoryPlan format, HTTP bridge to the mod, build and verify
 mod/        SatAIBridge, the Unreal / C++ game mod
 data/       parsed game data, building catalog, cached test set
 docs/       FactoryPlan format and training notes
+models/     the trained model of each finished stage (weights only)
 tests/      pytest tests, one folder per package
 runs/       training runs, checkpoints and the registry (not in git)
 ```
@@ -112,6 +113,32 @@ python -m layout.view --seed 3 --out random.png       # a random agent's layout
 python -m layout.baseline --seed 3 --out greedy.png   # Baseline A
 python -m layout.anneal --seed 3 --out anneal.png     # Baseline B
 python -m layout.testset --show                       # test set results table
+```
+
+### Try the trained models
+
+`models/` holds the best trained model of each finished stage, the ones behind the results table,
+with only the network weights (5.4 MB each):
+
+| File | Stage | Greedy | Best-of-64 |
+|---|---|---|---|
+| `models/stage1.pt` | 1 | 0.760 | 0.769 |
+| `models/stage2.pt` | 2 | 0.607 | 0.654 |
+| `models/stage3.pt` | 3 | 0.561 | 0.649 |
+| `models/stage4.pt` | 4 | 0.517 | 0.594 |
+
+Play a model on one test task, compare it with both baselines and save a picture like the one at
+the top (a few seconds with a GPU):
+
+```
+python -m layout.try_model models/stage4.pt                                    # list the stage's test tasks
+python -m layout.try_model models/stage4.pt --task 57004 --out motor.png       # play one of them
+```
+
+To reproduce a whole row of the results table, score a model on every test task of its stage:
+
+```
+python -m layout.best_of models/stage4.pt --stage 4 --k 64
 ```
 
 Training and scoring a model (all flags are explained in [docs/training.md](docs/training.md)):

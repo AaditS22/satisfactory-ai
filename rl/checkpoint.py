@@ -13,6 +13,13 @@ def save_checkpoint(path, policy, optimizer, round, extra=None):
     }
     torch.save(save, path)
 
+def strip_checkpoint(path, out_path, info=None):
+    """Save only the policy weights of a training checkpoint (no optimizer state), for sharing.
+    The result loads with load_checkpoint (without an optimizer) and with torch.load(weights_only=True)."""
+    data = torch.load(path, map_location="cpu")
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    torch.save({"policy": data["policy"], "round": data["round"], "extra": info or {}}, out_path)
+
 def load_checkpoint(path, policy, optimizer=None, device="cpu"):
     """Put a saved checkpoint's numbers back into an existing policy and optimizer"""
     data = torch.load(path, map_location=device)

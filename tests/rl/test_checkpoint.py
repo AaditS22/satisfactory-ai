@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from rl.checkpoint import save_checkpoint, load_checkpoint
+from rl.checkpoint import save_checkpoint, load_checkpoint, strip_checkpoint
 
 TMP = Path("tests/_tmp_ckpt")
 
@@ -128,3 +128,18 @@ def test_load_onto_device():
     assert next(other.parameters()).device.type == device
     assert torch.equal(other.body.weight.cpu(), net.body.weight)
     fresh()
+
+
+def test_strip_keeps_weights_drops_optimizer():
+    fresh()
+    net, opt = trained()
+    save_checkpoint(TMP / "full.pt", net, opt, 12, {"lr": 0.1})
+    strip_checkpoint(TMP / "full.pt", TMP / "out" / "small.pt", {"run": "x", "stage": 2})
+    data = torch.load(TMP / "out" / "small.pt", weights_only=True)
+    assert set(data) == {"policy", "round", "extra"}
+    assert data["round"] == 12 and data["extra"] == {"run": "x", "stage": 2}
+    other = Tiny()
+    assert load_checkpoint(TMP / "out" / "small.pt", other) == (12, {"run": "x", "stage": 2})
+    assert same(net, other)
+    assert (TMP / "out" / "small.pt").stat().st_size < (TMP / "full.pt").stat().st_size
+    shutil.rmtree(TMP, ignore_errors=True)
