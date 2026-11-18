@@ -82,7 +82,7 @@ def sec_per_round(stage, sup):
 
 def rounds_left(entry):
     """How many rounds a queue entry still has to train"""
-    total = entry["settings"].get("rounds", 50)
+    total = entry["settings"].get("stop_at") or entry["settings"].get("rounds", 50)
     if not entry["resume"]:
         return total
     rows = read_rows(jobs.run_folder(entry["stage"], entry["run"]) / "log.csv")
@@ -136,7 +136,7 @@ def tail(path, n=15):
 def progress(rows, evals, entry, sup):
     """The short summary written at a milestone"""
     last = rows[-1]["round"]
-    total = entry["settings"].get("rounds", 50)
+    total = entry["settings"].get("stop_at") or entry["settings"].get("rounds", 50)
     pace = avg(rows, "round_s", last - 49, last) or sup["sec_per_round"]
     return {"round": last, "rounds": total,
             "entropy": {"rounds_0_4": avg(rows, "entropy", 0, 4), "last_10": avg(rows, "entropy", last - 9, last)},
@@ -284,7 +284,7 @@ def run_one(entry, cfg):
         event(cfg, "killed", run, rule=rule, why=why, stopped_pids=stopped)
         return rule != "stop_all"
     rows = read_rows(folder / "log.csv")
-    total = entry["settings"].get("rounds", 50)
+    total = entry["settings"].get("stop_at") or entry["settings"].get("rounds", 50)
     if result[1] != 0 or not rows or rows[-1]["round"] < total - 1:
         why = f"training ended with code {result[1]} at round {rows[-1]['round'] if rows else None} of {total}"
         procs.kill_tree(proc.pid)

@@ -8,11 +8,11 @@ from tools import registry
 
 DIR = Path("runs/supervisor")
 SETTINGS = {"rounds": int, "games": int, "workers": int, "T": int, "minibatch": int, "seed": int, "device": str,
-            "eval_every": int, "images_every": int, "lr": float, "init": str, "ent_coef": float, "solvable": bool,
+            "eval_every": int, "images_every": int, "lr": float, "epochs": int, "init": str, "ent_coef": float, "solvable": bool,
             "overlap": bool, "shaping": float, "copies": int, "groups": int, "broken_margin": float,
-            "fixed_scale": bool, "scale": float, "cost_map": bool}
+            "fixed_scale": bool, "scale": float, "cost_map": bool, "async_play": bool, "lag": str, "stop_at": int}
 FROM_CONFIG = {"n_games": "games", "set_scale": "scale"}
-NOT_ON_RESUME = ("init", "scale", "device")
+NOT_ON_RESUME = ("init", "scale", "device", "stop_at")
 
 def flag(name):
     """The command-line flag of a setting, e.g. ent_coef -> --ent-coef"""
