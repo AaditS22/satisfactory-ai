@@ -40,7 +40,7 @@ def first_scale(adv):
 def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4, minibatch=256, ent_coef=0.01, seed=0,
           device=None, run=None, eval_every=10, images_every=50, resume=False, solvable=False, init=None, overlap=False, verbose=True,
           shaping=0.0, note="", copies=0, groups=40, broken_margin=0.1, fixed_scale=False, set_scale=None, cost_map=False,
-          async_play=False, lag="off", stop_at=None):
+          async_play=False, lag="off", stop_at=None, max_k=0):
     """Trains Policy on LayoutGym tasks from one curriculum stage with PPO"""
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
@@ -62,6 +62,8 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         raise ValueError("--stop-at must be between 1 and --rounds")
     if fixed_scale and not copies:
           raise ValueError("--fixed-scale needs --copies")
+    if max_k and not (copies and 2 <= max_k <= copies):
+        raise ValueError("--max-k needs --copies and must be between 2 and --copies")
     if set_scale is not None:
         if not fixed_scale:
             raise ValueError("--scale needs --fixed-scale")
@@ -70,7 +72,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         if resume:
             raise ValueError("--resume keeps the run's own scale; drop --scale")
         
-    buffer = EpisodeBuffer(copies, broken_margin) if copies else RolloutBuffer(T, n_games, N_POS)
+    buffer = EpisodeBuffer(copies, broken_margin, max_k) if copies else RolloutBuffer(T, n_games, N_POS)
 
     if resume and run is None:
         raise ValueError("resume needs the run name (--run)")
@@ -87,7 +89,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
     
     settings = {"stage": stage, "rounds": rounds, "ent_coef": ent_coef, "solvable": solvable, "overlap": overlap,
             "shaping": shaping, "copies": copies, "groups": groups, "broken_margin": broken_margin, "fixed_scale": fixed_scale,
-            "cost_map": cost_map, "async_play": async_play, "lag": lag}
+            "cost_map": cost_map, "async_play": async_play, "lag": lag, "max_k": max_k}
 
     start, best, scale = 0, float("-inf"), set_scale
     if resume:
@@ -112,7 +114,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
             "solvable": solvable, "overlap": overlap, "shaping": shaping, "eval_every": eval_every,
             "images_every": images_every, "copies": copies, "groups": groups, "broken_margin": broken_margin,
             "fixed_scale": fixed_scale, "set_scale": set_scale, "cost_map": cost_map, "async_play": async_play,
-            "lag": lag, "stop_at": stop_at}
+            "lag": lag, "stop_at": stop_at, "max_k": max_k}
     info = save_run_info(folder, note, config, resumed_at=start if resume else None)
     log.text("note", f"{note}  \n{info['command']}  \ncode {info['code']}" if not resume
              else f"resumed at round {start}: {note}")
@@ -123,7 +125,7 @@ def train(stage=1, rounds=50, n_games=48, workers=24, T=32, lr=2.5e-4, epochs=4,
         obs, masks = games.reset(seed * 1000 + start * n_games)
         play_groups = collect_groups_async if async_play else collect_groups
         if overlap and copies:
-            bg = Background(policy, games, [buffer, EpisodeBuffer(copies, broken_margin)], obs_to_torch, gen)
+            bg = Background(policy, games, [buffer, EpisodeBuffer(copies, broken_margin, max_k)], obs_to_torch, gen)
             bg.sync(policy)
             bg.start_groups(page_jobs(seed, start, groups, copies), is_broken, async_play)
         elif overlap:
@@ -233,6 +235,8 @@ def main():
     p.add_argument("--async-play", action="store_true", help="with --copies: workers move on without waiting for the slowest one")
     p.add_argument("--lag", default="off", choices=["off", "log", "fix"],
                    help="with --overlap: log how late pages are (log) or correct for it with decoupled PPO (fix)")
+    p.add_argument("--max-k", type=int, default=0,
+                   help="with --copies: grade games for the best of K copies instead of the average (K >= 2; 0 = off)")
     p.add_argument("--stop-at", type=int, default=None,
                    help="stop after this many rounds while keeping the lr schedule of --rounds (for short tests)")
     args = p.parse_args()
@@ -247,7 +251,7 @@ def main():
                 lr=args.lr, init=args.init, ent_coef=args.ent_coef, solvable=args.solvable, overlap=args.overlap,
                 shaping=args.shaping, note=args.note, copies=args.copies, groups=args.groups,
                 broken_margin=args.broken_margin, fixed_scale=args.fixed_scale, set_scale=args.scale, cost_map=args.cost_map,
-                async_play=args.async_play, lag=args.lag, stop_at=args.stop_at)
+                async_play=args.async_play, lag=args.lag, max_k=args.max_k, stop_at=args.stop_at)
     print(f"last 10 rounds: mean score {np.nanmean(history[-10:]):.3f}   ({(time.time() - t0) / 60:.1f} min)")
 
 if __name__ == "__main__":

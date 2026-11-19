@@ -1,6 +1,7 @@
 import numpy as np
 
-from rl.buffer import gae, RolloutBuffer, loo_advantage, fix_broken, EpisodeBuffer
+from rl.buffer import gae, RolloutBuffer, loo_advantage, fix_broken, EpisodeBuffer, maxk_advantage
+import itertools
 
 
 def f32(x):
@@ -328,3 +329,52 @@ def test_episode_reset_refills():
     buf.end_game(1, 5, 0.3, False)
     buf.finish()
     assert buf.T == 2 and np.allclose(buf.get(np.arange(2))[1]["adv"], 0.0)
+
+
+def brute_maxk_raw(row, k):
+    """Each game's average gain to the best of every k-subset holding it"""
+    n = len(row)
+    raw = np.zeros(n)
+    for i in range(n):
+        others = [j for j in range(n) if j != i]
+        subs = list(itertools.combinations(others, k - 1))
+        raw[i] = np.mean([max(row[i], max(row[j] for j in s)) - max(row[j] for j in s) for s in subs])
+    return raw
+
+
+def test_maxk_matches_brute_force():
+    rng = np.random.default_rng(0)
+    returns = rng.normal(0.5, 0.1, size=(3, 7))
+    returns[1, 2] = returns[1, 5]  # a tie
+    for k in (2, 3, 5, 7):
+        want = loo_advantage(np.stack([brute_maxk_raw(r, k) for r in returns]))
+        assert np.allclose(maxk_advantage(returns, k), want, atol=1e-6)
+
+
+def test_maxk_hand_case_and_order():
+    # k=2 raw: 0.2 -> mean((0.2-0.4)+, (0.2-0.1)+, (0.2-0.3)+) = 0.1/3
+    returns = np.array([[0.2, 0.4, 0.1, 0.3]])
+    raw = brute_maxk_raw(returns[0], 2)
+    assert np.allclose(raw, [0.1 / 3, 0.6 / 3, 0.0, 0.3 / 3])
+    adv = maxk_advantage(returns, 4)
+    assert adv[0, 1] > 0 and np.allclose(adv[0, [0, 2, 3]], adv[0, 0])  # k = n: only the best game gains
+    assert np.allclose(maxk_advantage(returns, 2).sum(), 0.0, atol=1e-6)
+
+
+def test_maxk_refuses_bad_k():
+    for k in (1, 5):
+        try:
+            maxk_advantage(np.zeros((1, 4)), k)
+            raise AssertionError("bad k must raise")
+        except ValueError:
+            pass
+
+
+def test_episode_buffer_uses_maxk():
+    buf = EpisodeBuffer(copies=3, max_k=3)
+    for slot, score in enumerate([0.5, 0.7, 0.6]):
+        put(buf, slot, slot)
+        buf.end_game(slot, 1, score, False)
+    buf.finish()
+    _, d = buf.get(np.arange(3))
+    assert d["adv"][1] > 0 and np.isclose(d["adv"][0], d["adv"][2]) and d["adv"][0] < 0

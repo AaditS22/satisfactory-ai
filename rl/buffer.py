@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 def gae(rewards, values, dones, last_value, gamma=1.0, lam=0.95):
@@ -26,6 +28,25 @@ def loo_advantage(returns):
     out = (returns - others_avg).astype(np.float32)
     
     return out
+
+def maxk_advantage(returns, k):
+    """Grades every game by how much it raises the best of k copies (k >= 2), against its other copies.
+
+    A game's raw grade is how far it beats the best of k-1 other copies picked at random, on average
+    (0 if it doesn't beat them). That is its share of the gradient of E[best of k]. The raw grades are
+    then compared with the other copies' like loo_advantage, so games that never help the best go negative."""
+    G, n = returns.shape
+    if not 2 <= k <= n:
+        raise ValueError(f"k must be between 2 and the number of copies ({n})")
+    j = np.arange(n - 1)
+    # chance that the best of k-1 other copies is the j-th smallest of them
+    p = np.array([math.comb(i, k - 2) for i in j], dtype=np.float64) / math.comb(n - 1, k - 1)
+    raw = np.zeros((G, n))
+    for g in range(G):
+        for i in range(n):
+            others = np.sort(np.delete(returns[g], i))
+            raw[g, i] = np.sum(p * np.maximum(returns[g, i] - others, 0.0))
+    return loo_advantage(raw)
 
 def fix_broken(returns, broken, margin):
     """Makes broken games count slightly worse than the worst instead of completely different"""
@@ -97,8 +118,8 @@ class RolloutBuffer:
 class EpisodeBuffer:
     """Steps of whole games, where every task was repeated 'copies' times"""
 
-    def __init__(self, copies, margin=0.1):
-        self.copies, self.margin = copies, margin
+    def __init__(self, copies, margin=0.1, max_k=0):
+        self.copies, self.margin, self.max_k = copies, margin, max_k
         self.reset()
 
     def reset(self):
@@ -128,7 +149,7 @@ class EpisodeBuffer:
         scores = np.array([game[2] for game in self.games], dtype=np.float64)
         broken = np.array([game[3] for game in self.games], dtype=bool)
         fixed = fix_broken(scores[table], broken[table], self.margin)
-        grades = loo_advantage(fixed)
+        grades = maxk_advantage(fixed, self.max_k) if self.max_k >= 2 else loo_advantage(fixed)
         game_adv = np.zeros(len(self.games), dtype=np.float32)
         game_adv[table] = grades
 
