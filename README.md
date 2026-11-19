@@ -13,13 +13,13 @@ is done with standard algorithms.
 
 ## Status
 
-Work in progress. The pipeline works end to end, and an RL layout agent is trained through a
-5-stage curriculum, one stage at a time, each stage starting from the previous stage's model.
+The RL layout agent is finished, and currently has one model per stage of a 5-stage curriculum, each starting with weights from
+the previous stage's model.
 
-- All 5 stages are done. On every one of them, the agent's best-of-64 layouts beat Baseline A, and
-  on stages 1, 4 and 5 they also beat Baseline B.
-- On stage 5 (Computer), the hardest stage, best-of-64 beats A on all 45 tasks and matches or beats B
-  on 44 of them.
+- On 38 items it never trained on, it beats Baseline B on average with zero broken layouts, and is
+  about 4x faster (see [Final verification](#final-verification-items-it-never-trained-on)).
+- Next: building the agent's layouts in-game at scale, then a single command that runs the whole
+  pipeline.
 
 ## How it works
 
@@ -54,8 +54,9 @@ Work in progress. The pipeline works end to end, and an RL layout agent is train
   played in the background while the network learns from the current one.
 - **Curriculum:** each stage adds bigger target items. A new stage starts from the previous
   stage's model, softened (more random) so it explores again.
-- **Using it:** sample 64 layouts per task and keep the best one (best-of-64). That takes a few
-  seconds per task, compared with 4-31 s for Baseline B.
+- **Using it** (`layout/design.py`): every stage's model takes 8 samples, then the model with the
+  best layout takes 56 more, and the best of all 96 is kept ("scout" mode). About 2.5 s per task,
+  compared with ~10 s for Baseline B.
 
 The full training log, with every run, what it changed and what it taught me, is in
 [docs/training.md](docs/training.md).
@@ -82,10 +83,31 @@ Baseline A can solve. *greedy* is one try per task; *best-of-64* keeps the best 
 
 On stages 2 and 3, best-of-64 is level with B (within 0.004).
 
-**Goal:** an RL model that beats A on every task and matches or beats B more than 50% of the
-time, while taking much less time to run than B. On stage 4, best-of-64 beats A on 82 of 88 tasks
-and matches or beats B on 72%. On stage 5 it beats A on all 45 tasks and matches or beats B on 98%,
-and greedy alone (one try) is level with B.
+### Final verification: items it never trained on
+
+The final test was 152 tasks for 38 target items that no stage trained on (Stator, Smart Plating,
+Nobelisk, Uranium Fuel Rod, ...), counting only the 140 that Baseline A can solve. Three ways of using
+the five stage models are compared:
+
+- **all:** best-of-64 with every model (320 games).
+- **greedy:** one greedy game per model, then best-of-64 with the one that scored highest (69 games).
+- **scout:** best-of-8 per model, then 56 more games with the one that scored highest (96 games).
+
+| Method | Mean score | vs B (paired, SE) | Matches or beats B | Broken | Time per task |
+|---|---|---|---|---|---|
+| Baseline A | 0.661 | | | | 0.14 s |
+| Baseline B | 0.699 | | | | 10.0 s |
+| Agent, all | **0.710** | +0.012 (0.003) | 70% | 0 | 5.8 s |
+| Agent, scout | 0.706 | +0.007 (0.003) | 68% | 0 | **2.5 s** |
+| Agent, greedy | 0.703 | +0.005 (0.003) | 62% | 0 | 1.6 s |
+
+- **Scout is the default:** within 0.005 of "all" at less than half the
+  time, and about 4x faster than B. Times are wall-clock on one machine and B uses one CPU core per task,
+  the agent uses 16 workers and a GPU.
+- **Weak spots:** B is clearly better on Cable, Concrete and Stator (by 0.03-0.04) and on SAM
+  Fluctuator (by 0.01).
+
+Reproduce it with `python -m layout.verify` (~30 min), or print the saved results with `--show`.
 
 ## Repo layout
 
@@ -130,7 +152,15 @@ with only the network weights (5.4 MB each):
 | `models/stage4.pt` | 4 | 0.517 | 0.594 |
 | `models/stage5.pt` | 5 | 0.528 | 0.597 |
 
-Play a model on one test task, compare it with both baselines and save a picture like the one at
+Design a layout for any supported item and rate with all five models, compared with Baseline A
+(`--b` adds Baseline B, `--out` saves a picture):
+
+```
+python -m layout.design Stator 10
+python -m layout.design "Smart Plating" 2 --site 64x48 --b --out plating.png
+```
+
+Play a single model on one test task, compare it with both baselines and save a picture like the one at
 the top (a few seconds with a GPU):
 
 ```
