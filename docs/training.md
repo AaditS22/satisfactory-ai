@@ -49,6 +49,7 @@ python -m layout.train --run stage3_b --stage 3 --rounds 2000 --ent-coef 0.01 --
 - `--async-play` (needs --copies) lets each worker move on as soon as it answers, instead of every game waiting for the slowest worker on every tick (a game's last move, which routes and scores, or a reset can take 100+ ms while a normal move takes ~3 ms). Same jobs, same weights per page; only the order of the random draws changes.
 - `--overlap` plays the next page in the background while the network learns from the current one. Each page is then played by weights one update old.
 - `--lag` (with --overlap): `log` records how far apart the playing weights and the current ones are (lag_kl, lag_clip, clip_frac_played); `fix` also corrects for it with decoupled PPO (the clip is measured from the current weights, and each move is weighted by p_current / p_played, capped at 2).
+- `--max-k K` (with --copies, 2 <= K <= copies) grades each game for the best of K copies instead of the average: a game's raw grade is how far it beats the best of K-1 random other copies (0 if it doesn't), which is its share of the gradient of E[best of K]; the raw grades are then compared with the other copies' like the normal grade. Tried on stage 5 (see below), not used since.
 - `--stop-at N` stops after N rounds but keeps the lr schedule of --rounds (for short tests that match a full run's first N rounds).
 
 **Output**:
@@ -153,4 +154,27 @@ Current recipe (stage4_d):
 python -m layout.train --run stage4_d --stage 4 --rounds 2000 --workers 16 --init runs/other/f_s4soft_wide.pt --ent-coef 0.01 --solvable --copies 16 --groups 7 --fixed-scale --scale 0.056543 --cost-map --async-play --overlap --lag fix --seed 0 --lr 0.0001 --note "..."
 ```
 
-### To be continued...
+## Stage 5: (Items - computer)
+
+Reference scores: A 0.511, B 0.539 (45 tasks). Games have ~14 blocks (stage 4: ~12). The test set is half the size of stage 4's, so the SEs are ~1.4x bigger.
+
+All runs start from stage4_d's last.pt, softened by T 2.5 (entropy 1.42 on stage 5 tasks), with stage4_d's recipe (16 copies x 7 tasks, async play, overlap, lag fix).
+
+| run | change | greedy | best-of-64 | notes |
+|---|---|---|---|---|
+| stage5_a | stage4_d's recipe (lr 1e-4) | | | Drifted: entropy flat for 150 rounds, then +0.32 by round 220 (approx_kl ~0.1, clip_frac ~0.23). Killed |
+| stage5_b | a + `--max-k 4` | | | Drifted faster: entropy +0.49 by round 50. Killed |
+| **stage5_c** | a with lr 5e-5 | **0.528** | 0.597 | No drift. Best-of-64 beats A (+0.087, all 45 tasks) and B (+0.059, 44 of 45). Greedy level with B. Specialist |
+| stage5_d | c + `--max-k 2` | 0.419 | **0.602** | Best-of-64 +0.005 vs c (1.9 SE, neutral). 6 broken greedy layouts (c: 1) |
+
+Notes:
+- **Each stage needed a smaller step:** lr 2.5e-4 worked to stage 3, stage 4 drifted at it and needed 1e-4, and stage 5 drifted at 1e-4 and needed 5e-5. At 5e-5, approx_kl was ~0.05-0.08 early and shrank all run.
+- **Greedy looks flat for a long time:** stage5_c's greedy eval rose only ~0.02 in the first 800 rounds, then 0.44 -> 0.49 as the lr decayed. With 45 tasks, one eval swings +-0.04, so only 100+ round averages show a trend.
+- **Max-k (training for best-of-k) didn't pay off:** at k 4 it drifted at once: grading only the top games pushes probability off all the middle moves, which spreads it out. At k 2 with the smaller lr it trained fine, but best-of-64 only moved +0.005 (neutral), and greedy broke on 6 tasks. On tasks where it didn't break, its greedy was +0.010 better than c's, so the problem is breakage, not layout quality. Training on the average is not what limits best-of-k here.
+- **Stage 5 is the best result vs B so far:** best-of-64 beats B on 44 of 45 tasks (stage 4: 63 of 88), mostly with shorter belts (618 vs 743 m), fewer floors (2.2 vs 2.7) and fewer crossings (1.1 vs 2.0), at the cost of more lifts (22 vs 15). Greedy alone is -0.011 vs B (inconclusive); on stage 4 it was -0.052 (worse).
+
+Final recipe (stage5_c):
+```
+python -m layout.train --run stage5_c --stage 5 --rounds 2000 --workers 16 --init runs/other/d4_s5soft.pt --ent-coef 0.01 --solvable --copies 16 --groups 7 --fixed-scale --cost-map --async-play --overlap --lag fix --seed 0 --lr 5e-05 --note "..."
+```
+`runs/other/d4_s5soft.pt` is `python -m layout.soften runs/stage4/stage4_d/last.pt --stage 5 --temps 1.0 1.5 2.0 2.5 3.0 3.5 --target 1.34 --save runs/other/d4_s5soft.pt`.

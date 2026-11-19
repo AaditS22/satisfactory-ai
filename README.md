@@ -16,9 +16,10 @@ is done with standard algorithms.
 Work in progress. The pipeline works end to end, and an RL layout agent is trained through a
 5-stage curriculum, one stage at a time, each stage starting from the previous stage's model.
 
-- Stages 1-4 are done. On every one of them, the agent's best-of-64 layouts beat Baseline A, and
-  on stages 1 and 4 they also beat Baseline B.
-- Stage 5 (Computer) is next.
+- All 5 stages are done. On every one of them, the agent's best-of-64 layouts beat Baseline A, and
+  on stages 1, 4 and 5 they also beat Baseline B.
+- On stage 5 (Computer), the hardest stage, best-of-64 beats A on all 45 tasks and matches or beats B
+  on 44 of them.
 
 ## How it works
 
@@ -77,13 +78,14 @@ Baseline A can solve. *greedy* is one try per task; *best-of-64* keeps the best 
 | 2 | Reinforced Iron Plate, Rotor | 0.605 | **0.658** | 0.607 | 0.654 |
 | 3 | Modular Frame, Encased Industrial Beam | 0.599 | **0.653** | 0.561 | 0.649 |
 | 4 | Motor, Heavy Modular Frame | 0.532 | 0.569 | 0.517 | **0.594** |
-| 5 | Computer | | | | |
+| 5 | Computer | 0.511 | 0.539 | 0.528 | **0.597** |
 
 On stages 2 and 3, best-of-64 is level with B (within 0.004).
 
-**Current goal:** an RL model that beats A on every task and matches or beats B more than 50% of the
+**Goal:** an RL model that beats A on every task and matches or beats B more than 50% of the
 time, while taking much less time to run than B. On stage 4, best-of-64 beats A on 82 of 88 tasks
-and matches or beats B on 72%.
+and matches or beats B on 72%. On stage 5 it beats A on all 45 tasks and matches or beats B on 98%,
+and greedy alone (one try) is level with B.
 
 ## Repo layout
 
@@ -126,6 +128,7 @@ with only the network weights (5.4 MB each):
 | `models/stage2.pt` | 2 | 0.607 | 0.654 |
 | `models/stage3.pt` | 3 | 0.561 | 0.649 |
 | `models/stage4.pt` | 4 | 0.517 | 0.594 |
+| `models/stage5.pt` | 5 | 0.528 | 0.597 |
 
 Play a model on one test task, compare it with both baselines and save a picture like the one at
 the top (a few seconds with a GPU):
